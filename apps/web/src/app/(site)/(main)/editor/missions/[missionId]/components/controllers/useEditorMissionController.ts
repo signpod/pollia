@@ -1,8 +1,6 @@
 "use client";
 
 import { saveMissionEditorDraft } from "@/actions/mission/draft";
-import { updateMission } from "@/actions/mission/update";
-import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { GetMissionResponse } from "@/types/dto";
 import {
   type EditorMissionDraftPayload,
@@ -10,19 +8,12 @@ import {
   normalizeEditorMissionDraftPayload,
   toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
-import { MissionType } from "@prisma/client";
-import { toast, useModal } from "@repo/ui/components";
-import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { editorDraftVersionAtom } from "../../atoms/editorDraftVersionAtom";
-import {
-  type ServerActionLike,
-  type ServerCompletionLike,
-  getPublishBlockingMessage,
-  validateEditorPublishFlow,
-} from "../editor-publish-flow-validation";
+import type { ServerActionLike, ServerCompletionLike } from "../editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "../editor-save.types";
 import {
   type PublishAvailability,
@@ -30,12 +21,9 @@ import {
 } from "../models/editorMissionPublishModel";
 import {
   type PostSectionSaveOutcome,
-  checkPublishGuard,
   checkSaveGuard,
   checkUnifiedSaveGuard,
-  resolveNoChangesOutcome,
   resolvePostSectionSaveOutcome,
-  resolveSaveStrategy,
 } from "./editorMissionSaveFlowModel";
 import {
   type EditorSectionKey,
@@ -45,8 +33,6 @@ import {
 } from "./editorMissionSaveSummaryModel";
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
-const PUBLISH_TOAST_ID = "editor-mission-publish-result";
-const UNPUBLISH_TOAST_ID = "editor-mission-unpublish-result";
 const SECTION_REFS_POLL_INTERVAL_MS = 250;
 const LOCAL_DRAFT_STORAGE_KEY_PREFIX = "pollia:mission-editor-local-draft:";
 const LOCAL_DRAFT_AUTOSAVE_DELAY_MS = 800;
@@ -115,10 +101,6 @@ function resolveDraftToRestore({
   mission,
   missionQueryData,
 }: ResolveDraftToRestoreInput): EditorMissionDraftPayload | null {
-  if (mission.isActive || missionQueryData?.isActive) {
-    return null;
-  }
-
   const latestMission = missionQueryData ?? mission;
   const serverDraftRaw = normalizeEditorMissionDraftPayload(
     (latestMission as { editorDraft?: unknown }).editorDraft,
@@ -147,24 +129,6 @@ interface DraftClearResult {
   serverDraftErrorMessage: string | null;
 }
 
-interface MissionRefetchResult {
-  data?: {
-    data?: GetMissionResponse["data"];
-  };
-}
-
-interface ActionsRefetchResult {
-  data?: {
-    data?: ServerActionLike[];
-  };
-}
-
-interface CompletionsRefetchResult {
-  data?: {
-    data?: ServerCompletionLike[];
-  };
-}
-
 export interface UseEditorMissionControllerParams {
   missionId: string;
   mission: GetMissionResponse["data"];
@@ -174,9 +138,6 @@ export interface UseEditorMissionControllerParams {
   completionsQueryData?: ServerCompletionLike[] | null;
   isActionsLoading: boolean;
   isCompletionsLoading: boolean;
-  refetchMission: () => Promise<MissionRefetchResult>;
-  refetchActions: () => Promise<ActionsRefetchResult>;
-  refetchCompletions: () => Promise<CompletionsRefetchResult>;
 }
 
 export interface UseEditorMissionControllerResult {
@@ -195,12 +156,8 @@ export interface UseEditorMissionControllerResult {
     onCompletionWorkingSetChange: () => void;
   };
   viewState: {
-    isPublished: boolean;
-    canPublish: boolean;
     canSave: boolean;
     isSavingAll: boolean;
-    isPublishing: boolean;
-    isUnpublishing: boolean;
     hasAnyBusySection: boolean;
     hasAnyPendingChanges: boolean;
     hasAnyValidationIssues: boolean;
@@ -208,8 +165,6 @@ export interface UseEditorMissionControllerResult {
   publishState: PublishAvailability;
   actions: {
     onSave: () => Promise<void>;
-    onPublish: () => Promise<void>;
-    onUnpublish: () => void;
   };
 }
 
@@ -235,25 +190,15 @@ export function useEditorMissionController({
   completionsQueryData,
   isActionsLoading,
   isCompletionsLoading,
-  refetchMission,
-  refetchActions,
-  refetchCompletions,
 }: UseEditorMissionControllerParams): UseEditorMissionControllerResult {
-  const { showModal } = useModal();
-  const queryClient = useQueryClient();
-
   const basicInfoRef = useRef<SectionSaveHandle | null>(null);
   const rewardRef = useRef<SectionSaveHandle | null>(null);
   const actionRef = useRef<SectionSaveHandle | null>(null);
   const completionRef = useRef<SectionSaveHandle | null>(null);
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
-  const publishInFlightRef = useRef(false);
 
   const [isSavingAll, setIsSavingAll] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isUnpublishing, setIsUnpublishing] = useState(false);
-  const [isPublished, setIsPublished] = useState(mission.isActive);
   const [publishSnapshotVersion, setPublishSnapshotVersion] = useState(0);
   const [sectionStates, setSectionStates] = useState<Record<EditorSectionKey, SectionSaveState>>({
     basic: {
@@ -329,10 +274,6 @@ export function useEditorMissionController({
   );
 
   useEffect(() => {
-    setIsPublished(mission.isActive);
-  }, [mission.id, mission.isActive]);
-
-  useEffect(() => {
     if (!isEditorTab || typeof window === "undefined") {
       return;
     }
@@ -403,7 +344,6 @@ export function useEditorMissionController({
   const publishState = useMemo(
     () =>
       computePublishAvailability({
-        isPublished,
         entryActionId: missionEntryActionId,
         useAiCompletion: missionUseAiCompletionForPublish,
         serverActions: actionsQueryData,
@@ -416,7 +356,6 @@ export function useEditorMissionController({
       actionsQueryData,
       completionDraftSnapshotForPublish,
       completionsQueryData,
-      isPublished,
       missionEntryActionId,
       missionUseAiCompletionForPublish,
     ],
@@ -516,7 +455,7 @@ export function useEditorMissionController({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: draftVersion and sectionStates are intentional triggers
   useEffect(() => {
-    if (!isEditorTab || typeof window === "undefined" || isPublished) {
+    if (!isEditorTab || typeof window === "undefined") {
       return;
     }
     if (!draftRestoreAppliedRef.current) {
@@ -549,7 +488,6 @@ export function useEditorMissionController({
     hasAnyPendingChanges,
     hasPendingChangesFromRefs,
     isEditorTab,
-    isPublished,
     missionId,
     sectionStates,
   ]);
@@ -702,23 +640,6 @@ export function useEditorMissionController({
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
-        if (isPublished) {
-          const clearResult = await clearPersistedDraft();
-          const noChangesOutcome = resolveNoChangesOutcome(clearResult);
-          if (noChangesOutcome.type === "clear_failed") {
-            console.error("Failed to clear mission editor draft:", {
-              missionId,
-              serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-            });
-            toast({
-              message: "저장할 변경사항이 없습니다.\n임시저장을 정리하지 못했습니다.",
-              icon: AlertCircle,
-              iconClassName: "text-red-500",
-              id: UNIFIED_SAVE_TOAST_ID,
-            });
-            return "no_changes" as const;
-          }
-        }
         if (showNoChangesToast) {
           toast({ message: "저장할 변경사항이 없습니다.", id: UNIFIED_SAVE_TOAST_ID });
         }
@@ -736,7 +657,6 @@ export function useEditorMissionController({
 
         const outcome = resolvePostSectionSaveOutcome({
           mode,
-          isPublished,
           summary,
           showSavedToast,
           showNoChangesToast,
@@ -751,44 +671,15 @@ export function useEditorMissionController({
     },
     [
       applyPostSectionSaveOutcome,
-      clearPersistedDraft,
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasPendingChangesFromRefs,
       isEditorTab,
-      isPublished,
       isSavingAll,
       missionId,
       runSectionSaves,
     ],
   );
-
-  const runPublishPreflightValidation = useCallback(async () => {
-    const [latestMissionResult, latestActionsResult, latestCompletionsResult] = await Promise.all([
-      refetchMission(),
-      refetchActions(),
-      refetchCompletions(),
-    ]);
-
-    const latestMission = latestMissionResult.data?.data ?? missionQueryData ?? mission;
-    const latestActions = latestActionsResult.data?.data ?? actionsQueryData ?? [];
-    const latestCompletions = latestCompletionsResult.data?.data ?? completionsQueryData ?? [];
-
-    return validateEditorPublishFlow({
-      entryActionId: latestMission.entryActionId,
-      useAiCompletion: latestMission.useAiCompletion,
-      serverActions: latestActions,
-      serverCompletions: latestCompletions,
-    });
-  }, [
-    actionsQueryData,
-    completionsQueryData,
-    mission,
-    missionQueryData,
-    refetchActions,
-    refetchCompletions,
-    refetchMission,
-  ]);
 
   const saveDraft = useCallback(async () => {
     const draftPayload = collectLocalDraftPayload();
@@ -805,168 +696,26 @@ export function useEditorMissionController({
     }
   }, [collectLocalDraftPayload, missionId]);
 
-  const handlePublish = useCallback(async () => {
-    const guard = checkPublishGuard({
-      isEditorTab,
-      isPublished,
-      publishInFlight: publishInFlightRef.current,
-      isPublishing,
-      isSavingAll,
-      hasAnyBusySection,
-      canPublish: publishState.canPublish,
+  const handleSave = useCallback(async () => {
+    const guard = checkSaveGuard({
       isValidationDataReady: publishState.isValidationDataReady,
       issueCount: publishState.issues.length,
       blockingMessage: publishState.blockingMessage,
     });
 
     if (!guard.allowed) {
-      if (!guard.silent) {
-        toast({
-          message: guard.message,
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-          id: PUBLISH_TOAST_ID,
-        });
-      }
-      return;
-    }
-
-    publishInFlightRef.current = true;
-    setIsPublishing(true);
-    try {
-      if (hasAnyPendingChanges) {
-        await saveDraft();
-        const saveResult = await runUnifiedSave({
-          showSavedToast: false,
-          showNoChangesToast: false,
-          mode: "publish",
-        });
-        if (saveResult === "failed") {
-          return;
-        }
-      }
-
-      const preflightValidation = await runPublishPreflightValidation();
-      if (!preflightValidation.isValid) {
-        toast({
-          message: getPublishBlockingMessage(preflightValidation.issues),
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-          id: PUBLISH_TOAST_ID,
-        });
-        return;
-      }
-
-      await updateMission(missionId, {
-        isActive: true,
-        type: MissionType.GENERAL,
-      });
-      setIsPublished(true);
-      void queryClient.invalidateQueries({
-        queryKey: missionQueryKeys.mission(missionId),
-      });
       toast({
-        message: "발행되었습니다.",
-        id: PUBLISH_TOAST_ID,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "발행 중 오류가 발생했습니다.";
-      toast({
-        message,
+        message: guard.message,
         icon: AlertCircle,
         iconClassName: "text-red-500",
-        id: PUBLISH_TOAST_ID,
+        id: UNIFIED_SAVE_TOAST_ID,
       });
-    } finally {
-      publishInFlightRef.current = false;
-      setIsPublishing(false);
-    }
-  }, [
-    hasAnyBusySection,
-    hasAnyPendingChanges,
-    isEditorTab,
-    isPublished,
-    isPublishing,
-    isSavingAll,
-    missionId,
-    publishState.blockingMessage,
-    publishState.canPublish,
-    publishState.isValidationDataReady,
-    publishState.issues.length,
-    queryClient,
-    runPublishPreflightValidation,
-    runUnifiedSave,
-    saveDraft,
-  ]);
-
-  const handleUnpublish = useCallback(() => {
-    if (!isPublished || isUnpublishing || isSavingAll || isPublishing) {
-      return;
-    }
-
-    showModal({
-      title: "발행 되돌리기",
-      description: "발행을 되돌리면 미션이 비공개 상태로 전환됩니다.\n계속하시겠습니까?",
-      confirmText: "되돌리기",
-      cancelText: "취소",
-      showCancelButton: true,
-      onConfirm: async () => {
-        setIsUnpublishing(true);
-        try {
-          await updateMission(missionId, { isActive: false });
-          setIsPublished(false);
-          void queryClient.invalidateQueries({
-            queryKey: missionQueryKeys.mission(missionId),
-          });
-          toast({
-            message: "발행이 되돌려졌습니다.",
-            id: UNPUBLISH_TOAST_ID,
-          });
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "발행 되돌리기 중 오류가 발생했습니다.";
-          toast({
-            message,
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-            id: UNPUBLISH_TOAST_ID,
-          });
-        } finally {
-          setIsUnpublishing(false);
-        }
-      },
-    });
-  }, [isPublished, isUnpublishing, isSavingAll, isPublishing, missionId, queryClient, showModal]);
-
-  const handleSave = useCallback(async () => {
-    const strategy = resolveSaveStrategy(isPublished);
-
-    if (strategy === "direct-save") {
-      const guard = checkSaveGuard({
-        isValidationDataReady: publishState.isValidationDataReady,
-        issueCount: publishState.issues.length,
-        blockingMessage: publishState.blockingMessage,
-      });
-
-      if (!guard.allowed) {
-        toast({
-          message: guard.message,
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-          id: UNIFIED_SAVE_TOAST_ID,
-        });
-        return;
-      }
-
-      await saveDraft();
-      await runUnifiedSave({ mode: "publish" });
       return;
     }
 
     await saveDraft();
-    await runUnifiedSave({ mode: "manual" });
+    await runUnifiedSave({ mode: "publish" });
   }, [
-    isPublished,
     publishState.blockingMessage,
     publishState.isValidationDataReady,
     publishState.issues.length,
@@ -1021,12 +770,8 @@ export function useEditorMissionController({
       onCompletionWorkingSetChange: handleCompletionWorkingSetChange,
     },
     viewState: {
-      isPublished,
-      canPublish: publishState.canPublish,
       canSave,
       isSavingAll,
-      isPublishing,
-      isUnpublishing,
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasAnyValidationIssues,
@@ -1034,8 +779,6 @@ export function useEditorMissionController({
     publishState,
     actions: {
       onSave: handleSave,
-      onPublish: handlePublish,
-      onUnpublish: handleUnpublish,
     },
   };
 }

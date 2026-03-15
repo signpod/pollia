@@ -17,19 +17,6 @@ export interface SaveGuardInput {
   blockingMessage: string | null;
 }
 
-export interface PublishGuardInput {
-  isEditorTab: boolean;
-  isPublished: boolean;
-  publishInFlight: boolean;
-  isPublishing: boolean;
-  isSavingAll: boolean;
-  hasAnyBusySection: boolean;
-  canPublish: boolean;
-  isValidationDataReady: boolean;
-  issueCount: number;
-  blockingMessage: string | null;
-}
-
 // ---------------------------------------------------------------------------
 // Guard Results (discriminated unions)
 // ---------------------------------------------------------------------------
@@ -37,11 +24,6 @@ export interface PublishGuardInput {
 export type UnifiedSaveGuardResult = { allowed: true } | { allowed: false };
 
 export type SaveGuardResult = { allowed: true } | { allowed: false; message: string };
-
-export type PublishGuardResult =
-  | { allowed: true }
-  | { allowed: false; silent: true }
-  | { allowed: false; silent: false; message: string };
 
 // ---------------------------------------------------------------------------
 // Outcome Inputs
@@ -53,7 +35,6 @@ export interface DraftClearOutcomeInput {
 
 export interface PostSectionSaveInput {
   mode: "manual" | "publish";
-  isPublished: boolean;
   summary: SectionSaveSummary;
   showSavedToast: boolean;
   showNoChangesToast: boolean;
@@ -79,16 +60,6 @@ export type PostSectionSaveOutcome =
     }
   | { type: "saved"; shouldClearDraft: boolean; showToast: boolean; result: "saved" }
   | { type: "no_changes"; showToast: boolean; result: "no_changes" };
-
-// ---------------------------------------------------------------------------
-// Save Strategy
-// ---------------------------------------------------------------------------
-
-export type SaveStrategy = "draft-then-save" | "direct-save";
-
-export function resolveSaveStrategy(isPublished: boolean): SaveStrategy {
-  return isPublished ? "direct-save" : "draft-then-save";
-}
 
 // ---------------------------------------------------------------------------
 // Guard Functions
@@ -117,32 +88,6 @@ export function checkSaveGuard(input: SaveGuardInput): SaveGuardResult {
   return { allowed: true };
 }
 
-export function checkPublishGuard(input: PublishGuardInput): PublishGuardResult {
-  if (
-    !input.isEditorTab ||
-    input.isPublished ||
-    input.publishInFlight ||
-    input.isPublishing ||
-    input.isSavingAll ||
-    input.hasAnyBusySection
-  ) {
-    return { allowed: false, silent: true };
-  }
-
-  if (!input.canPublish) {
-    const isCheckingState = !input.isValidationDataReady || input.issueCount === 0;
-    return {
-      allowed: false,
-      silent: false,
-      message: isCheckingState
-        ? "발행 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-        : (input.blockingMessage ?? "발행 가능한 상태인지 확인할 수 없습니다."),
-    };
-  }
-
-  return { allowed: true };
-}
-
 // ---------------------------------------------------------------------------
 // Outcome Functions
 // ---------------------------------------------------------------------------
@@ -155,12 +100,7 @@ export function resolveNoChangesOutcome(input: DraftClearOutcomeInput): NoChange
   return { type: "cleared" };
 }
 
-export function shouldClearDraftAfterSave(
-  summary: SectionSaveSummary,
-  isPublished: boolean,
-): boolean {
-  if (!isPublished) return false;
-
+export function shouldClearDraftAfterSave(summary: SectionSaveSummary): boolean {
   return (
     summary.savedCount > 0 &&
     summary.failedCount === 0 &&
@@ -170,8 +110,8 @@ export function shouldClearDraftAfterSave(
 }
 
 export function resolvePostSectionSaveOutcome(input: PostSectionSaveInput): PostSectionSaveOutcome {
-  const { mode, isPublished, summary, showSavedToast, showNoChangesToast } = input;
-  const canClearDraft = shouldClearDraftAfterSave(summary, isPublished);
+  const { mode, summary, showSavedToast, showNoChangesToast } = input;
+  const canClearDraft = shouldClearDraftAfterSave(summary);
 
   if (mode === "publish" && (summary.invalidCount > 0 || summary.failedCount > 0)) {
     return {

@@ -91,9 +91,6 @@ export function EditorMissionTabContent({
     completionsQueryData: completionsQuery.data?.data,
     isActionsLoading: actionsQuery.isLoading,
     isCompletionsLoading: completionsQuery.isLoading,
-    refetchMission: missionQuery.refetch,
-    refetchActions: actionsQuery.refetch,
-    refetchCompletions: completionsQuery.refetch,
   });
   const effectiveMission = missionQuery.data?.data ?? mission;
   const serverActions = actionsQuery.data?.data;

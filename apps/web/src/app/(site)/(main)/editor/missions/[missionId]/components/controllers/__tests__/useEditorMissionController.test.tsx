@@ -111,30 +111,10 @@ describe("useEditorMissionController", () => {
         completionsQueryData: [{ id: "completion-1", title: "완료" }],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({
-          data: {
-            data: [
-              {
-                id: "action-1",
-                type: "SUBJECTIVE",
-                title: "질문 1",
-                nextActionId: null,
-                nextCompletionId: "completion-1",
-                options: [],
-              },
-            ],
-          },
-        }),
-        refetchCompletions: async () => ({
-          data: {
-            data: [{ id: "completion-1", title: "완료" }],
-          },
-        }),
       }),
     );
 
-    expect(result.current.viewState.canPublish).toBe(true);
+    expect(result.current.publishState.canPublish).toBe(true);
     expect(result.current.viewState.canSave).toBe(true);
     expect(result.current.publishState.isValidationDataReady).toBe(true);
   });
@@ -152,18 +132,15 @@ describe("useEditorMissionController", () => {
         completionsQueryData: undefined,
         isActionsLoading: true,
         isCompletionsLoading: true,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: undefined } }),
-        refetchCompletions: async () => ({ data: { data: undefined } }),
       }),
     );
 
-    expect(result.current.viewState.canPublish).toBe(false);
+    expect(result.current.publishState.canPublish).toBe(false);
     expect(result.current.viewState.canSave).toBe(false);
     expect(result.current.publishState.isValidationDataReady).toBe(false);
   });
 
-  it("발행 상태여도 플로우가 유효하면 canSave는 true이고 canPublish는 false다", () => {
+  it("발행 상태여도 플로우가 유효하면 canSave와 canPublish 모두 true다", () => {
     const mission = createMission({ isActive: true });
 
     const { result } = renderHook(() =>
@@ -185,13 +162,10 @@ describe("useEditorMissionController", () => {
         completionsQueryData: [{ id: "completion-1", title: "완료" }],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
       }),
     );
 
-    expect(result.current.viewState.canPublish).toBe(false);
+    expect(result.current.publishState.canPublish).toBe(true);
     expect(result.current.viewState.canSave).toBe(true);
   });
 
@@ -208,9 +182,6 @@ describe("useEditorMissionController", () => {
         completionsQueryData: [],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
       }),
     );
 
@@ -239,30 +210,10 @@ describe("useEditorMissionController", () => {
         completionsQueryData: [{ id: "completion-1", title: "완료" }],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({
-          data: {
-            data: [
-              {
-                id: "action-1",
-                type: "SUBJECTIVE",
-                title: "질문 1",
-                nextActionId: null,
-                nextCompletionId: "completion-1",
-                options: [],
-              },
-            ],
-          },
-        }),
-        refetchCompletions: async () => ({
-          data: {
-            data: [{ id: "completion-1", title: "완료" }],
-          },
-        }),
       }),
     );
 
-    expect(result.current.viewState.canPublish).toBe(false);
+    expect(result.current.publishState.canPublish).toBe(false);
 
     act(() => {
       result.current.refs.basicInfoRef.current = createSectionHandle(null);
@@ -276,28 +227,28 @@ describe("useEditorMissionController", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.viewState.canPublish).toBe(true);
+      expect(result.current.publishState.canPublish).toBe(true);
     });
   });
 
-  it("발행 상태에서는 server draft 자동저장이 동작하지 않는다", async () => {
+  it("발행 상태에서도 변경이 있으면 localStorage에 임시저장한다", async () => {
     jest.useFakeTimers();
     const mission = createMission({ isActive: true });
 
-    const { result } = renderHook(() =>
-      useEditorMissionController({
-        missionId: mission.id,
-        mission,
-        currentTab: "editor",
-        missionQueryData: mission,
-        actionsQueryData: [],
-        completionsQueryData: [],
-        isActionsLoading: false,
-        isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
-      }),
+    const initialProps = {
+      missionId: mission.id,
+      mission,
+      currentTab: "editor" as const,
+      missionQueryData: mission,
+      actionsQueryData: [] as any[],
+      completionsQueryData: [] as any[],
+      isActionsLoading: true,
+      isCompletionsLoading: false,
+    };
+
+    const { result, rerender } = renderHook(
+      (props: typeof initialProps) => useEditorMissionController(props),
+      { initialProps },
     );
 
     act(() => {
@@ -307,13 +258,27 @@ describe("useEditorMissionController", () => {
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
 
-    await act(async () => {
-      jest.advanceTimersByTime(45_000);
+    rerender({ ...initialProps, isActionsLoading: false });
+
+    act(() => {
+      result.current.sectionBindings.onBasicStateChange({
+        hasPendingChanges: true,
+        isBusy: false,
+        hasValidationIssues: false,
+        validationIssueCount: 0,
+      });
     });
 
-    expect(mockedSaveMissionEditorDraft).not.toHaveBeenCalledWith(
-      mission.id,
-      expect.objectContaining({ basic: expect.anything() }),
+    await act(async () => {
+      jest.advanceTimersByTime(900);
+    });
+
+    const stored = window.localStorage.getItem(`${LOCAL_DRAFT_STORAGE_KEY_PREFIX}${mission.id}`);
+    expect(stored).toBeTruthy();
+    expect(JSON.parse(stored as string)).toEqual(
+      expect.objectContaining({
+        basic: expect.objectContaining({ title: "기본정보" }),
+      }),
     );
   });
 
@@ -331,9 +296,6 @@ describe("useEditorMissionController", () => {
         completionsQueryData: [],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
       }),
     );
 
@@ -382,9 +344,6 @@ describe("useEditorMissionController", () => {
         completionsQueryData: [{ id: "completion-1", title: "완료" }],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
       }),
     );
 
@@ -409,7 +368,7 @@ describe("useEditorMissionController", () => {
     );
   });
 
-  it("발행 상태에서는 draft가 있어도 복원하지 않고 복원 토스트를 노출하지 않는다", async () => {
+  it("발행 상태에서도 draft가 있으면 복원하고 복원 토스트를 노출한다", async () => {
     const mission = createMission({
       isActive: true,
       editorDraft: {
@@ -420,20 +379,20 @@ describe("useEditorMissionController", () => {
 
     const importSpy = jest.fn();
 
-    const { result } = renderHook(() =>
-      useEditorMissionController({
-        missionId: mission.id,
-        mission,
-        currentTab: "editor",
-        missionQueryData: mission,
-        actionsQueryData: [],
-        completionsQueryData: [],
-        isActionsLoading: false,
-        isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
-      }),
+    const initialProps = {
+      missionId: mission.id,
+      mission,
+      currentTab: "editor" as const,
+      missionQueryData: mission,
+      actionsQueryData: [] as any[],
+      completionsQueryData: [] as any[],
+      isActionsLoading: true,
+      isCompletionsLoading: false,
+    };
+
+    const { result, rerender } = renderHook(
+      (props: typeof initialProps) => useEditorMissionController(props),
+      { initialProps },
     );
 
     act(() => {
@@ -446,34 +405,33 @@ describe("useEditorMissionController", () => {
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
 
-    await act(async () => {});
+    rerender({ ...initialProps, isActionsLoading: false });
 
-    expect(importSpy).not.toHaveBeenCalled();
-    expect(mockedToast).not.toHaveBeenCalledWith(
+    await waitFor(() => {
+      expect(importSpy).toHaveBeenCalled();
+    });
+
+    expect(mockedToast).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "임시 저장된 편집 내용이 복원되었습니다.",
       }),
     );
   });
 
-  it("SSR mission이 발행 상태이고 쿼리 캐시가 미발행 상태여도 복원하지 않는다", async () => {
-    const ssrMission = createMission({ isActive: true });
-    const staleCachedMission = createMission({ isActive: false });
+  it("draft가 없으면 복원하지 않고 복원 토스트를 노출하지 않는다", async () => {
+    const mission = createMission({ isActive: true });
     const importSpy = jest.fn();
 
     const { result } = renderHook(() =>
       useEditorMissionController({
-        missionId: ssrMission.id,
-        mission: ssrMission,
+        missionId: mission.id,
+        mission,
         currentTab: "editor",
-        missionQueryData: staleCachedMission,
+        missionQueryData: mission,
         actionsQueryData: [],
         completionsQueryData: [],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: ssrMission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
       }),
     );
 
@@ -516,9 +474,6 @@ describe("useEditorMissionController", () => {
       completionsQueryData: [],
       isActionsLoading: true,
       isCompletionsLoading: false,
-      refetchMission: async () => ({ data: { data: mission } }),
-      refetchActions: async () => ({ data: { data: [] } }),
-      refetchCompletions: async () => ({ data: { data: [] } }),
     };
 
     const { result, rerender } = renderHook(
@@ -568,9 +523,6 @@ describe("useEditorMissionController", () => {
       completionsQueryData: [],
       isActionsLoading: true,
       isCompletionsLoading: false,
-      refetchMission: async () => ({ data: { data: mission } }),
-      refetchActions: async () => ({ data: { data: [] } }),
-      refetchCompletions: async () => ({ data: { data: [] } }),
     };
 
     const importSpy = jest.fn();
@@ -608,9 +560,6 @@ describe("useEditorMissionController", () => {
       completionsQueryData: [] as any[],
       isActionsLoading: true,
       isCompletionsLoading: false,
-      refetchMission: async () => ({ data: { data: mission } }),
-      refetchActions: async () => ({ data: { data: [] as any[] } }),
-      refetchCompletions: async () => ({ data: { data: [] as any[] } }),
     };
 
     const { result, rerender } = renderHook(
@@ -663,9 +612,6 @@ describe("useEditorMissionController", () => {
         completionsQueryData: [],
         isActionsLoading: false,
         isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
       }),
     );
 
