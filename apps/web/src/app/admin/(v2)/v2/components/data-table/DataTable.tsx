@@ -1,6 +1,13 @@
 "use client";
 
-import styled from "@emotion/styled";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
 import {
   type ColumnDef,
   type PaginationState,
@@ -8,8 +15,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/Table";
-import { color, radius } from "../ui/tokens";
 import { DataTablePagination } from "./DataTablePagination";
 
 interface DataTableProps<TData> {
@@ -45,30 +50,32 @@ export function DataTable<TData>({
   });
 
   return (
-    <Wrapper>
-      <TableContainer>
-        <Table>
-          <TableHeader>
+    <>
+      <TableContainer component={Paper} variant="outlined">
+        <Table size="small">
+          <TableHead>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
+                  <TableCell key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
+                  </TableCell>
                 ))}
               </TableRow>
             ))}
-          </TableHeader>
+          </TableHead>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <EmptyCell colSpan={columns.length}>불러오는 중...</EmptyCell>
+                <TableCell colSpan={columns.length} align="center" sx={{ py: 6 }}>
+                  <Typography color="text.secondary">불러오는 중...</Typography>
+                </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(row => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} hover>
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -78,32 +85,15 @@ export function DataTable<TData>({
               ))
             ) : (
               <TableRow>
-                <EmptyCell colSpan={columns.length}>데이터가 없습니다.</EmptyCell>
+                <TableCell colSpan={columns.length} align="center" sx={{ py: 6 }}>
+                  <Typography color="text.secondary">데이터가 없습니다.</Typography>
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
       <DataTablePagination table={table} total={total} />
-    </Wrapper>
+    </>
   );
 }
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const TableContainer = styled.div`
-  border: 1px solid ${color.gray200};
-  border-radius: ${radius.md};
-  overflow: hidden;
-`;
-
-const EmptyCell = styled.td`
-  height: 96px;
-  text-align: center;
-  color: ${color.gray400};
-  padding: 12px 16px;
-`;

@@ -1,11 +1,11 @@
 "use client";
 
-import styled from "@emotion/styled";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import type { PaginationState } from "@tanstack/react-table";
 import { useState } from "react";
 import { DataTable } from "../components/data-table/DataTable";
 import { DataTableToolbar } from "../components/data-table/DataTableToolbar";
-import { color, fontSize } from "../components/ui/tokens";
 import { useAdminV2Missions } from "../hooks/mission/use-admin-v2-missions";
 import { useMissionColumns } from "./useMissionColumns";
 
@@ -25,8 +25,8 @@ export default function AdminV2ContentsPage() {
   const columns = useMissionColumns();
 
   return (
-    <PageWrapper>
-      <PageTitle>콘텐츠 관리</PageTitle>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Typography variant="h1">콘텐츠 관리</Typography>
       <DataTableToolbar
         searchValue={search}
         onSearchChange={value => {
@@ -43,18 +43,6 @@ export default function AdminV2ContentsPage() {
         onPaginationChange={setPagination}
         isLoading={isLoading}
       />
-    </PageWrapper>
+    </Box>
   );
 }
-
-const PageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const PageTitle = styled.h1`
-  font-size: ${fontSize["2xl"]};
-  font-weight: 700;
-  color: ${color.gray900};
-`;
