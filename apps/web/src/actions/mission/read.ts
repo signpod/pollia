@@ -1,6 +1,6 @@
 "use server";
 
-import { requireContentManager } from "@/actions/common/auth";
+import { requireActiveUser, requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";

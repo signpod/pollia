@@ -95,7 +95,7 @@ export default async function MissionLayout({
     getCachedMission(missionId).catch(handleNotFound),
   ]);
 
-  if ("error" in missionResult && missionResult.error?.cause === 404) {
+  if ("error" in missionResult && (missionResult.error as { cause?: number })?.cause === 404) {
     notFound();
   }
 
