@@ -143,8 +143,12 @@ function VisibilityDropdown({ missionId }: { missionId: string }) {
             onClick={() => void handleSelect(key)}
             disabled={isUpdating}
           >
-            <span className="text-sm font-medium text-zinc-900">{value.label}</span>
-            <span className="text-xs text-zinc-500">{value.description}</span>
+            <Typo.Body size="medium" className="text-zinc-900">
+              {value.label}
+            </Typo.Body>
+            <Typo.Body size="small" className="text-zinc-500">
+              {value.description}
+            </Typo.Body>
           </button>
         ))}
       </PopoverContent>
