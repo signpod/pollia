@@ -572,12 +572,15 @@ const MyContentTab = memo(function MyContentTab() {
           </>
         }
         action={
-          <div className="flex justify-center">
-            <Link href={ROUTES.CREATE_MISSION}>
+          <div className="flex justify-center gap-2">
+            <Link href={`${ROUTES.CREATE_MISSION}?category=RESEARCH`}>
               <ButtonV2 variant="primary" className="w-auto">
-                <Typo.ButtonText size="large">
-                  첫 {UBIQUITOUS_CONSTANTS.MISSION} 만들기
-                </Typo.ButtonText>
+                <Typo.ButtonText size="large">📋 설문조사/리서치</Typo.ButtonText>
+              </ButtonV2>
+            </Link>
+            <Link href={`${ROUTES.CREATE_MISSION}?category=TEST`}>
+              <ButtonV2 variant="secondary" className="w-auto">
+                <Typo.ButtonText size="large">🧠 심리/유형 테스트</Typo.ButtonText>
               </ButtonV2>
             </Link>
           </div>
