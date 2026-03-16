@@ -18,10 +18,11 @@ export const TableBody = styled.tbody`
   }
 `;
 
-export const TableRow = styled.tr`
+export const TableRow = styled.tr<{ highlight?: boolean }>`
   transition: background 150ms ease;
+  background: ${({ highlight }) => (highlight ? color.blue50 : "transparent")};
   &:hover {
-    background: ${color.gray50};
+    background: ${({ highlight }) => (highlight ? color.blue50 : color.gray50)};
   }
 `;
 
