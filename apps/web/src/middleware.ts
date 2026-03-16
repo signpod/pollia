@@ -6,6 +6,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/editor/:path*",
     "/me/:path*",
     "/mission/:missionId/action/:path*",
     "/mission/:missionId/done",
@@ -86,7 +87,7 @@ export async function middleware(request: NextRequest) {
     // /admin, /me: 실제 인증 검증 필요 (getUser 호출)
     const { user, response } = await getSession(request);
 
-    if (pathname.startsWith("/admin")) {
+    if (pathname.startsWith("/admin") || pathname.startsWith("/editor")) {
       if (!user) {
         return NextResponse.redirect(new URL("/login/admin", request.url));
       }
@@ -104,7 +105,7 @@ export async function middleware(request: NextRequest) {
   } catch (error) {
     console.error("[Middleware] Session check failed:", error);
     // 보안을 위해 에러 발생 시 로그인 페이지로 리다이렉트
-    if (pathname.startsWith("/admin")) {
+    if (pathname.startsWith("/admin") || pathname.startsWith("/editor")) {
       return NextResponse.redirect(new URL("/login/admin", request.url));
     }
     if (pathname === "/me" || pathname.startsWith("/me/") || pathname.includes("/mission/")) {
