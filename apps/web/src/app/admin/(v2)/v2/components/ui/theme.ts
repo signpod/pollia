@@ -69,17 +69,17 @@ export const adminTheme = createTheme({
     },
     MuiTableCell: {
       styleOverrides: {
-        head: {
+        head: ({ theme }) => ({
           fontWeight: 600,
-          color: "#6b7280",
+          color: theme.palette.grey[500],
           fontSize: "0.75rem",
           textTransform: "uppercase" as const,
           letterSpacing: "0.05em",
-        },
-        body: {
+        }),
+        body: ({ theme }) => ({
           fontSize: "0.875rem",
-          color: "#1f2937",
-        },
+          color: theme.palette.grey[800],
+        }),
       },
     },
     MuiChip: {
