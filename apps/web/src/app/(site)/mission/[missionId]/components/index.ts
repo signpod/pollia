@@ -11,7 +11,7 @@ export * from "./MissionRewardSection";
 export * from "./ParticipationMethodSection";
 export * from "./MissionFooter";
 export * from "./MissionBadge";
-export * from "./DevTools";
+
 export * from "./SocialShareButtons";
 export * from "./SocialShareButtonsWithData";
 export * from "./MissionWidget";

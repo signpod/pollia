@@ -1,10 +1,10 @@
 import { getReward } from "@/actions/reward";
+import { AdminToolbar } from "@/components/common/AdminToolbar";
 import prisma from "@/database/utils/prisma/client";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import { MissionClientWrapper } from "./MissionClientWrapper";
 import { MissionPageWrapper } from "./MissionPageWrapper";
-import { DevTools } from "./components";
 import { getCachedMission } from "./getCachedMission";
 
 export const revalidate = false;
@@ -23,7 +23,7 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
 
   return (
     <>
-      <DevTools missionId={missionId} />
+      <AdminToolbar missionId={missionId} />
       <MissionClientWrapper dehydratedState={dehydrate(getQueryClient())}>
         <MissionPageWrapper
           mission={mission.data}
