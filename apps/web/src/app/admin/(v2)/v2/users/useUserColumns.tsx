@@ -1,5 +1,9 @@
 "use client";
 
+import type { AdminUserItem } from "@/types/dto/admin-user";
+import { UserRole, UserStatus } from "@prisma/client";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useMemo } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,30 +14,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/app/admin/components/shadcn-ui/alert-dialog";
-import { Badge } from "@/app/admin/components/shadcn-ui/badge";
-import { Button } from "@/app/admin/components/shadcn-ui/button";
-import type { AdminUserItem } from "@/types/dto/admin-user";
-import { UserRole, UserStatus } from "@prisma/client";
-import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+  Badge,
+  Button,
+} from "../components/ui";
 import { useAdminForceWithdraw } from "../hooks/user/use-admin-force-withdraw";
 
 function WithdrawButton({ userId, status }: { userId: string; status: UserStatus }) {
   const mutation = useAdminForceWithdraw();
 
   if (status === UserStatus.WITHDRAWN) {
-    return (
-      <Badge variant="secondary" className="text-muted-foreground">
-        탈퇴됨
-      </Badge>
-    );
+    return <Badge variant="secondary">탈퇴됨</Badge>;
   }
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="h-7 text-xs">
+      <AlertDialogTrigger>
+        <Button variant="destructive" size="sm">
           탈퇴
         </Button>
       </AlertDialogTrigger>

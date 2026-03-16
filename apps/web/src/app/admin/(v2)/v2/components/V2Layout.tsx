@@ -1,9 +1,9 @@
 "use client";
 
-import { AdminSidebarTrigger } from "@/app/admin/components/AdminSidebarTrigger";
-import { SidebarInset, SidebarProvider } from "@/app/admin/components/shadcn-ui/sidebar";
-import { Toaster } from "@/app/admin/components/shadcn-ui/sonner";
+import styled from "@emotion/styled";
 import { V2Sidebar } from "./V2Sidebar";
+import { SidebarMainContent, SidebarProvider, SidebarToggle } from "./ui/Sidebar";
+import { color } from "./ui/tokens";
 
 interface V2LayoutProps {
   children: React.ReactNode;
@@ -12,14 +12,28 @@ interface V2LayoutProps {
 export function V2Layout({ children }: V2LayoutProps) {
   return (
     <SidebarProvider>
-      <Toaster />
       <V2Sidebar />
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-2">
-          <AdminSidebarTrigger />
-        </header>
-        <div className="flex-1 overflow-auto p-7">{children}</div>
-      </SidebarInset>
+      <SidebarMainContent>
+        <Header>
+          <SidebarToggle />
+        </Header>
+        <ContentArea>{children}</ContentArea>
+      </SidebarMainContent>
     </SidebarProvider>
   );
 }
+
+const Header = styled.header`
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 8px;
+  border-bottom: 1px solid ${color.gray200};
+  flex-shrink: 0;
+`;
+
+const ContentArea = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: 28px;
+`;

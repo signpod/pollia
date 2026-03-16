@@ -1,4 +1,8 @@
+"use client";
+
+import styled from "@emotion/styled";
 import Link from "next/link";
+import { color, fontSize, radius, transition } from "./components/ui/tokens";
 import { ADMIN_V2_ROUTES } from "./constants/routes";
 
 const MENU_ITEMS = [
@@ -17,20 +21,63 @@ const MENU_ITEMS = [
 
 export default function AdminV2Page() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Admin V2</h1>
-      <div className="grid gap-4 sm:grid-cols-3">
+    <PageWrapper>
+      <PageTitle>Admin V2</PageTitle>
+      <CardGrid>
         {MENU_ITEMS.map(item => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="rounded-lg border p-6 transition-colors hover:bg-muted"
-          >
-            <h2 className="text-lg font-semibold">{item.label}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
-          </Link>
+          <CardLink key={item.href} href={item.href}>
+            <CardTitle>{item.label}</CardTitle>
+            <CardDesc>{item.description}</CardDesc>
+          </CardLink>
         ))}
-      </div>
-    </div>
+      </CardGrid>
+    </PageWrapper>
   );
 }
+
+const PageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const PageTitle = styled.h1`
+  font-size: ${fontSize["2xl"]};
+  font-weight: 700;
+  color: ${color.gray900};
+`;
+
+const CardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const CardLink = styled(Link)`
+  display: block;
+  padding: 24px;
+  border: 1px solid ${color.gray200};
+  border-radius: ${radius.lg};
+  text-decoration: none;
+  transition: background ${transition.fast};
+
+  &:hover {
+    background: ${color.gray50};
+  }
+`;
+
+const CardTitle = styled.h2`
+  font-size: ${fontSize.lg};
+  font-weight: 600;
+  color: ${color.gray900};
+`;
+
+const CardDesc = styled.p`
+  margin-top: 4px;
+  font-size: ${fontSize.sm};
+  color: ${color.gray500};
+`;

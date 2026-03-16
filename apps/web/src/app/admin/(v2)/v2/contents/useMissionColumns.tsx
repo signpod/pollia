@@ -1,5 +1,13 @@
 "use client";
 
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
+import type { AdminMissionItem } from "@/types/dto/admin-mission";
+import styled from "@emotion/styled";
+import { MissionType } from "@prisma/client";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ExternalLink, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,23 +18,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/app/admin/components/shadcn-ui/alert-dialog";
-import { Badge } from "@/app/admin/components/shadcn-ui/badge";
-import { Button } from "@/app/admin/components/shadcn-ui/button";
-import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
-import type { AdminMissionItem } from "@/types/dto/admin-mission";
-import { MissionType } from "@prisma/client";
-import type { ColumnDef } from "@tanstack/react-table";
-import { ExternalLink, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { useMemo } from "react";
+  Badge,
+  Button,
+} from "../components/ui";
+import { color, fontSize, radius } from "../components/ui/tokens";
 import { useAdminDeleteMission } from "../hooks/mission/use-admin-delete-mission";
 
-function resolveVisibilityLabel(isActive: boolean, type: MissionType) {
-  if (!isActive) return { label: "나만보기", className: "bg-zinc-100 text-zinc-600" };
+type VisibilityInfo = { label: string; bg: string; fg: string };
+
+function resolveVisibility(isActive: boolean, type: MissionType): VisibilityInfo {
+  if (!isActive) return { label: "나만보기", bg: color.zinc100, fg: color.zinc600 };
   if (type === MissionType.GENERAL)
-    return { label: "전체공개", className: "bg-green-100 text-green-700" };
-  return { label: "링크만공개", className: "bg-blue-100 text-blue-700" };
+    return { label: "전체공개", bg: color.green100, fg: color.green700 };
+  return { label: "링크만공개", bg: color.blue100, fg: color.blue700 };
 }
 
 function DeleteMissionButton({ missionId }: { missionId: string }) {
@@ -34,13 +38,9 @@ function DeleteMissionButton({ missionId }: { missionId: string }) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-        >
-          <Trash2 className="h-4 w-4" />
+      <AlertDialogTrigger>
+        <Button variant="ghost" size="icon">
+          <Trash2 size={16} />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -70,9 +70,7 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
       {
         accessorKey: "title",
         header: "제목",
-        cell: ({ row }) => (
-          <span className="max-w-[300px] truncate block">{row.original.title}</span>
-        ),
+        cell: ({ row }) => <TruncatedText>{row.original.title}</TruncatedText>,
       },
       {
         accessorKey: "category",
@@ -87,16 +85,11 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
         id: "visibility",
         header: "공개여부",
         cell: ({ row }) => {
-          const { label, className } = resolveVisibilityLabel(
-            row.original.isActive,
-            row.original.type,
-          );
+          const v = resolveVisibility(row.original.isActive, row.original.type);
           return (
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
-            >
-              {label}
-            </span>
+            <VisibilityBadge $bg={v.bg} $fg={v.fg}>
+              {v.label}
+            </VisibilityBadge>
           );
         },
       },
@@ -109,12 +102,9 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
         id: "edit",
         header: "",
         cell: ({ row }) => (
-          <Link
-            href={`/editor/missions/${row.original.id}`}
-            className="inline-flex items-center text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="h-4 w-4" />
-          </Link>
+          <EditLink href={`/editor/missions/${row.original.id}`}>
+            <ExternalLink size={16} />
+          </EditLink>
         ),
       },
       {
@@ -126,3 +116,31 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
     [],
   );
 }
+
+const TruncatedText = styled.span`
+  display: block;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const VisibilityBadge = styled.span<{ $bg: string; $fg: string }>`
+  display: inline-flex;
+  align-items: center;
+  border-radius: ${radius.full};
+  padding: 2px 8px;
+  font-size: ${fontSize.xs};
+  font-weight: 500;
+  background: ${({ $bg }) => $bg};
+  color: ${({ $fg }) => $fg};
+`;
+
+const EditLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  color: ${color.gray400};
+  &:hover {
+    color: ${color.gray700};
+  }
+`;

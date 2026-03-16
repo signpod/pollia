@@ -1,82 +1,118 @@
 "use client";
 
-import { Button } from "@/app/admin/components/shadcn-ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/app/admin/components/shadcn-ui/select";
+import styled from "@emotion/styled";
 import type { Table } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Button } from "../ui/Button";
+import { Select } from "../ui/Select";
+import { color, fontSize } from "../ui/tokens";
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
   total: number;
 }
 
+const PAGE_SIZE_OPTIONS = [
+  { value: "10", label: "10" },
+  { value: "20", label: "20" },
+  { value: "50", label: "50" },
+];
+
 export function DataTablePagination<TData>({ table, total }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="text-sm text-muted-foreground">총 {total.toLocaleString()}건</div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">페이지 크기</p>
+    <Container>
+      <TotalCount>총 {total.toLocaleString()}건</TotalCount>
+      <Controls>
+        <ControlGroup>
+          <ControlLabel>페이지 크기</ControlLabel>
           <Select
             value={`${table.getState().pagination.pageSize}`}
-            onValueChange={value => table.setPageSize(Number(value))}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
-            </SelectTrigger>
-            <SelectContent side="top">
-              {[10, 20, 50].map(size => (
-                <SelectItem key={size} value={`${size}`}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+            onChange={e => table.setPageSize(Number(e.target.value))}
+            options={PAGE_SIZE_OPTIONS}
+          />
+        </ControlGroup>
+        <PageInfo>
           {table.getState().pagination.pageIndex + 1} / {table.getPageCount()} 페이지
-        </div>
-        <div className="flex items-center space-x-2">
+        </PageInfo>
+        <NavButtons>
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
+            size="icon"
             onClick={() => table.firstPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <ChevronsLeft className="h-4 w-4" />
+            <ChevronsLeft size={16} />
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            size="icon"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft size={16} />
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            size="icon"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight size={16} />
           </Button>
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
+            size="icon"
             onClick={() => table.lastPage()}
             disabled={!table.getCanNextPage()}
           >
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight size={16} />
           </Button>
-        </div>
-      </div>
-    </div>
+        </NavButtons>
+      </Controls>
+    </Container>
   );
 }
+
+const Container = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+`;
+
+const TotalCount = styled.span`
+  font-size: ${fontSize.sm};
+  color: ${color.gray500};
+`;
+
+const Controls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 24px;
+`;
+
+const ControlGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ControlLabel = styled.span`
+  font-size: ${fontSize.sm};
+  font-weight: 500;
+  color: ${color.gray700};
+`;
+
+const PageInfo = styled.span`
+  font-size: ${fontSize.sm};
+  font-weight: 500;
+  color: ${color.gray700};
+  min-width: 100px;
+  text-align: center;
+`;
+
+const NavButtons = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;

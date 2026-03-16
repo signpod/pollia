@@ -1,19 +1,20 @@
 "use client";
 
-import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
+import type { BannerItem } from "@/types/dto/banner";
+import styled from "@emotion/styled";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import {
+  Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/app/admin/components/shadcn-ui/dialog";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
-import type { BannerItem } from "@/types/dto/banner";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+  Input,
+  Label,
+} from "../../components/ui";
+import { color, fontSize, radius } from "../../components/ui/tokens";
 import { useCreateBanner } from "../../hooks/banner/use-create-banner";
 import { useUpdateBanner } from "../../hooks/banner/use-update-banner";
 
@@ -85,67 +86,101 @@ export function BannerFormDialog({ open, onOpenChange, banner }: BannerFormDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "배너 수정" : "배너 추가"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>이미지</Label>
-            {currentImageUrl ? (
-              <div className="relative aspect-[3/2] w-full overflow-hidden rounded-md border">
-                <Image src={currentImageUrl} alt="배너 미리보기" fill className="object-cover" />
-              </div>
-            ) : (
-              <div className="flex aspect-[3/2] w-full items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-                이미지를 업로드해주세요
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-            >
-              {isUploading ? "업로드 중..." : "이미지 선택"}
-            </Button>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="banner-title">제목</Label>
-            <Input
-              id="banner-title"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="배너 제목"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="banner-subtitle">부제목 (선택)</Label>
-            <Input
-              id="banner-subtitle"
-              value={subtitle}
-              onChange={e => setSubtitle(e.target.value)}
-              placeholder="배너 부제목"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            취소
+      <DialogHeader>
+        <DialogTitle>{isEdit ? "배너 수정" : "배너 추가"}</DialogTitle>
+      </DialogHeader>
+      <FormBody>
+        <FieldGroup>
+          <Label>이미지</Label>
+          {currentImageUrl ? (
+            <PreviewContainer>
+              <Image
+                src={currentImageUrl}
+                alt="배너 미리보기"
+                fill
+                style={{ objectFit: "cover" }}
+              />
+            </PreviewContainer>
+          ) : (
+            <PlaceholderBox>이미지를 업로드해주세요</PlaceholderBox>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            {isUploading ? "업로드 중..." : "이미지 선택"}
           </Button>
-          <Button onClick={handleSubmit} disabled={!canSubmit}>
-            {isPending ? "저장 중..." : isEdit ? "수정" : "추가"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+        </FieldGroup>
+        <FieldGroup>
+          <Label htmlFor="banner-title">제목</Label>
+          <Input
+            id="banner-title"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="배너 제목"
+          />
+        </FieldGroup>
+        <FieldGroup>
+          <Label htmlFor="banner-subtitle">부제목 (선택)</Label>
+          <Input
+            id="banner-subtitle"
+            value={subtitle}
+            onChange={e => setSubtitle(e.target.value)}
+            placeholder="배너 부제목"
+          />
+        </FieldGroup>
+      </FormBody>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          취소
+        </Button>
+        <Button onClick={handleSubmit} disabled={!canSubmit}>
+          {isPending ? "저장 중..." : isEdit ? "수정" : "추가"}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }
+
+const FormBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const FieldGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const PreviewContainer = styled.div`
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: ${radius.md};
+  border: 1px solid ${color.gray200};
+`;
+
+const PlaceholderBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: ${radius.md};
+  border: 1px dashed ${color.gray300};
+  font-size: ${fontSize.sm};
+  color: ${color.gray400};
+`;

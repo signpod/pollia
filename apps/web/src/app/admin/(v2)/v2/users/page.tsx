@@ -1,9 +1,11 @@
 "use client";
 
+import styled from "@emotion/styled";
 import type { PaginationState } from "@tanstack/react-table";
 import { useState } from "react";
 import { DataTable } from "../components/data-table/DataTable";
 import { DataTableToolbar } from "../components/data-table/DataTableToolbar";
+import { color, fontSize } from "../components/ui/tokens";
 import { useAdminUsers } from "../hooks/user/use-admin-users";
 import { useUserColumns } from "./useUserColumns";
 
@@ -23,8 +25,8 @@ export default function AdminV2UsersPage() {
   const columns = useUserColumns();
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">유저 관리</h1>
+    <PageWrapper>
+      <PageTitle>유저 관리</PageTitle>
       <DataTableToolbar
         searchValue={search}
         onSearchChange={value => {
@@ -41,6 +43,18 @@ export default function AdminV2UsersPage() {
         onPaginationChange={setPagination}
         isLoading={isLoading}
       />
-    </div>
+    </PageWrapper>
   );
 }
+
+const PageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const PageTitle = styled.h1`
+  font-size: ${fontSize["2xl"]};
+  font-weight: 700;
+  color: ${color.gray900};
+`;

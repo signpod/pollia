@@ -4,7 +4,7 @@ import { V2Layout } from "./components/V2Layout";
 
 export default async function AdminV2LayoutRoot({ children }: { children: React.ReactNode }) {
   return (
-    <div className="admin-root fixed inset-0 overflow-auto">
+    <div style={{ position: "fixed", inset: 0, overflow: "auto" }}>
       <AdminGate>
         <AdminQueryProvider>
           <V2Layout>{children}</V2Layout>

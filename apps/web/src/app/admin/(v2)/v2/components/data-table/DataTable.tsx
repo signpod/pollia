@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/app/admin/components/shadcn-ui/table";
+import styled from "@emotion/styled";
 import {
   type ColumnDef,
   type PaginationState,
@@ -15,6 +8,8 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/Table";
+import { color, radius } from "../ui/tokens";
 import { DataTablePagination } from "./DataTablePagination";
 
 interface DataTableProps<TData> {
@@ -50,8 +45,8 @@ export function DataTable<TData>({
   });
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
+    <Wrapper>
+      <TableContainer>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -69,9 +64,7 @@ export function DataTable<TData>({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  불러오는 중...
-                </TableCell>
+                <EmptyCell colSpan={columns.length}>불러오는 중...</EmptyCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(row => (
@@ -85,15 +78,32 @@ export function DataTable<TData>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  데이터가 없습니다.
-                </TableCell>
+                <EmptyCell colSpan={columns.length}>데이터가 없습니다.</EmptyCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </div>
+      </TableContainer>
       <DataTablePagination table={table} total={total} />
-    </div>
+    </Wrapper>
   );
 }
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const TableContainer = styled.div`
+  border: 1px solid ${color.gray200};
+  border-radius: ${radius.md};
+  overflow: hidden;
+`;
+
+const EmptyCell = styled.td`
+  height: 96px;
+  text-align: center;
+  color: ${color.gray400};
+  padding: 12px 16px;
+`;
