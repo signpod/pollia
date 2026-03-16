@@ -1,4 +1,8 @@
-import type { SectionSaveSummary } from "./editorMissionSaveSummaryModel";
+import {
+  type EditorSectionKey,
+  SECTION_LABELS,
+  type SectionSaveSummary,
+} from "./editorMissionSaveSummaryModel";
 
 // ---------------------------------------------------------------------------
 // Guard Inputs
@@ -11,49 +15,18 @@ export interface UnifiedSaveGuardInput {
   hasAnyBusySection: boolean;
 }
 
-export interface SaveGuardInput {
-  isValidationDataReady: boolean;
-  issueCount: number;
-  blockingMessage: string | null;
-}
-
-export interface PublishGuardInput {
-  isEditorTab: boolean;
-  isPublished: boolean;
-  publishInFlight: boolean;
-  isPublishing: boolean;
-  isSavingAll: boolean;
-  hasAnyBusySection: boolean;
-  canPublish: boolean;
-  isValidationDataReady: boolean;
-  issueCount: number;
-  blockingMessage: string | null;
-}
-
 // ---------------------------------------------------------------------------
 // Guard Results (discriminated unions)
 // ---------------------------------------------------------------------------
 
 export type UnifiedSaveGuardResult = { allowed: true } | { allowed: false };
 
-export type SaveGuardResult = { allowed: true } | { allowed: false; message: string };
-
-export type PublishGuardResult =
-  | { allowed: true }
-  | { allowed: false; silent: true }
-  | { allowed: false; silent: false; message: string };
-
 // ---------------------------------------------------------------------------
 // Outcome Inputs
 // ---------------------------------------------------------------------------
 
-export interface DraftClearOutcomeInput {
-  serverDraftCleared: boolean;
-}
-
 export interface PostSectionSaveInput {
   mode: "manual" | "publish";
-  isPublished: boolean;
   summary: SectionSaveSummary;
   showSavedToast: boolean;
   showNoChangesToast: boolean;
@@ -62,8 +35,6 @@ export interface PostSectionSaveInput {
 // ---------------------------------------------------------------------------
 // Outcome Results (discriminated unions)
 // ---------------------------------------------------------------------------
-
-export type NoChangesOutcome = { type: "clear_failed" } | { type: "cleared" };
 
 export type UnifiedSaveResult = "saved" | "no_changes" | "failed";
 
@@ -81,16 +52,6 @@ export type PostSectionSaveOutcome =
   | { type: "no_changes"; showToast: boolean; result: "no_changes" };
 
 // ---------------------------------------------------------------------------
-// Save Strategy
-// ---------------------------------------------------------------------------
-
-export type SaveStrategy = "draft-then-save" | "direct-save";
-
-export function resolveSaveStrategy(isPublished: boolean): SaveStrategy {
-  return isPublished ? "direct-save" : "draft-then-save";
-}
-
-// ---------------------------------------------------------------------------
 // Guard Functions
 // ---------------------------------------------------------------------------
 
@@ -102,65 +63,11 @@ export function checkUnifiedSaveGuard(input: UnifiedSaveGuardInput): UnifiedSave
   return { allowed: true };
 }
 
-export function checkSaveGuard(input: SaveGuardInput): SaveGuardResult {
-  const isCheckingState = !input.isValidationDataReady || input.issueCount === 0;
-
-  if (!input.isValidationDataReady || input.issueCount > 0) {
-    return {
-      allowed: false,
-      message: isCheckingState
-        ? "저장 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-        : (input.blockingMessage ?? "저장 가능한 상태인지 확인할 수 없습니다."),
-    };
-  }
-
-  return { allowed: true };
-}
-
-export function checkPublishGuard(input: PublishGuardInput): PublishGuardResult {
-  if (
-    !input.isEditorTab ||
-    input.isPublished ||
-    input.publishInFlight ||
-    input.isPublishing ||
-    input.isSavingAll ||
-    input.hasAnyBusySection
-  ) {
-    return { allowed: false, silent: true };
-  }
-
-  if (!input.canPublish) {
-    const isCheckingState = !input.isValidationDataReady || input.issueCount === 0;
-    return {
-      allowed: false,
-      silent: false,
-      message: isCheckingState
-        ? "발행 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-        : (input.blockingMessage ?? "발행 가능한 상태인지 확인할 수 없습니다."),
-    };
-  }
-
-  return { allowed: true };
-}
-
 // ---------------------------------------------------------------------------
 // Outcome Functions
 // ---------------------------------------------------------------------------
 
-export function resolveNoChangesOutcome(input: DraftClearOutcomeInput): NoChangesOutcome {
-  if (!input.serverDraftCleared) {
-    return { type: "clear_failed" };
-  }
-
-  return { type: "cleared" };
-}
-
-export function shouldClearDraftAfterSave(
-  summary: SectionSaveSummary,
-  isPublished: boolean,
-): boolean {
-  if (!isPublished) return false;
-
+export function shouldClearDraftAfterSave(summary: SectionSaveSummary): boolean {
   return (
     summary.savedCount > 0 &&
     summary.failedCount === 0 &&
@@ -170,8 +77,8 @@ export function shouldClearDraftAfterSave(
 }
 
 export function resolvePostSectionSaveOutcome(input: PostSectionSaveInput): PostSectionSaveOutcome {
-  const { mode, isPublished, summary, showSavedToast, showNoChangesToast } = input;
-  const canClearDraft = shouldClearDraftAfterSave(summary, isPublished);
+  const { mode, summary, showSavedToast, showNoChangesToast } = input;
+  const canClearDraft = shouldClearDraftAfterSave(summary);
 
   if (mode === "publish" && (summary.invalidCount > 0 || summary.failedCount > 0)) {
     return {
@@ -188,11 +95,13 @@ export function resolvePostSectionSaveOutcome(input: PostSectionSaveInput): Post
     if (processedCount > 0) {
       const message = buildManualSaveToastMessage({
         savedCount: summary.savedCount,
-        skippedCount,
         failedCount: summary.failedCount,
+        failedSections: summary.failedSections,
+        invalidSections: summary.invalidSections,
+        firstErrorMessage: summary.firstErrorMessage,
       });
 
-      if (summary.failedCount > 0) {
+      if (summary.failedCount > 0 || summary.invalidCount > 0) {
         return {
           type: "manual_with_failures",
           message,
@@ -230,16 +139,36 @@ export function resolvePostSectionSaveOutcome(input: PostSectionSaveInput): Post
 // Toast Message Builder
 // ---------------------------------------------------------------------------
 
+function formatSectionNames(sections: EditorSectionKey[]): string {
+  return sections.map(key => SECTION_LABELS[key]).join(", ");
+}
+
 export function buildManualSaveToastMessage(params: {
   savedCount: number;
-  skippedCount: number;
   failedCount: number;
+  failedSections: EditorSectionKey[];
+  invalidSections: EditorSectionKey[];
+  firstErrorMessage: string | null;
 }): string {
-  const { savedCount, skippedCount, failedCount } = params;
-  const lines = [`저장 ${savedCount} / 스킵 ${skippedCount}`];
-  if (failedCount > 0) {
-    lines.push(`실패 ${failedCount}`);
+  const { savedCount, failedCount, failedSections, invalidSections, firstErrorMessage } = params;
+
+  if (invalidSections.length > 0) {
+    return firstErrorMessage ?? `${formatSectionNames(invalidSections)} 입력값을 확인해주세요.`;
   }
 
-  return lines.join("\n");
+  if (failedCount > 0) {
+    const lines: string[] = [];
+    if (savedCount > 0) {
+      const successSections = (Object.keys(SECTION_LABELS) as EditorSectionKey[]).filter(
+        key => !failedSections.includes(key) && !invalidSections.includes(key),
+      );
+      if (successSections.length > 0) {
+        lines.push(`${formatSectionNames(successSections)} 저장 완료`);
+      }
+    }
+    lines.push(`${formatSectionNames(failedSections)} 저장 실패`);
+    return lines.join("\n");
+  }
+
+  return "변경사항이 저장되었습니다.";
 }

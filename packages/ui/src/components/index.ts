@@ -43,6 +43,7 @@ export * from "./common/RatingScale";
 export * from "./common/StarScale";
 export * from "./common/DateAndTimePicker";
 export * from "./common/TiptapEditor";
+export * from "./ui/popover";
 // Hooks
 export * from "../hooks/useStep";
 

@@ -1,97 +1,37 @@
 "use client";
 
 import { Button } from "@repo/ui/components";
-import { Rocket, RotateCcw, Save } from "lucide-react";
+import { Save } from "lucide-react";
 
 export interface EditorMissionActionBarProps {
-  isPublished: boolean;
   isSavingAll: boolean;
-  isPublishing: boolean;
-  isUnpublishing: boolean;
   hasAnyBusySection: boolean;
   hasAnyPendingChanges: boolean;
   hasAnyValidationIssues: boolean;
-  canSave: boolean;
-  canPublish: boolean;
   onSave: () => void;
-  onPublish: () => void;
-  onUnpublish: () => void;
 }
 
 export function EditorMissionActionBar({
-  isPublished,
   isSavingAll,
-  isPublishing,
-  isUnpublishing,
   hasAnyBusySection,
   hasAnyPendingChanges,
   hasAnyValidationIssues,
-  canSave,
-  canPublish,
   onSave,
-  onPublish,
-  onUnpublish,
 }: EditorMissionActionBarProps) {
-  if (isPublished) {
-    return (
-      <div className="flex gap-2 px-5 py-3">
-        <Button
-          variant="primary"
-          fullWidth
-          inlineIcon
-          leftIcon={<Save className="size-4" />}
-          onClick={onSave}
-          loading={isSavingAll}
-          disabled={
-            isSavingAll ||
-            isPublishing ||
-            isUnpublishing ||
-            hasAnyBusySection ||
-            !hasAnyPendingChanges ||
-            hasAnyValidationIssues ||
-            !canSave
-          }
-        >
-          저장하기
-        </Button>
-        <Button
-          variant="secondary"
-          fullWidth
-          inlineIcon
-          leftIcon={<RotateCcw className="size-4" />}
-          onClick={onUnpublish}
-          loading={isUnpublishing}
-          disabled={isSavingAll || isPublishing || isUnpublishing || hasAnyBusySection}
-        >
-          발행 되돌리기
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex gap-2 px-5 py-3">
       <Button
-        variant="secondary"
+        variant="primary"
         fullWidth
         inlineIcon
         leftIcon={<Save className="size-4" />}
         onClick={onSave}
         loading={isSavingAll}
-        disabled={isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges}
+        disabled={
+          isSavingAll || hasAnyBusySection || !hasAnyPendingChanges || hasAnyValidationIssues
+        }
       >
         저장하기
-      </Button>
-      <Button
-        variant="primary"
-        fullWidth
-        inlineIcon
-        leftIcon={<Rocket className="size-4" />}
-        onClick={onPublish}
-        loading={isPublishing}
-        disabled={isSavingAll || isPublishing || hasAnyBusySection || !canPublish}
-      >
-        발행하기
       </Button>
     </div>
   );
