@@ -6,7 +6,6 @@ import { saveMissionEditorDraft } from "@/actions/mission/draft";
 import type { GetMissionResponse } from "@/types/dto";
 import { toast } from "@repo/ui/components";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { AlertCircle } from "lucide-react";
 import type { SectionSaveHandle, SectionSaveOptions } from "../../editor-save.types";
 import { useEditorMissionController } from "../useEditorMissionController";
 
@@ -115,7 +114,6 @@ describe("useEditorMissionController", () => {
     );
 
     expect(result.current.publishState.canPublish).toBe(true);
-    expect(result.current.viewState.canSave).toBe(true);
     expect(result.current.publishState.isValidationDataReady).toBe(true);
   });
 
@@ -136,11 +134,10 @@ describe("useEditorMissionController", () => {
     );
 
     expect(result.current.publishState.canPublish).toBe(false);
-    expect(result.current.viewState.canSave).toBe(false);
     expect(result.current.publishState.isValidationDataReady).toBe(false);
   });
 
-  it("발행 상태여도 플로우가 유효하면 canSave와 canPublish 모두 true다", () => {
+  it("발행 상태여도 플로우가 유효하면 canPublish가 true다", () => {
     const mission = createMission({ isActive: true });
 
     const { result } = renderHook(() =>
@@ -166,10 +163,9 @@ describe("useEditorMissionController", () => {
     );
 
     expect(result.current.publishState.canPublish).toBe(true);
-    expect(result.current.viewState.canSave).toBe(true);
   });
 
-  it("발행 상태에서 플로우가 유효하지 않으면 canSave가 false다", () => {
+  it("발행 상태에서 플로우가 유효하지 않으면 canPublish가 false다", () => {
     const mission = createMission({ isActive: true, entryActionId: null });
 
     const { result } = renderHook(() =>
@@ -185,7 +181,7 @@ describe("useEditorMissionController", () => {
       }),
     );
 
-    expect(result.current.viewState.canSave).toBe(false);
+    expect(result.current.publishState.canPublish).toBe(false);
   });
 
   it("entryActionId가 비어도 ref snapshot 준비 후 canPublish가 갱신된다", async () => {
@@ -321,7 +317,7 @@ describe("useEditorMissionController", () => {
     );
   });
 
-  it("저장하기는 draft를 먼저 저장한 뒤 publish trigger로 섹션 저장을 수행한다", async () => {
+  it("저장하기는 draft를 먼저 저장한 뒤 manual trigger로 섹션 저장을 수행한다", async () => {
     const mission = createMission({ isActive: true });
     const saveOptionsSpy = jest.fn<void, [SectionSaveOptions | undefined]>();
 
@@ -364,7 +360,7 @@ describe("useEditorMissionController", () => {
     const payloadCalls = mockedSaveMissionEditorDraft.mock.calls.filter(([, payload]) => payload);
     expect(payloadCalls).toHaveLength(1);
     expect(saveOptionsSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ trigger: "publish", showValidationUi: true }),
+      expect.objectContaining({ trigger: "manual", showValidationUi: true }),
     );
   });
 
@@ -598,7 +594,7 @@ describe("useEditorMissionController", () => {
     );
   });
 
-  it("canSave가 false면 저장을 차단하고 안내 토스트를 노출한다", async () => {
+  it("플로우 검증 이슈가 있어도 저장은 차단되지 않는다", async () => {
     const mission = createMission({ isActive: true, entryActionId: null });
     const saveOptionsSpy = jest.fn<void, [SectionSaveOptions | undefined]>();
 
@@ -625,18 +621,13 @@ describe("useEditorMissionController", () => {
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
 
+    expect(result.current.publishState.canPublish).toBe(false);
+
     await act(async () => {
       await result.current.actions.onSave();
     });
 
-    expect(saveOptionsSpy).not.toHaveBeenCalled();
-    expect(mockedSaveMissionEditorDraft).not.toHaveBeenCalled();
-    expect(mockedToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "editor-mission-save-result",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      }),
-    );
+    expect(mockedSaveMissionEditorDraft).toHaveBeenCalled();
+    expect(saveOptionsSpy).toHaveBeenCalled();
   });
 });

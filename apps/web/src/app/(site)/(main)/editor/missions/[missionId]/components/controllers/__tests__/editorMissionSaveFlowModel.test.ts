@@ -1,6 +1,5 @@
 import {
   buildManualSaveToastMessage,
-  checkSaveGuard,
   checkUnifiedSaveGuard,
   resolveNoChangesOutcome,
   resolvePostSectionSaveOutcome,
@@ -42,57 +41,6 @@ describe("checkUnifiedSaveGuard", () => {
     expect(checkUnifiedSaveGuard({ ...baseInput, hasAnyBusySection: true })).toEqual({
       allowed: false,
     });
-  });
-});
-
-describe("checkSaveGuard", () => {
-  it("검증 데이터가 준비되고 이슈가 없으면 allowed: true를 반환한다", () => {
-    expect(
-      checkSaveGuard({
-        isValidationDataReady: true,
-        issueCount: 0,
-        blockingMessage: null,
-      }),
-    ).toEqual({ allowed: true });
-  });
-
-  it("검증 데이터가 준비되지 않으면 확인 중 메시지를 반환한다", () => {
-    const result = checkSaveGuard({
-      isValidationDataReady: false,
-      issueCount: 0,
-      blockingMessage: null,
-    });
-
-    expect(result.allowed).toBe(false);
-    if (!result.allowed) {
-      expect(result.message).toContain("확인 중");
-    }
-  });
-
-  it("이슈가 있으면 blockingMessage를 반환한다", () => {
-    const result = checkSaveGuard({
-      isValidationDataReady: true,
-      issueCount: 2,
-      blockingMessage: "플로우 오류",
-    });
-
-    expect(result.allowed).toBe(false);
-    if (!result.allowed) {
-      expect(result.message).toBe("플로우 오류");
-    }
-  });
-
-  it("이슈가 있지만 blockingMessage가 없으면 기본 메시지를 반환한다", () => {
-    const result = checkSaveGuard({
-      isValidationDataReady: true,
-      issueCount: 1,
-      blockingMessage: null,
-    });
-
-    expect(result.allowed).toBe(false);
-    if (!result.allowed) {
-      expect(result.message).toContain("확인할 수 없습니다");
-    }
   });
 });
 
@@ -238,6 +186,7 @@ describe("resolvePostSectionSaveOutcome", () => {
           ...createEmptySectionSaveSummary(),
           savedCount: 1,
           failedCount: 1,
+          failedSections: ["action"],
         },
         showSavedToast: true,
         showNoChangesToast: true,
@@ -245,6 +194,27 @@ describe("resolvePostSectionSaveOutcome", () => {
 
       expect(result.type).toBe("manual_with_failures");
       expect(result.result).toBe("failed");
+    });
+
+    it("invalidCount가 있으면 manual_with_failures를 반환한다", () => {
+      const result = resolvePostSectionSaveOutcome({
+        mode: "manual",
+        summary: {
+          ...createEmptySectionSaveSummary(),
+          savedCount: 1,
+          invalidCount: 1,
+          invalidSections: ["reward"],
+          firstErrorMessage: "리워드 입력값을 확인해주세요.",
+        },
+        showSavedToast: true,
+        showNoChangesToast: true,
+      });
+
+      expect(result.type).toBe("manual_with_failures");
+      expect(result.result).toBe("failed");
+      if (result.type === "manual_with_failures") {
+        expect(result.message).toBe("리워드 입력값을 확인해주세요.");
+      }
     });
 
     it("savedCount > 0이면 manual_processed로 saved 결과를 반환한다", () => {
@@ -341,18 +311,56 @@ describe("resolvePostSectionSaveOutcome", () => {
 });
 
 describe("buildManualSaveToastMessage", () => {
-  it("기본 메시지를 생성한다", () => {
-    expect(buildManualSaveToastMessage({ savedCount: 2, skippedCount: 1, failedCount: 0 })).toBe(
-      "저장 2 / 스킵 1",
+  const baseParams = {
+    savedCount: 0,
+    failedCount: 0,
+    failedSections: [] as ("basic" | "reward" | "action" | "completion")[],
+    invalidSections: [] as ("basic" | "reward" | "action" | "completion")[],
+    firstErrorMessage: null as string | null,
+  };
+
+  it("모두 성공이면 저장 완료 메시지를 반환한다", () => {
+    expect(buildManualSaveToastMessage({ ...baseParams, savedCount: 2 })).toBe(
+      "변경사항이 저장되었습니다.",
     );
   });
 
-  it("실패가 있으면 실패 줄을 추가한다", () => {
+  it("실패 섹션이 있으면 성공/실패 섹션명을 포함한다", () => {
     const message = buildManualSaveToastMessage({
+      ...baseParams,
       savedCount: 1,
-      skippedCount: 0,
-      failedCount: 2,
+      failedCount: 1,
+      failedSections: ["action"],
     });
-    expect(message).toContain("실패 2");
+    expect(message).toContain("액션 저장 실패");
+  });
+
+  it("부분 실패 시 성공 섹션명도 포함한다", () => {
+    const message = buildManualSaveToastMessage({
+      ...baseParams,
+      savedCount: 2,
+      failedCount: 1,
+      failedSections: ["action"],
+    });
+    expect(message).toContain("저장 완료");
+    expect(message).toContain("액션 저장 실패");
+  });
+
+  it("검증 오류가 있으면 firstErrorMessage를 반환한다", () => {
+    const message = buildManualSaveToastMessage({
+      ...baseParams,
+      invalidSections: ["reward"],
+      firstErrorMessage: "리워드 입력값을 확인해주세요.",
+    });
+    expect(message).toBe("리워드 입력값을 확인해주세요.");
+  });
+
+  it("검증 오류 시 firstErrorMessage가 없으면 기본 메시지를 생성한다", () => {
+    const message = buildManualSaveToastMessage({
+      ...baseParams,
+      invalidSections: ["basic", "reward"],
+      firstErrorMessage: null,
+    });
+    expect(message).toBe("기본 정보, 리워드 입력값을 확인해주세요.");
   });
 });

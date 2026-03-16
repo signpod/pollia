@@ -21,12 +21,12 @@ import {
 } from "../models/editorMissionPublishModel";
 import {
   type PostSectionSaveOutcome,
-  checkSaveGuard,
   checkUnifiedSaveGuard,
   resolvePostSectionSaveOutcome,
 } from "./editorMissionSaveFlowModel";
 import {
   type EditorSectionKey,
+  SECTION_LABELS,
   type SectionSaveSummary,
   accumulateSectionSaveResult,
   createEmptySectionSaveSummary,
@@ -156,7 +156,6 @@ export interface UseEditorMissionControllerResult {
     onCompletionWorkingSetChange: () => void;
   };
   viewState: {
-    canSave: boolean;
     isSavingAll: boolean;
     hasAnyBusySection: boolean;
     hasAnyPendingChanges: boolean;
@@ -360,8 +359,6 @@ export function useEditorMissionController({
       missionUseAiCompletionForPublish,
     ],
   );
-  const canSave = publishState.isValidationDataReady && publishState.issues.length === 0;
-
   const collectLocalDraftPayload = useCallback((): LocalEditorDraftPayload => {
     return {
       basic: basicInfoRef.current?.exportDraftSnapshot() ?? null,
@@ -507,10 +504,10 @@ export function useEditorMissionController({
         label: string;
         ref: RefObject<SectionSaveHandle | null>;
       }> = [
-        { key: "basic", label: "기본 정보", ref: basicInfoRef },
-        { key: "reward", label: "리워드", ref: rewardRef },
-        { key: "action", label: "액션", ref: actionRef },
-        { key: "completion", label: "결과 화면", ref: completionRef },
+        { key: "basic", label: SECTION_LABELS.basic, ref: basicInfoRef },
+        { key: "reward", label: SECTION_LABELS.reward, ref: rewardRef },
+        { key: "action", label: SECTION_LABELS.action, ref: actionRef },
+        { key: "completion", label: SECTION_LABELS.completion, ref: completionRef },
       ];
 
       let summary: SectionSaveSummary = createEmptySectionSaveSummary();
@@ -697,31 +694,9 @@ export function useEditorMissionController({
   }, [collectLocalDraftPayload, missionId]);
 
   const handleSave = useCallback(async () => {
-    const guard = checkSaveGuard({
-      isValidationDataReady: publishState.isValidationDataReady,
-      issueCount: publishState.issues.length,
-      blockingMessage: publishState.blockingMessage,
-    });
-
-    if (!guard.allowed) {
-      toast({
-        message: guard.message,
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-        id: UNIFIED_SAVE_TOAST_ID,
-      });
-      return;
-    }
-
     await saveDraft();
-    await runUnifiedSave({ mode: "publish" });
-  }, [
-    publishState.blockingMessage,
-    publishState.isValidationDataReady,
-    publishState.issues.length,
-    runUnifiedSave,
-    saveDraft,
-  ]);
+    await runUnifiedSave({ mode: "manual" });
+  }, [runUnifiedSave, saveDraft]);
 
   const onBasicStateChange = useCallback(
     (state: SectionSaveState) => {
@@ -770,7 +745,6 @@ export function useEditorMissionController({
       onCompletionWorkingSetChange: handleCompletionWorkingSetChange,
     },
     viewState: {
-      canSave,
       isSavingAll,
       hasAnyBusySection,
       hasAnyPendingChanges,

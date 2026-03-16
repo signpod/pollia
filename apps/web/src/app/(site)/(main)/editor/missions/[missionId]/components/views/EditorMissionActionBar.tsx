@@ -8,7 +8,6 @@ export interface EditorMissionActionBarProps {
   hasAnyBusySection: boolean;
   hasAnyPendingChanges: boolean;
   hasAnyValidationIssues: boolean;
-  canSave: boolean;
   onSave: () => void;
 }
 
@@ -17,7 +16,6 @@ export function EditorMissionActionBar({
   hasAnyBusySection,
   hasAnyPendingChanges,
   hasAnyValidationIssues,
-  canSave,
   onSave,
 }: EditorMissionActionBarProps) {
   return (
@@ -30,11 +28,7 @@ export function EditorMissionActionBar({
         onClick={onSave}
         loading={isSavingAll}
         disabled={
-          isSavingAll ||
-          hasAnyBusySection ||
-          !hasAnyPendingChanges ||
-          hasAnyValidationIssues ||
-          !canSave
+          isSavingAll || hasAnyBusySection || !hasAnyPendingChanges || hasAnyValidationIssues
         }
       >
         저장하기

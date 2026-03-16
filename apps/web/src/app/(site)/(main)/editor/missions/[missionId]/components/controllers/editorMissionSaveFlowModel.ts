@@ -1,4 +1,8 @@
-import type { SectionSaveSummary } from "./editorMissionSaveSummaryModel";
+import {
+  type EditorSectionKey,
+  SECTION_LABELS,
+  type SectionSaveSummary,
+} from "./editorMissionSaveSummaryModel";
 
 // ---------------------------------------------------------------------------
 // Guard Inputs
@@ -11,19 +15,11 @@ export interface UnifiedSaveGuardInput {
   hasAnyBusySection: boolean;
 }
 
-export interface SaveGuardInput {
-  isValidationDataReady: boolean;
-  issueCount: number;
-  blockingMessage: string | null;
-}
-
 // ---------------------------------------------------------------------------
 // Guard Results (discriminated unions)
 // ---------------------------------------------------------------------------
 
 export type UnifiedSaveGuardResult = { allowed: true } | { allowed: false };
-
-export type SaveGuardResult = { allowed: true } | { allowed: false; message: string };
 
 // ---------------------------------------------------------------------------
 // Outcome Inputs
@@ -73,21 +69,6 @@ export function checkUnifiedSaveGuard(input: UnifiedSaveGuardInput): UnifiedSave
   return { allowed: true };
 }
 
-export function checkSaveGuard(input: SaveGuardInput): SaveGuardResult {
-  const isCheckingState = !input.isValidationDataReady || input.issueCount === 0;
-
-  if (!input.isValidationDataReady || input.issueCount > 0) {
-    return {
-      allowed: false,
-      message: isCheckingState
-        ? "저장 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-        : (input.blockingMessage ?? "저장 가능한 상태인지 확인할 수 없습니다."),
-    };
-  }
-
-  return { allowed: true };
-}
-
 // ---------------------------------------------------------------------------
 // Outcome Functions
 // ---------------------------------------------------------------------------
@@ -128,11 +109,13 @@ export function resolvePostSectionSaveOutcome(input: PostSectionSaveInput): Post
     if (processedCount > 0) {
       const message = buildManualSaveToastMessage({
         savedCount: summary.savedCount,
-        skippedCount,
         failedCount: summary.failedCount,
+        failedSections: summary.failedSections,
+        invalidSections: summary.invalidSections,
+        firstErrorMessage: summary.firstErrorMessage,
       });
 
-      if (summary.failedCount > 0) {
+      if (summary.failedCount > 0 || summary.invalidCount > 0) {
         return {
           type: "manual_with_failures",
           message,
@@ -170,16 +153,36 @@ export function resolvePostSectionSaveOutcome(input: PostSectionSaveInput): Post
 // Toast Message Builder
 // ---------------------------------------------------------------------------
 
+function formatSectionNames(sections: EditorSectionKey[]): string {
+  return sections.map(key => SECTION_LABELS[key]).join(", ");
+}
+
 export function buildManualSaveToastMessage(params: {
   savedCount: number;
-  skippedCount: number;
   failedCount: number;
+  failedSections: EditorSectionKey[];
+  invalidSections: EditorSectionKey[];
+  firstErrorMessage: string | null;
 }): string {
-  const { savedCount, skippedCount, failedCount } = params;
-  const lines = [`저장 ${savedCount} / 스킵 ${skippedCount}`];
-  if (failedCount > 0) {
-    lines.push(`실패 ${failedCount}`);
+  const { savedCount, failedCount, failedSections, invalidSections, firstErrorMessage } = params;
+
+  if (invalidSections.length > 0) {
+    return firstErrorMessage ?? `${formatSectionNames(invalidSections)} 입력값을 확인해주세요.`;
   }
 
-  return lines.join("\n");
+  if (failedCount > 0) {
+    const lines: string[] = [];
+    if (savedCount > 0) {
+      const successSections = (Object.keys(SECTION_LABELS) as EditorSectionKey[]).filter(
+        key => !failedSections.includes(key) && !invalidSections.includes(key),
+      );
+      if (successSections.length > 0) {
+        lines.push(`${formatSectionNames(successSections)} 저장 완료`);
+      }
+    }
+    lines.push(`${formatSectionNames(failedSections)} 저장 실패`);
+    return lines.join("\n");
+  }
+
+  return "변경사항이 저장되었습니다.";
 }

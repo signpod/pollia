@@ -229,7 +229,6 @@ export function EditorMissionTabContent({
         hasAnyBusySection={viewState.hasAnyBusySection}
         hasAnyPendingChanges={viewState.hasAnyPendingChanges}
         hasAnyValidationIssues={viewState.hasAnyValidationIssues}
-        canSave={viewState.canSave}
         onSave={() => {
           void actions.onSave().then(() => bumpPreviewRefresh(v => v + 1));
         }}
@@ -237,7 +236,6 @@ export function EditorMissionTabContent({
     ),
     [
       actions,
-      viewState.canSave,
       viewState.hasAnyBusySection,
       viewState.hasAnyPendingChanges,
       viewState.hasAnyValidationIssues,

@@ -21,7 +21,6 @@ describe("EditorMissionActionBar", () => {
         hasAnyBusySection={false}
         hasAnyPendingChanges={true}
         hasAnyValidationIssues={false}
-        canSave={true}
         onSave={() => {}}
       />,
     );
@@ -29,14 +28,13 @@ describe("EditorMissionActionBar", () => {
     expect(screen.getByRole("button", { name: "저장하기" })).not.toBeNull();
   });
 
-  it("canSave가 false면 저장하기 버튼이 비활성화된다", () => {
+  it("검증 오류가 있으면 저장하기 버튼이 비활성화된다", () => {
     render(
       <EditorMissionActionBar
         isSavingAll={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={true}
-        hasAnyValidationIssues={false}
-        canSave={false}
+        hasAnyValidationIssues={true}
         onSave={() => {}}
       />,
     );
@@ -51,7 +49,6 @@ describe("EditorMissionActionBar", () => {
         hasAnyBusySection={false}
         hasAnyPendingChanges={false}
         hasAnyValidationIssues={false}
-        canSave={true}
         onSave={() => {}}
       />,
     );
