@@ -335,6 +335,25 @@ describe("ActionService - applyActionSectionDraft", () => {
     });
   });
 
+  it("isAdmin이면 소유자가 아니어도 성공한다", async () => {
+    // Given
+    const mockMission = createMockMission({
+      id: "mission1",
+      creatorId: "owner",
+      editorDraft: { basic: null, reward: null, action: null, completion: null },
+    });
+    ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+    ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+    // When
+    const result = await ctx.service.applyActionSectionDraft("mission1", "non-owner", true);
+
+    // Then
+    expect(result.createdActionIds).toEqual([]);
+    expect(result.updatedActionIds).toEqual([]);
+    expect(result.createdCompletionIds).toEqual([]);
+  });
+
   describe("sanitize 후 형태 호환성", () => {
     it("sanitizeActionSnapshotForServer 결과물은 정상 파싱된다", async () => {
       // Given - sanitize 후 형태 (dirtyByItemKey 포함)
@@ -738,6 +757,27 @@ describe("ActionService - applyActionSectionDraft", () => {
       expect(result.tempToRealCompletionIdMap).toEqual({
         "draft:completion:c1": "real-c1",
       });
+    });
+  });
+
+  describe("isAdmin 바이패스", () => {
+    it("isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given - mock mission with different owner, editorDraft with action: null
+      const mockMission = createMockMission({
+        id: "mission1",
+        creatorId: "owner",
+        editorDraft: { basic: null, reward: null, action: null, completion: null },
+      });
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      // When
+      const result = await ctx.service.applyActionSectionDraft("mission1", "non-owner", true);
+
+      // Then
+      expect(result.createdActionIds).toEqual([]);
+      expect(result.updatedActionIds).toEqual([]);
+      expect(result.createdCompletionIds).toEqual([]);
     });
   });
 });

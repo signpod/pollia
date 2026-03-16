@@ -93,6 +93,22 @@ describe("MissionNotionPageService", () => {
       expect(mockRepo.findByMissionId).not.toHaveBeenCalled();
     });
 
+    it("isAdmin이면 소유자가 아니어도 조회할 수 있다", async () => {
+      // Given
+      const mockMission = createMockMission({ creatorId: TEST_USER_ID });
+      const mockNotionPage = createMockMissionNotionPage();
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findByMissionId.mockResolvedValue(mockNotionPage);
+
+      // When
+      const result = await service.getByMissionIdWithAuth(TEST_MISSION_ID, OTHER_USER_ID, true);
+
+      // Then
+      expect(result).toEqual(mockNotionPage);
+      expect(mockMissionRepo.findById).toHaveBeenCalledWith(TEST_MISSION_ID);
+      expect(mockRepo.findByMissionId).toHaveBeenCalledWith(TEST_MISSION_ID);
+    });
+
     it("권한이 있지만 MissionNotionPage가 없으면 null을 반환한다", async () => {
       // Given
       const mockMission = createMockMission({ creatorId: TEST_USER_ID });

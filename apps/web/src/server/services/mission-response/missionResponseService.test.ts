@@ -1169,4 +1169,69 @@ describe("MissionResponseService", () => {
       ).rejects.toThrow("응답을 찾을 수 없습니다.");
     });
   });
+
+  describe("isAdmin 바이패스", () => {
+    it("getResponseById - isAdmin이면 다른 사용자의 응답도 조회할 수 있다", async () => {
+      // Given
+      const mockResponse = { id: "response1", userId: "other-user", missionId: "mission1" };
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+
+      // When
+      const result = await service.getResponseById("response1", mockUser.id, true);
+
+      // Then
+      expect(result).toBeDefined();
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("getMissionResponses - isAdmin이면 소유자가 아니어도 조회할 수 있다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "other-user" };
+      const mockResponses = [{ id: "response1" }, { id: "response2" }];
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.findByMissionId.mockResolvedValue(mockResponses as never);
+
+      // When
+      const result = await service.getMissionResponses("mission1", mockUser.id, undefined, true);
+
+      // Then
+      expect(result).toEqual(mockResponses);
+      expect(mockResponseRepo.findByMissionId).toHaveBeenCalledWith("mission1", undefined);
+    });
+
+    it("getMissionResponsesPage - isAdmin이면 소유자가 아니어도 조회할 수 있다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "other-user" };
+      const mockResponses = [{ id: "response1" }];
+      const pageOptions = { page: 1, pageSize: 20 };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.findByMissionIdPaged.mockResolvedValue(mockResponses as never);
+      mockResponseRepo.countByMissionIdFiltered.mockResolvedValue(1);
+
+      // When
+      const result = await service.getMissionResponsesPage(
+        "mission1",
+        mockUser.id,
+        pageOptions,
+        true,
+      );
+
+      // Then
+      expect(result.responses).toEqual(mockResponses);
+      expect(result.pagination.totalRows).toBe(1);
+    });
+
+    it("deleteResponse - isAdmin이면 다른 사용자의 응답도 삭제할 수 있다", async () => {
+      // Given
+      const mockResponse = { id: "response1", userId: "other-user" };
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockResponseRepo.delete.mockResolvedValue(mockResponse as never);
+
+      // When
+      await service.deleteResponse("response1", mockUser.id, true);
+
+      // Then
+      expect(mockResponseRepo.delete).toHaveBeenCalledWith("response1");
+    });
+  });
 });
