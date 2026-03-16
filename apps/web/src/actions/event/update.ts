@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { eventService } from "@/server/services/event";
@@ -11,8 +11,8 @@ export async function updateEvent(
   request: UpdateEventRequest,
 ): Promise<UpdateEventResponse> {
   try {
-    const user = await requireActiveUser();
-    const event = await eventService.updateEvent(eventId, request, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const event = await eventService.updateEvent(eventId, request, user.id, isAdmin);
     return { data: event };
   } catch (error) {
     return handleActionError(error, `${UBIQUITOUS_CONSTANTS.EVENT} 수정 중 오류가 발생했습니다.`);

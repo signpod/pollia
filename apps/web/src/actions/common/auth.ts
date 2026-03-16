@@ -89,6 +89,12 @@ export async function requireAdmin(): Promise<{
   }
 }
 
+export const requireContentManager = cache(async (): Promise<{ user: User; isAdmin: boolean }> => {
+  const user = await requireActiveUser();
+  const dbUser = await userService.getUserById(user.id);
+  return { user, isAdmin: dbUser.role === UserRole.ADMIN };
+});
+
 export async function signOut(redirectTo?: string): Promise<void> {
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.auth.signOut();

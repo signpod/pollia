@@ -1,13 +1,13 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { rewardService } from "@/server/services/reward/rewardService";
 import type { UpdateRewardRequest } from "@/types/dto";
 
 export async function updateReward(rewardId: string, request: UpdateRewardRequest) {
   try {
-    const user = await requireActiveUser();
+    const { user } = await requireContentManager();
     const reward = await rewardService.updateReward(rewardId, request, user.id);
     return { data: reward };
   } catch (error) {

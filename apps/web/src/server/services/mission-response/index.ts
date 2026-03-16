@@ -46,7 +46,7 @@ export class MissionResponseService {
     private completionStatRepo = missionCompletionStatRepository,
   ) {}
 
-  async getResponseById(responseId: string, actor: string | ResponseActor) {
+  async getResponseById(responseId: string, actor: string | ResponseActor, isAdmin = false) {
     const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
@@ -56,7 +56,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (!isResponseOwner(response, normalizedActor)) {
+    if (!isAdmin && !isResponseOwner(response, normalizedActor)) {
       const error = new Error("조회 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -87,7 +87,7 @@ export class MissionResponseService {
     return this.responseRepo.findByUserId(userId);
   }
 
-  private async requireMissionOwnership(missionId: string, userId: string) {
+  private async requireMissionOwnership(missionId: string, userId: string, isAdmin = false) {
     const mission = await this.missionRepo.findById(missionId);
 
     if (!mission) {
@@ -96,8 +96,8 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
+    if (!isAdmin && mission.creatorId !== userId) {
+      const error = new Error("미션 응답 조회 권한이 없습니다.");
       error.cause = 403;
       throw error;
     }
@@ -109,8 +109,9 @@ export class MissionResponseService {
     missionId: string,
     userId: string,
     options?: { membersOnly?: boolean },
+    isAdmin = false,
   ) {
-    await this.requireMissionOwnership(missionId, userId);
+    await this.requireMissionOwnership(missionId, userId, isAdmin);
     return this.responseRepo.findByMissionId(missionId, options);
   }
 
@@ -118,8 +119,9 @@ export class MissionResponseService {
     missionId: string,
     userId: string,
     dateRange?: DateRange,
+    isAdmin = false,
   ): Promise<ResponseStats> {
-    const mission = await this.requireMissionOwnership(missionId, userId);
+    const mission = await this.requireMissionOwnership(missionId, userId, isAdmin);
 
     const [total, completed, averageDurationMs, completionsResult, completionStatsResult] =
       await Promise.all([
@@ -171,8 +173,9 @@ export class MissionResponseService {
     missionId: string,
     userId: string,
     dateRange?: DateRange,
+    isAdmin = false,
   ): Promise<DailyParticipationTrendItem[]> {
-    await this.requireMissionOwnership(missionId, userId);
+    await this.requireMissionOwnership(missionId, userId, isAdmin);
     return this.responseRepo.groupByStartedAtDate(missionId, dateRange);
   }
 
@@ -180,12 +183,13 @@ export class MissionResponseService {
     missionId: string,
     userId: string,
     options: GetMissionResponsesPageOptions,
+    isAdmin = false,
   ): Promise<
     MissionResponsesPageResult<
       Awaited<ReturnType<MissionResponseRepository["findByMissionIdPaged"]>>[number]
     >
   > {
-    await this.requireMissionOwnership(missionId, userId);
+    await this.requireMissionOwnership(missionId, userId, isAdmin);
 
     const [responses, totalRows] = await Promise.all([
       this.responseRepo.findByMissionIdPaged(missionId, options),
@@ -505,7 +509,11 @@ export class MissionResponseService {
     };
   }
 
-  async deleteResponse(responseId: string, actor: string | ResponseActor): Promise<void> {
+  async deleteResponse(
+    responseId: string,
+    actor: string | ResponseActor,
+    isAdmin = false,
+  ): Promise<void> {
     const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
@@ -515,7 +523,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (!isResponseOwner(response, normalizedActor)) {
+    if (!isAdmin && !isResponseOwner(response, normalizedActor)) {
       const error = new Error("삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;

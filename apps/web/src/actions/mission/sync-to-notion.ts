@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { missionService } from "@/server/services/mission";
 import { missionNotionPageService } from "@/server/services/mission-notion-page";
@@ -10,18 +10,17 @@ import type { SyncMissionToNotionResponse } from "@/types/dto";
 
 export async function syncMissionToNotion(missionId: string): Promise<SyncMissionToNotionResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
     const mission = await missionService.getMission(missionId);
 
-    if (mission.creatorId !== user.id) {
-      const error = new Error("노션 동기화 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
-    }
-
     const actions = await missionService.getMissionActionsDetail(missionId);
-    const responses = await missionResponseService.getMissionResponses(missionId, user.id);
+    const responses = await missionResponseService.getMissionResponses(
+      missionId,
+      user.id,
+      undefined,
+      isAdmin,
+    );
 
     const notionService = new NotionService();
     const result = await notionService.createOrUpdateMissionReport({

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { fileUploadService } from "@/server/services/file-upload";
 import type {
@@ -12,7 +12,7 @@ import type {
 
 export async function deleteFileByPath(request: DeleteFileRequest): Promise<DeleteFileResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user } = await requireContentManager();
     await fileUploadService.deleteFileByPath(request.path, user.id);
     return {};
   } catch (error) {
@@ -24,7 +24,7 @@ export async function deleteFileById(
   request: DeleteFileByIdRequest,
 ): Promise<DeleteFileByIdResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user } = await requireContentManager();
     await fileUploadService.deleteFileById(request.fileUploadId, user.id);
     return {};
   } catch (error) {

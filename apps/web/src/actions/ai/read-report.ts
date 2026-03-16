@@ -1,17 +1,13 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { AiReportData, GetMissionAiReportResponse } from "@/types/dto";
 
 export async function getMissionAiReport(missionId: string): Promise<GetMissionAiReportResponse> {
   try {
-    const user = await requireActiveUser();
+    await requireContentManager();
     const mission = await missionService.getMission(missionId);
-
-    if (mission.creatorId !== user.id) {
-      return { data: { reportData: null } };
-    }
 
     if (!mission.aiStatisticsReport) {
       return { data: { reportData: null } };

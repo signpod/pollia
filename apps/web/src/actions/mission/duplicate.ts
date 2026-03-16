@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
@@ -10,8 +10,8 @@ export async function duplicateMission(
   request: DuplicateMissionRequest,
 ): Promise<DuplicateMissionResponse> {
   try {
-    const user = await requireActiveUser();
-    const duplicated = await missionService.duplicateMission(request.missionId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const duplicated = await missionService.duplicateMission(request.missionId, user.id, isAdmin);
 
     return {
       data: {

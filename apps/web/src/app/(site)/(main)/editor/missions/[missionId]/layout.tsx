@@ -1,5 +1,5 @@
+import { requireContentManager } from "@/actions/common/auth";
 import { getMission } from "@/actions/mission";
-import { checkAuthStatus } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
@@ -13,12 +13,14 @@ export default async function EditorMissionLayout({
 }: PropsWithChildren<EditorMissionLayoutProps>) {
   const { missionId } = await params;
 
-  const { isAuthenticated, user } = await checkAuthStatus().catch(() => ({
-    isAuthenticated: false,
-    user: null,
-  }));
+  let userId: string;
+  let isAdmin: boolean;
 
-  if (!isAuthenticated || !user) {
+  try {
+    const result = await requireContentManager();
+    userId = result.user.id;
+    isAdmin = result.isAdmin;
+  } catch {
     redirect(`/login?next=/editor/missions/${missionId}`);
   }
 
@@ -29,7 +31,7 @@ export default async function EditorMissionLayout({
     throw error;
   });
 
-  if (missionResult.data.creatorId !== user.id) {
+  if (!isAdmin && missionResult.data.creatorId !== userId) {
     notFound();
   }
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { actionService } from "@/server/services/action";
 import { missionService } from "@/server/services/mission";
@@ -9,8 +9,8 @@ import { revalidatePath } from "next/cache";
 
 export async function updateAction(actionId: string, request: UpdateActionRequest) {
   try {
-    const user = await requireActiveUser();
-    const updatedAction = await actionService.updateAction(actionId, request, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const updatedAction = await actionService.updateAction(actionId, request, user.id, isAdmin);
 
     if (updatedAction.missionId) {
       revalidatePath(`/mission/${updatedAction.missionId}`);
@@ -25,9 +25,9 @@ export async function updateAction(actionId: string, request: UpdateActionReques
 
 export async function disconnectActionWithCleanup(actionId: string, missionId: string) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
-    await actionService.disconnectActionWithCleanup(actionId, missionId, user.id);
+    await actionService.disconnectActionWithCleanup(actionId, missionId, user.id, isAdmin);
 
     revalidatePath(`/admin/missions/${missionId}/flow`);
     revalidatePath(`/mission/${missionId}`);
@@ -44,9 +44,15 @@ export async function disconnectBranchOptionWithCleanup(
   missionId: string,
 ) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
-    await actionService.disconnectBranchOptionWithCleanup(actionId, optionId, missionId, user.id);
+    await actionService.disconnectBranchOptionWithCleanup(
+      actionId,
+      optionId,
+      missionId,
+      user.id,
+      isAdmin,
+    );
 
     revalidatePath(`/admin/missions/${missionId}/flow`);
     revalidatePath(`/mission/${missionId}`);
@@ -64,9 +70,16 @@ export async function connectAction(
   missionId: string,
 ) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
-    await actionService.connectAction(sourceActionId, targetId, isCompletion, missionId, user.id);
+    await actionService.connectAction(
+      sourceActionId,
+      targetId,
+      isCompletion,
+      missionId,
+      user.id,
+      isAdmin,
+    );
 
     revalidatePath(`/admin/missions/${missionId}/flow`);
     revalidatePath(`/mission/${missionId}`);
@@ -85,7 +98,7 @@ export async function connectBranchOption(
   missionId: string,
 ) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
     await actionService.connectBranchOption(
       actionId,
@@ -94,6 +107,7 @@ export async function connectBranchOption(
       isCompletion,
       missionId,
       user.id,
+      isAdmin,
     );
 
     revalidatePath(`/admin/missions/${missionId}/flow`);
@@ -107,11 +121,11 @@ export async function connectBranchOption(
 
 export async function disconnectStartWithCleanup(targetActionId: string, missionId: string) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
-    await actionService.disconnectActionWithCleanup(targetActionId, missionId, user.id);
+    await actionService.disconnectActionWithCleanup(targetActionId, missionId, user.id, isAdmin);
 
-    await missionService.updateMission(missionId, { entryActionId: null }, user.id);
+    await missionService.updateMission(missionId, { entryActionId: null }, user.id, isAdmin);
 
     revalidatePath(`/admin/missions/${missionId}/flow`);
     revalidatePath(`/mission/${missionId}`);

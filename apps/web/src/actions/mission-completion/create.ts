@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
@@ -25,11 +25,12 @@ export async function createMissionCompletion(
   request: CreateMissionCompletionRequest,
 ): Promise<CreateMissionCompletionResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
     const input = toCreateMissionCompletionInput(request);
     const missionCompletion = await missionCompletionService.createMissionCompletion(
       input,
       user.id,
+      isAdmin,
     );
 
     return { data: toMissionCompletionData(missionCompletion) };

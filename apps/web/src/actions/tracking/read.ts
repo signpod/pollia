@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { trackingActionService } from "@/server/services/tracking";
 import type { DateRangeString } from "@/types/common/dateRange";
@@ -11,7 +11,7 @@ export async function getMissionFunnel(
   options?: { membersOnly?: boolean; dateRange?: DateRangeString },
 ): Promise<GetMissionFunnelResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
     const serviceOptions: { membersOnly?: boolean; dateRange?: { from: Date; to: Date } } = {};
     if (options?.membersOnly) serviceOptions.membersOnly = true;
     if (options?.dateRange) {
@@ -24,6 +24,7 @@ export async function getMissionFunnel(
       missionId,
       user.id,
       serviceOptions,
+      isAdmin,
     );
     return { data: funnelData };
   } catch (error) {

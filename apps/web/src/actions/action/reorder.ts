@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { actionService } from "@/server/services/action";
 import { revalidatePath } from "next/cache";
@@ -12,11 +12,12 @@ export interface ReorderActionsRequest {
 
 export async function reorderActions(request: ReorderActionsRequest) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
     const result = await actionService.reorderActions(
       request.missionId,
       request.actionOrders,
       user.id,
+      isAdmin,
     );
 
     revalidatePath(`/mission/${request.missionId}`);

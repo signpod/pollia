@@ -26,7 +26,11 @@ export class MissionAiReportService {
     this.provider = new AnthropicAiProvider(null, undefined, REPORT_MAX_TOKENS);
   }
 
-  async generate(missionId: string, userId: string): Promise<MissionAiReportResult> {
+  async generate(
+    missionId: string,
+    userId: string,
+    isAdmin = false,
+  ): Promise<MissionAiReportResult> {
     const mission = await missionRepository.findById(missionId);
     if (!mission) {
       const error = new Error("미션을 찾을 수 없습니다.");
@@ -34,8 +38,8 @@ export class MissionAiReportService {
       throw error;
     }
 
-    if (mission.creatorId !== userId) {
-      const error = new Error("미션에 대한 접근 권한이 없습니다.");
+    if (!isAdmin && mission.creatorId !== userId) {
+      const error = new Error("AI 리포트 생성 권한이 없습니다.");
       error.cause = 403;
       throw error;
     }

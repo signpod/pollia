@@ -74,6 +74,7 @@ export class ActionService {
     type: ActionType,
     userId: string,
     maxSelections?: number,
+    isAdmin = false,
   ): Promise<ActionCreatedResult> {
     const result = schema.safeParse(input);
     if (!result.success) {
@@ -85,7 +86,7 @@ export class ActionService {
     const validated = result.data;
 
     if (validated.missionId) {
-      await this.verifyMissionAccess(validated.missionId, userId);
+      await this.verifyMissionAccess(validated.missionId, userId, isAdmin);
     }
 
     const action = await this.actionRepo.create(
@@ -116,6 +117,7 @@ export class ActionService {
     type: ActionType,
     userId: string,
     maxSelections?: number,
+    isAdmin = false,
   ): Promise<ActionCreatedResult> {
     const result = schema.safeParse(input);
     if (!result.success) {
@@ -127,7 +129,7 @@ export class ActionService {
     const validated = result.data;
 
     if (validated.missionId) {
-      await this.verifyMissionAccess(validated.missionId, userId);
+      await this.verifyMissionAccess(validated.missionId, userId, isAdmin);
     }
 
     const { options, ...actionData } = validated;
@@ -206,6 +208,7 @@ export class ActionService {
   async createMultipleChoiceAction(
     input: CreateMultipleChoiceInput,
     userId: string,
+    isAdmin = false,
   ): Promise<ActionCreatedResult> {
     return this.createActionWithOptions(
       input,
@@ -213,85 +216,191 @@ export class ActionService {
       ActionType.MULTIPLE_CHOICE,
       userId,
       input.maxSelections,
+      isAdmin,
     );
   }
 
-  async createScaleAction(input: CreateScaleInput, userId: string): Promise<ActionCreatedResult> {
-    return this.createActionWithOptions(input, scaleInputSchema, ActionType.SCALE, userId);
+  async createScaleAction(
+    input: CreateScaleInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
+    return this.createActionWithOptions(
+      input,
+      scaleInputSchema,
+      ActionType.SCALE,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
   async createSubjectiveAction(
     input: CreateSubjectiveInput,
     userId: string,
+    isAdmin = false,
   ): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(input, subjectiveInputSchema, ActionType.SUBJECTIVE, userId);
+    return this.createSimpleAction(
+      input,
+      subjectiveInputSchema,
+      ActionType.SUBJECTIVE,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
   async createShortTextAction(
     input: CreateShortTextInput,
     userId: string,
+    isAdmin = false,
   ): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(input, shortTextInputSchema, ActionType.SHORT_TEXT, userId);
+    return this.createSimpleAction(
+      input,
+      shortTextInputSchema,
+      ActionType.SHORT_TEXT,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
   async createEitherOrAction(
     input: CreateEitherOrInput,
     userId: string,
+    isAdmin = false,
   ): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(input, eitherOrInputSchema, ActionType.MULTIPLE_CHOICE, userId);
+    return this.createSimpleAction(
+      input,
+      eitherOrInputSchema,
+      ActionType.MULTIPLE_CHOICE,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
-  async createTagAction(input: CreateTagInput, userId: string): Promise<ActionCreatedResult> {
+  async createTagAction(
+    input: CreateTagInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
     return this.createActionWithOptions(
       input,
       tagInputSchema,
       ActionType.TAG,
       userId,
       input.maxSelections,
+      isAdmin,
     );
   }
 
-  async createRatingAction(input: CreateRatingInput, userId: string): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(input, ratingInputSchema, ActionType.RATING, userId);
+  async createRatingAction(
+    input: CreateRatingInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(
+      input,
+      ratingInputSchema,
+      ActionType.RATING,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
-  async createImageAction(input: CreateImageInput, userId: string): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(input, imageInputSchema, ActionType.IMAGE, userId);
+  async createImageAction(
+    input: CreateImageInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(
+      input,
+      imageInputSchema,
+      ActionType.IMAGE,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
-  async createPdfAction(input: CreatePdfInput, userId: string): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(input, pdfInputSchema, ActionType.PDF, userId);
+  async createPdfAction(
+    input: CreatePdfInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(
+      input,
+      pdfInputSchema,
+      ActionType.PDF,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
-  async createVideoAction(input: CreateVideoInput, userId: string): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(input, videoInputSchema, ActionType.VIDEO, userId);
+  async createVideoAction(
+    input: CreateVideoInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(
+      input,
+      videoInputSchema,
+      ActionType.VIDEO,
+      userId,
+      undefined,
+      isAdmin,
+    );
   }
 
-  async createDateAction(input: CreateDateInput, userId: string): Promise<ActionCreatedResult> {
+  async createDateAction(
+    input: CreateDateInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
     return this.createSimpleAction(
       input,
       dateInputSchema,
       ActionType.DATE,
       userId,
       input.maxSelections,
+      isAdmin,
     );
   }
 
-  async createTimeAction(input: CreateTimeInput, userId: string): Promise<ActionCreatedResult> {
+  async createTimeAction(
+    input: CreateTimeInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
     return this.createSimpleAction(
       input,
       timeInputSchema,
       ActionType.TIME,
       userId,
       input.maxSelections,
+      isAdmin,
     );
   }
 
-  async createBranchAction(input: CreateBranchInput, userId: string): Promise<ActionCreatedResult> {
-    return this.createActionWithOptions(input, branchInputSchema, ActionType.BRANCH, userId, 1);
+  async createBranchAction(
+    input: CreateBranchInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
+    return this.createActionWithOptions(
+      input,
+      branchInputSchema,
+      ActionType.BRANCH,
+      userId,
+      1,
+      isAdmin,
+    );
   }
 
-  async updateAction(actionId: string, data: UpdateActionInput, userId: string) {
+  async updateAction(actionId: string, data: UpdateActionInput, userId: string, isAdmin = false) {
     const result = actionUpdateSchema.safeParse(data);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || VALIDATION_FAILED_MESSAGE);
@@ -305,7 +414,7 @@ export class ActionService {
     }
 
     if (action.missionId) {
-      await this.verifyMissionAccess(action.missionId, userId);
+      await this.verifyMissionAccess(action.missionId, userId, isAdmin);
     }
 
     const { options, type, ...restActionData } = result.data;
@@ -353,14 +462,14 @@ export class ActionService {
     );
   }
 
-  async deleteAction(actionId: string, userId: string): Promise<void> {
+  async deleteAction(actionId: string, userId: string, isAdmin = false): Promise<void> {
     const action = await this.actionRepo.findById(actionId);
     if (!action) {
       this.throwActionNotFound();
     }
 
     if (action.missionId) {
-      await this.verifyMissionAccess(action.missionId, userId);
+      await this.verifyMissionAccess(action.missionId, userId, isAdmin);
       await this.deleteAndReindexOrders(actionId, action.missionId);
       return;
     }
@@ -398,8 +507,9 @@ export class ActionService {
     missionId: string,
     actionOrders: Array<{ id: string; order: number }>,
     userId: string,
+    isAdmin = false,
   ) {
-    await this.verifyMissionAccess(missionId, userId);
+    await this.verifyMissionAccess(missionId, userId, isAdmin);
 
     const actionIds = actionOrders.map(a => a.id);
     const missionActions = await this.actionRepo.findActionIdsByMissionId(missionId);
@@ -420,8 +530,9 @@ export class ActionService {
     actionId: string,
     missionId: string,
     userId: string,
+    isAdmin = false,
   ): Promise<ActionCreatedResult> {
-    await this.verifyMissionAccess(missionId, userId);
+    await this.verifyMissionAccess(missionId, userId, isAdmin);
 
     const original = await this.actionRepo.findByIdWithOptions(actionId);
     if (!original) {
@@ -492,10 +603,14 @@ export class ActionService {
     return mission;
   }
 
-  private async verifyMissionAccess(missionId: string, userId: string): Promise<void> {
+  private async verifyMissionAccess(
+    missionId: string,
+    userId: string,
+    isAdmin = false,
+  ): Promise<void> {
     const mission = await this.getMissionOrThrow(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("액션을 추가할 권한이 없습니다.");
       error.cause = HTTP_STATUS.FORBIDDEN;
       throw error;
@@ -544,7 +659,12 @@ export class ActionService {
     return Array.from(reachable);
   }
 
-  async disconnectActionWithCleanup(actionId: string, missionId: string, userId: string) {
+  async disconnectActionWithCleanup(
+    actionId: string,
+    missionId: string,
+    userId: string,
+    isAdmin = false,
+  ) {
     try {
       const action = await this.actionRepo.findById(actionId);
       if (!action) {
@@ -552,7 +672,7 @@ export class ActionService {
       }
 
       if (action.missionId) {
-        await this.verifyMissionAccess(action.missionId, userId);
+        await this.verifyMissionAccess(action.missionId, userId, isAdmin);
       }
 
       await this.actionRepo.update(
@@ -605,6 +725,7 @@ export class ActionService {
     optionId: string,
     missionId: string,
     userId: string,
+    isAdmin = false,
   ) {
     try {
       const action = await this.actionRepo.findByIdWithOptions(actionId);
@@ -613,7 +734,7 @@ export class ActionService {
       }
 
       if (action.missionId) {
-        await this.verifyMissionAccess(action.missionId, userId);
+        await this.verifyMissionAccess(action.missionId, userId, isAdmin);
       }
 
       const updatedOptions = action.options.map(opt =>
@@ -671,6 +792,7 @@ export class ActionService {
     isCompletion: boolean,
     _missionId: string,
     userId: string,
+    isAdmin = false,
   ) {
     try {
       const action = await this.actionRepo.findById(sourceActionId);
@@ -679,7 +801,7 @@ export class ActionService {
       }
 
       if (action.missionId) {
-        await this.verifyMissionAccess(action.missionId, userId);
+        await this.verifyMissionAccess(action.missionId, userId, isAdmin);
       }
 
       await this.actionRepo.update(
@@ -709,6 +831,7 @@ export class ActionService {
     isCompletion: boolean,
     _missionId: string,
     userId: string,
+    isAdmin = false,
   ) {
     try {
       const action = await this.actionRepo.findByIdWithOptions(actionId);
@@ -717,7 +840,7 @@ export class ActionService {
       }
 
       if (action.missionId) {
-        await this.verifyMissionAccess(action.missionId, userId);
+        await this.verifyMissionAccess(action.missionId, userId, isAdmin);
       }
 
       const updatedOptions = action.options.map(opt =>
@@ -746,8 +869,9 @@ export class ActionService {
   async saveActionSection(
     input: SaveActionSectionInput,
     userId: string,
+    isAdmin = false,
   ): Promise<SaveActionSectionResult> {
-    await this.verifyMissionAccess(input.missionId, userId);
+    await this.verifyMissionAccess(input.missionId, userId, isAdmin);
 
     const tempToRealActionIdMap = new Map<string, string>();
     const tempToRealCompletionIdMap = new Map<string, string>();
@@ -955,10 +1079,11 @@ export class ActionService {
   async applyActionSectionDraft(
     missionId: string,
     userId: string,
+    isAdmin = false,
   ): Promise<SaveActionSectionResult> {
     const mission = await this.getMissionOrThrow(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("액션을 추가할 권한이 없습니다.");
       error.cause = HTTP_STATUS.FORBIDDEN;
       throw error;
@@ -1066,6 +1191,7 @@ export class ActionService {
         entryActionKey,
       },
       userId,
+      isAdmin,
     );
 
     const clearedDraft = {

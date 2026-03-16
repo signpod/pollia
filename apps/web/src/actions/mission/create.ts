@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
@@ -16,7 +16,7 @@ function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
 
 export async function createMission(request: CreateMissionRequest): Promise<CreateMissionResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user } = await requireContentManager();
     const input = toCreateMissionInput(request);
     const mission = await missionService.createMission(input, user.id);
     return { data: mission };
