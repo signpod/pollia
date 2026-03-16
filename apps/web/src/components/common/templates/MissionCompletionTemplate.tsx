@@ -105,7 +105,8 @@ export function MissionCompletionTemplate({
 
             {purchaseLinks}
 
-            {reward}
+            {/* reward 일단 임시로 주석처리 */}
+            {/* {reward} */}
           </div>
         </div>
 
