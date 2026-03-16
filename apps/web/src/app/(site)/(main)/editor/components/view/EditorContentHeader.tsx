@@ -1,11 +1,13 @@
 "use client";
 
 import { updateMission } from "@/actions/mission/update";
+import { VISIBILITY_CONFIG } from "@/constants/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
 import { useReadMission } from "@/hooks/mission";
+import type { MissionVisibility } from "@/types/domain/mission";
 import { MissionType } from "@prisma/client";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
@@ -25,26 +27,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDeleteMission } from "../../../../me/hooks/useDeleteMission";
-
-type MissionVisibility = "public" | "linkOnly" | "private";
-
-const VISIBILITY_CONFIG = {
-  public: {
-    label: "전체 공개",
-    description: "폴리아 메인 피드에 공개가 되어요.",
-    badgeClassName: "bg-green-100 text-green-700",
-  },
-  linkOnly: {
-    label: "링크만 공개",
-    description: "주소로만 들어올 수 있어요.",
-    badgeClassName: "bg-blue-100 text-blue-700",
-  },
-  private: {
-    label: "나만 보기",
-    description: "작성자 본인만 들어올 수 있어요.",
-    badgeClassName: "bg-zinc-100 text-zinc-500",
-  },
-} as const;
 
 function resolveVisibility(isActive: boolean, type: MissionType): MissionVisibility {
   if (!isActive) return "private";
