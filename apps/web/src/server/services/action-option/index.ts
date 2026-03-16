@@ -45,6 +45,7 @@ export class ActionOptionService {
       fileUploadId?: string;
     },
     userId: string,
+    isAdmin = false,
   ): Promise<ActionOption> {
     const result = optionInputSchema.safeParse(data);
     if (!result.success) {
@@ -55,7 +56,7 @@ export class ActionOptionService {
 
     const actionId = result.data.actionId;
 
-    await this.verifyActionAccess(actionId, userId);
+    await this.verifyActionAccess(actionId, userId, isAdmin);
 
     const option = await this.optionRepo.create(
       {
@@ -81,6 +82,7 @@ export class ActionOptionService {
       fileUploadId?: string;
     }>,
     userId: string,
+    isAdmin = false,
   ): Promise<ActionOption[]> {
     const result = optionsInputSchema.safeParse({ actionId, options });
     if (!result.success) {
@@ -89,7 +91,7 @@ export class ActionOptionService {
       throw error;
     }
 
-    await this.verifyActionAccess(actionId, userId);
+    await this.verifyActionAccess(actionId, userId, isAdmin);
 
     const createdOptions = await this.optionRepo.createMany(
       actionId,
@@ -117,6 +119,7 @@ export class ActionOptionService {
       fileUploadId?: string;
     },
     userId: string,
+    isAdmin = false,
   ): Promise<ActionOption> {
     const result = optionUpdateSchema.safeParse(data);
     if (!result.success) {
@@ -127,7 +130,7 @@ export class ActionOptionService {
 
     const option = await this.getOptionById(optionId);
 
-    await this.verifyActionAccess(option.actionId, userId);
+    await this.verifyActionAccess(option.actionId, userId, isAdmin);
 
     const updatedOption = await this.optionRepo.update(
       optionId,
@@ -139,21 +142,25 @@ export class ActionOptionService {
     return updatedOption;
   }
 
-  async deleteOption(optionId: string, userId: string): Promise<void> {
+  async deleteOption(optionId: string, userId: string, isAdmin = false): Promise<void> {
     const option = await this.getOptionById(optionId);
 
-    await this.verifyActionAccess(option.actionId, userId);
+    await this.verifyActionAccess(option.actionId, userId, isAdmin);
 
     await this.optionRepo.delete(optionId);
   }
 
-  async deleteOptionsByActionId(actionId: string, userId: string): Promise<void> {
-    await this.verifyActionAccess(actionId, userId);
+  async deleteOptionsByActionId(actionId: string, userId: string, isAdmin = false): Promise<void> {
+    await this.verifyActionAccess(actionId, userId, isAdmin);
 
     await this.optionRepo.deleteByActionId(actionId);
   }
 
-  private async verifyActionAccess(actionId: string, userId: string): Promise<void> {
+  private async verifyActionAccess(
+    actionId: string,
+    userId: string,
+    isAdmin = false,
+  ): Promise<void> {
     const action = await this.actionRepo.findById(actionId);
 
     if (!action) {
@@ -171,7 +178,7 @@ export class ActionOptionService {
         throw error;
       }
 
-      if (mission.creatorId !== userId) {
+      if (!isAdmin && mission.creatorId !== userId) {
         const error = new Error("옵션을 수정할 권한이 없습니다.");
         error.cause = 403;
         throw error;

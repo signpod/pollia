@@ -806,4 +806,21 @@ describe("ActionService - saveActionSection", () => {
       expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledTimes(2);
     });
   });
+
+  it("isAdmin이면 소유자가 아니어도 성공한다", async () => {
+    // Given
+    const mockMission = createMockMission({ id: "mission1", creatorId: "owner" });
+    ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+    ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+    const input = baseSectionInput();
+
+    // When
+    const result = await ctx.service.saveActionSection(input, "non-owner", true);
+
+    // Then
+    expect(result.createdActionIds).toEqual([]);
+    expect(result.updatedActionIds).toEqual([]);
+    expect(result.createdCompletionIds).toEqual([]);
+  });
 });

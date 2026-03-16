@@ -120,7 +120,7 @@ describe("MissionCompletionService", () => {
 
       // When & Then
       await expect(service.createMissionCompletion(createData, TEST_USER_ID)).rejects.toThrow(
-        "생성 권한이 없습니다.",
+        "미션 완료 화면 생성 권한이 없습니다.",
       );
 
       try {
@@ -325,6 +325,7 @@ describe("MissionCompletionService", () => {
       });
 
       mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission());
       mockRepo.update.mockResolvedValue(mockUpdatedCompletion);
 
       // When
@@ -356,19 +357,15 @@ describe("MissionCompletionService", () => {
     it("Mission 생성자가 아니면 403 에러를 던진다", async () => {
       // Given
       const updateData = { title: "수정된 제목" };
-      const mockCompletion = createMockMissionCompletion({
-        mission: {
-          id: TEST_MISSION_ID,
-          creatorId: "other-user",
-        },
-      });
+      const mockCompletion = createMockMissionCompletion();
 
       mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission({ creatorId: "other-user" }));
 
       // When & Then
       await expect(
         service.updateMissionCompletion(mockCompletion.id, updateData, TEST_USER_ID),
-      ).rejects.toThrow("수정 권한이 없습니다.");
+      ).rejects.toThrow("미션 완료 화면 수정 권한이 없습니다.");
 
       try {
         await service.updateMissionCompletion(mockCompletion.id, updateData, TEST_USER_ID);
@@ -385,6 +382,7 @@ describe("MissionCompletionService", () => {
       const mockCompletion = createMockMissionCompletion();
 
       mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission());
 
       // When & Then
       await expect(
@@ -401,6 +399,7 @@ describe("MissionCompletionService", () => {
       const mockCompletion = createMockMissionCompletion();
 
       mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission());
       mockRepo.delete.mockResolvedValue(mockCompletion);
 
       // When
@@ -425,19 +424,15 @@ describe("MissionCompletionService", () => {
 
     it("Mission 생성자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockCompletion = createMockMissionCompletion({
-        mission: {
-          id: TEST_MISSION_ID,
-          creatorId: "other-user",
-        },
-      });
+      const mockCompletion = createMockMissionCompletion();
 
       mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission({ creatorId: "other-user" }));
 
       // When & Then
       await expect(
         service.deleteMissionCompletion(mockCompletion.id, TEST_USER_ID),
-      ).rejects.toThrow("삭제 권한이 없습니다.");
+      ).rejects.toThrow("미션 완료 화면 삭제 권한이 없습니다.");
 
       try {
         await service.deleteMissionCompletion(mockCompletion.id, TEST_USER_ID);
@@ -446,6 +441,69 @@ describe("MissionCompletionService", () => {
       }
 
       expect(mockRepo.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("isAdmin 바이패스", () => {
+    it("createMissionCompletion - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const createData = {
+        title: "미션 완료!",
+        description: "축하합니다!",
+        missionId: TEST_MISSION_ID,
+      };
+      const mockMission = createMockMission({ creatorId: "owner" });
+      const mockCreatedCompletion = createMockMissionCompletion(createData);
+
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.create.mockResolvedValue(mockCreatedCompletion);
+
+      // When
+      const result = await service.createMissionCompletion(createData, "non-owner", true);
+
+      // Then
+      expect(result).toBeDefined();
+      expect(result).toEqual(mockCreatedCompletion);
+      expect(mockRepo.create).toHaveBeenCalled();
+    });
+
+    it("updateMissionCompletion - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const updateData = { title: "수정된 제목" };
+      const mockCompletion = createMockMissionCompletion();
+      const mockUpdatedCompletion = createMockMissionCompletion(updateData);
+
+      mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission({ creatorId: "owner" }));
+      mockRepo.update.mockResolvedValue(mockUpdatedCompletion);
+
+      // When
+      const result = await service.updateMissionCompletion(
+        mockCompletion.id,
+        updateData,
+        "non-owner",
+        true,
+      );
+
+      // Then
+      expect(result).toBeDefined();
+      expect(result).toEqual(mockUpdatedCompletion);
+      expect(mockRepo.update).toHaveBeenCalled();
+    });
+
+    it("deleteMissionCompletion - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockCompletion = createMockMissionCompletion();
+
+      mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission({ creatorId: "owner" }));
+      mockRepo.delete.mockResolvedValue(mockCompletion);
+
+      // When
+      await service.deleteMissionCompletion(mockCompletion.id, "non-owner", true);
+
+      // Then
+      expect(mockRepo.delete).toHaveBeenCalledWith(mockCompletion.id);
     });
   });
 });

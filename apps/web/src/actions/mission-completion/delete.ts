@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
@@ -10,8 +10,8 @@ export async function deleteMissionCompletion(
   id: string,
 ): Promise<DeleteMissionCompletionResponse> {
   try {
-    const user = await requireActiveUser();
-    await missionCompletionService.deleteMissionCompletion(id, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    await missionCompletionService.deleteMissionCompletion(id, user.id, isAdmin);
     return { message: `${UBIQUITOUS_CONSTANTS.MISSION} 완료 데이터가 삭제되었습니다.` };
   } catch (error) {
     return handleActionError(

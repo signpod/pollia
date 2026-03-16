@@ -171,10 +171,15 @@ export class MissionService {
     return mission;
   }
 
-  async updateMission(missionId: string, data: UpdateMissionInput, userId: string) {
+  async updateMission(
+    missionId: string,
+    data: UpdateMissionInput,
+    userId: string,
+    isAdmin = false,
+  ) {
     const mission = await this.getMission(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("수정 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -211,10 +216,11 @@ export class MissionService {
     missionId: string,
     payload: EditorMissionDraftPayload | null,
     userId: string,
+    isAdmin = false,
   ) {
     const mission = await this.getMission(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("수정 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -233,10 +239,10 @@ export class MissionService {
     } as Prisma.MissionUncheckedUpdateInput);
   }
 
-  async deleteMission(missionId: string, userId: string): Promise<void> {
+  async deleteMission(missionId: string, userId: string, isAdmin = false): Promise<void> {
     const mission = await this.getMission(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -255,10 +261,14 @@ export class MissionService {
     });
   }
 
-  async duplicateMission(missionId: string, userId: string): Promise<MissionDuplicateResult> {
+  async duplicateMission(
+    missionId: string,
+    userId: string,
+    isAdmin = false,
+  ): Promise<MissionDuplicateResult> {
     const originalMission = await this.getMission(missionId);
 
-    if (originalMission.creatorId !== userId) {
+    if (!isAdmin && originalMission.creatorId !== userId) {
       const error = new Error("복제 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -322,10 +332,15 @@ export class MissionService {
     };
   }
 
-  async setPassword(missionId: string, password: string, userId: string): Promise<void> {
+  async setPassword(
+    missionId: string,
+    password: string,
+    userId: string,
+    isAdmin = false,
+  ): Promise<void> {
     const mission = await this.getMission(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("비밀번호 설정 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -342,10 +357,10 @@ export class MissionService {
     await this.repo.update(missionId, { password: encryptedPassword });
   }
 
-  async removePassword(missionId: string, userId: string): Promise<void> {
+  async removePassword(missionId: string, userId: string, isAdmin = false): Promise<void> {
     const mission = await this.getMission(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("비밀번호 제거 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -356,15 +371,12 @@ export class MissionService {
 
   /**
    * 미션의 비밀번호를 평문으로 반환합니다.
-   * @warning 보안에 민감한 메서드입니다. Admin/Creator 전용으로만 사용하세요.
-   * @param missionId - 미션 ID
-   * @param userId - 요청한 사용자 ID (Creator만 가능)
-   * @returns 복호화된 비밀번호 또는 null
+   * @warning 보안에 민감한 메서드입니다. Admin 전용으로만 사용하세요.
    */
-  async getPassword(missionId: string, userId: string): Promise<string | null> {
+  async getPassword(missionId: string, userId: string, isAdmin = false): Promise<string | null> {
     const mission = await this.getMission(missionId);
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("비밀번호 조회 권한이 없습니다.");
       error.cause = 403;
       throw error;

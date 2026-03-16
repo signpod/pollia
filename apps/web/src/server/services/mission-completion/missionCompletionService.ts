@@ -36,7 +36,11 @@ export class MissionCompletionService {
     return await this.repo.findAllByMissionId(missionId);
   }
 
-  async createMissionCompletion(input: CreateMissionCompletionInput, userId: string) {
+  async createMissionCompletion(
+    input: CreateMissionCompletionInput,
+    userId: string,
+    isAdmin = false,
+  ) {
     const mission = await this.missionRepo.findById(input.missionId);
 
     if (!mission) {
@@ -45,8 +49,8 @@ export class MissionCompletionService {
       throw error;
     }
 
-    if (mission.creatorId !== userId) {
-      const error = new Error("생성 권한이 없습니다.");
+    if (!isAdmin && mission.creatorId !== userId) {
+      const error = new Error("미션 완료 화면 생성 권한이 없습니다.");
       error.cause = 403;
       throw error;
     }
@@ -61,7 +65,12 @@ export class MissionCompletionService {
     return await this.repo.create(result.data, userId);
   }
 
-  async updateMissionCompletion(id: string, input: UpdateMissionCompletionInput, userId: string) {
+  async updateMissionCompletion(
+    id: string,
+    input: UpdateMissionCompletionInput,
+    userId: string,
+    isAdmin = false,
+  ) {
     const missionCompletion = await this.repo.findById(id);
 
     if (!missionCompletion) {
@@ -70,8 +79,14 @@ export class MissionCompletionService {
       throw error;
     }
 
-    if (missionCompletion.mission.creatorId !== userId) {
-      const error = new Error("수정 권한이 없습니다.");
+    const mission = await this.missionRepo.findById(missionCompletion.missionId);
+    if (!mission) {
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+    if (!isAdmin && mission.creatorId !== userId) {
+      const error = new Error("미션 완료 화면 수정 권한이 없습니다.");
       error.cause = 403;
       throw error;
     }
@@ -86,7 +101,7 @@ export class MissionCompletionService {
     return await this.repo.update(id, result.data, userId);
   }
 
-  async deleteMissionCompletion(id: string, userId: string): Promise<void> {
+  async deleteMissionCompletion(id: string, userId: string, isAdmin = false): Promise<void> {
     const missionCompletion = await this.repo.findById(id);
 
     if (!missionCompletion) {
@@ -95,8 +110,14 @@ export class MissionCompletionService {
       throw error;
     }
 
-    if (missionCompletion.mission.creatorId !== userId) {
-      const error = new Error("삭제 권한이 없습니다.");
+    const mission = await this.missionRepo.findById(missionCompletion.missionId);
+    if (!mission) {
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+    if (!isAdmin && mission.creatorId !== userId) {
+      const error = new Error("미션 완료 화면 삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
     }

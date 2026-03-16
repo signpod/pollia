@@ -12,7 +12,7 @@ export class MissionNotionPageService {
     return this.repo.findByMissionId(missionId);
   }
 
-  async getByMissionIdWithAuth(missionId: string, userId: string) {
+  async getByMissionIdWithAuth(missionId: string, userId: string, isAdmin = false) {
     const mission = await this.missionRepo.findById(missionId);
     if (!mission) {
       const error = new Error("미션을 찾을 수 없습니다.");
@@ -20,7 +20,7 @@ export class MissionNotionPageService {
       throw error;
     }
 
-    if (mission.creatorId !== userId) {
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("노션 리포트 조회 권한이 없습니다.");
       error.cause = 403;
       throw error;

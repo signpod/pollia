@@ -1,13 +1,13 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { actionService } from "@/server/services/action";
 import { revalidatePath } from "next/cache";
 
 export async function deleteAction(actionId: string) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
     const action = await actionService.getActionById(actionId);
     if (!action) {
@@ -18,7 +18,7 @@ export async function deleteAction(actionId: string) {
 
     const missionId = action.missionId;
 
-    await actionService.deleteAction(actionId, user.id);
+    await actionService.deleteAction(actionId, user.id, isAdmin);
 
     if (missionId) {
       revalidatePath(`/mission/${missionId}`);

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { eventService } from "@/server/services/event";
@@ -21,7 +21,7 @@ export async function getUserEvents(
   request?: GetUserEventsRequest,
 ): Promise<GetUserEventsResponse & { nextCursor?: string }> {
   try {
-    const user = await requireActiveUser();
+    const { user } = await requireContentManager();
     const limit = request?.limit ?? 10;
     const options = request ? { ...request, limit: limit + 1 } : { limit: limit + 1 };
 

@@ -722,4 +722,96 @@ describe("ActionService - Mutation", () => {
       ).rejects.toThrow("존재하지 않는 미션입니다.");
     });
   });
+
+  describe("isAdmin 바이패스", () => {
+    const mockAction = createMockAction({
+      title: "기존 액션",
+      type: ActionType.MULTIPLE_CHOICE,
+      maxSelections: 1,
+      isRequired: false,
+    });
+
+    it("updateAction - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ creatorId: "owner" });
+      const updateData = { title: "수정된 액션" };
+      const mockUpdatedAction = { ...mockAction, title: updateData.title };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.update.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      const result = await ctx.service.updateAction("action1", updateData, "non-owner", true);
+
+      // Then
+      expect(result).toEqual(mockUpdatedAction);
+      expect(ctx.mockActionRepo.update).toHaveBeenCalledWith("action1", updateData, "non-owner");
+    });
+
+    it("deleteAction - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ creatorId: "owner" });
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.delete.mockResolvedValue(mockAction);
+      ctx.mockActionRepo.findOrdersByMissionId.mockResolvedValue([
+        { id: "action2", order: 1, createdAt: new Date() },
+      ]);
+      ctx.mockActionRepo.updateOrder.mockResolvedValue({} as never);
+
+      // When
+      await ctx.service.deleteAction("action1", "non-owner", true);
+
+      // Then
+      expect(ctx.mockActionRepo.delete).toHaveBeenCalled();
+    });
+
+    it("reorderActions - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ creatorId: "owner" });
+      const actionOrders = [
+        { id: "action1", order: 1 },
+        { id: "action2", order: 0 },
+      ];
+      const missionActionIds = ["action1", "action2"];
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.findActionIdsByMissionId.mockResolvedValue(missionActionIds);
+      ctx.mockActionRepo.updateManyOrders.mockResolvedValue([]);
+
+      // When
+      const result = await ctx.service.reorderActions("mission1", actionOrders, "non-owner", true);
+
+      // Then
+      expect(result).toEqual({ success: true });
+      expect(ctx.mockActionRepo.updateManyOrders).toHaveBeenCalledWith(actionOrders);
+    });
+
+    it("duplicateAction - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ creatorId: "owner" });
+      const mockOriginalAction = createMockActionWithOptions(
+        { id: "action1", title: "원본 액션", order: 0 },
+        [],
+      );
+      const mockCreatedAction = createMockAction({
+        id: "action2",
+        title: "원본 액션 (복사본)",
+        order: 1,
+      });
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockOriginalAction);
+      ctx.mockActionRepo.findActionIdsByMissionId.mockResolvedValue(["action1"]);
+      ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
+
+      // When
+      const result = await ctx.service.duplicateAction("action1", "mission1", "non-owner", true);
+
+      // Then
+      expect(result.id).toBe("action2");
+      expect(ctx.mockActionRepo.create).toHaveBeenCalled();
+    });
+  });
 });

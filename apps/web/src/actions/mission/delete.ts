@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
@@ -8,8 +8,8 @@ import { revalidatePath } from "next/cache";
 
 export async function deleteMission(missionId: string) {
   try {
-    const user = await requireActiveUser();
-    await missionService.deleteMission(missionId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    await missionService.deleteMission(missionId, user.id, isAdmin);
 
     revalidatePath(`/mission/${missionId}`);
 

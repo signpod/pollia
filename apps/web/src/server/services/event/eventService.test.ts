@@ -468,4 +468,49 @@ describe("EventService", () => {
       expect(mockRepository.delete).not.toHaveBeenCalled();
     });
   });
+
+  describe("isAdmin 바이패스", () => {
+    it("updateEvent - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockEvent = createMockEvent({
+        id: "event-1",
+        creatorId: "owner",
+      });
+      const updatedMockEvent = {
+        ...mockEvent,
+        title: "수정된 제목",
+      };
+      mockRepository.findById.mockResolvedValue(mockEvent);
+      mockRepository.update.mockResolvedValue(updatedMockEvent);
+
+      // When
+      const result = await eventService.updateEvent(
+        "event-1",
+        { title: "수정된 제목" },
+        "non-owner",
+        true,
+      );
+
+      // Then
+      expect(result).toBeDefined();
+      expect(result.title).toBe("수정된 제목");
+      expect(mockRepository.update).toHaveBeenCalledWith("event-1", { title: "수정된 제목" });
+    });
+
+    it("deleteEvent - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockEvent = createMockEvent({
+        id: "event-1",
+        creatorId: "owner",
+      });
+      mockRepository.findById.mockResolvedValue(mockEvent);
+      mockRepository.delete.mockResolvedValue(mockEvent);
+
+      // When
+      await eventService.deleteEvent("event-1", "non-owner", true);
+
+      // Then
+      expect(mockRepository.delete).toHaveBeenCalledWith("event-1");
+    });
+  });
 });

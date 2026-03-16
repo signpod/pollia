@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
@@ -57,7 +57,7 @@ export async function getUserMissions(
   request?: GetUserMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    const user = await requireActiveUser();
+    const { user } = await requireContentManager();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetUserMissionsOptions({ ...request, limit: limit + 1 })
@@ -81,7 +81,7 @@ export async function getAllMissions(
   request?: GetAllMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    await requireActiveUser();
+    await requireContentManager();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetAllMissionsOptions({ ...request, limit: limit + 1 })
@@ -127,8 +127,8 @@ export async function getMission(missionId: string): Promise<GetMissionResponse>
 
 export async function getMissionPassword(missionId: string) {
   try {
-    const user = await requireActiveUser();
-    const password = await missionService.getPassword(missionId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const password = await missionService.getPassword(missionId, user.id, isAdmin);
     return { data: password };
   } catch (error) {
     return handleActionError(error, "비밀번호 조회 중 오류가 발생했습니다.");
@@ -159,8 +159,12 @@ export async function getMissionNotionPage(
   missionId: string,
 ): Promise<GetMissionNotionPageResponse> {
   try {
-    const user = await requireActiveUser();
-    const notionPage = await missionNotionPageService.getByMissionIdWithAuth(missionId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const notionPage = await missionNotionPageService.getByMissionIdWithAuth(
+      missionId,
+      user.id,
+      isAdmin,
+    );
 
     if (!notionPage) {
       return { data: null };

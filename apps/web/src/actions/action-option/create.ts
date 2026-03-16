@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { actionOptionService } from "@/server/services/action-option";
 import type { ActionOption } from "@prisma/client";
@@ -14,9 +14,9 @@ export async function createOption(data: {
   imageFileUploadId?: string;
 }): Promise<{ data: ActionOption }> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
-    const option = await actionOptionService.createOption(data, user.id);
+    const option = await actionOptionService.createOption(data, user.id, isAdmin);
 
     return { data: option };
   } catch (error) {
@@ -35,9 +35,14 @@ export async function createOptions(
   }>,
 ): Promise<{ data: ActionOption[] }> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
-    const createdOptions = await actionOptionService.createOptions(questionId, options, user.id);
+    const createdOptions = await actionOptionService.createOptions(
+      questionId,
+      options,
+      user.id,
+      isAdmin,
+    );
 
     return { data: createdOptions };
   } catch (error) {

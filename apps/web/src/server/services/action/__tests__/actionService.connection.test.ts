@@ -495,4 +495,78 @@ describe("ActionService - Connection Management", () => {
       expect(ctx.mockActionRepo.findDetailsByMissionId).not.toHaveBeenCalled();
     });
   });
+
+  describe("isAdmin 바이패스", () => {
+    it("disconnectActionWithCleanup - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission1",
+        entryActionId: "action-a",
+        creatorId: "owner",
+      });
+      const mockActionA = createMockAction({
+        id: "action-a",
+        missionId: "mission1",
+        nextActionId: null,
+      });
+      const mockAllActionsAfterDisconnect = [
+        createMockActionWithOptions({ id: "action-a", nextActionId: null }, []),
+      ];
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockActionA);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.update.mockResolvedValue({ ...mockActionA, nextActionId: null });
+      ctx.mockActionRepo.findDetailsByMissionId.mockResolvedValue(mockAllActionsAfterDisconnect);
+
+      // When
+      await ctx.service.disconnectActionWithCleanup("action-a", "mission1", "non-owner", true);
+
+      // Then
+      expect(ctx.mockActionRepo.update).toHaveBeenCalled();
+    });
+
+    it("disconnectBranchOptionWithCleanup - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission1",
+        entryActionId: "action-a",
+        creatorId: "owner",
+      });
+      const mockBranchAction = createMockActionWithOptions(
+        {
+          id: "branch-1",
+          missionId: "mission1",
+          type: ActionType.BRANCH,
+        },
+        [
+          { id: "opt-1", nextActionId: null },
+          { id: "opt-2", nextActionId: null },
+        ],
+      );
+      const mockAllActionsAfterDisconnect = [
+        createMockActionWithOptions({ id: "action-a", nextActionId: "branch-1" }, []),
+        createMockActionWithOptions({ id: "branch-1", type: ActionType.BRANCH }, [
+          { id: "opt-1", nextActionId: null },
+          { id: "opt-2", nextActionId: null },
+        ]),
+      ];
+
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockBranchAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockBranchAction);
+      ctx.mockActionRepo.findDetailsByMissionId.mockResolvedValue(mockAllActionsAfterDisconnect);
+
+      // When
+      await ctx.service.disconnectBranchOptionWithCleanup(
+        "branch-1",
+        "opt-1",
+        "mission1",
+        "non-owner",
+        true,
+      );
+
+      // Then
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalled();
+    });
+  });
 });

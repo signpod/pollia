@@ -89,6 +89,19 @@ export async function requireAdmin(): Promise<{
   }
 }
 
+export const requireContentManager = cache(async (): Promise<{ user: User; isAdmin: boolean }> => {
+  const user = await requireAuth();
+  const dbUser = await userService.getUserById(user.id);
+
+  if (dbUser.status !== UserStatus.ACTIVE) {
+    const error = new Error("탈퇴 처리된 계정입니다.");
+    error.cause = 403;
+    throw error;
+  }
+
+  return { user, isAdmin: dbUser.role === UserRole.ADMIN };
+});
+
 export async function signOut(redirectTo?: string): Promise<void> {
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.auth.signOut();

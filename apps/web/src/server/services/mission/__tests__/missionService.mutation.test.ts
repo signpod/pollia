@@ -543,4 +543,114 @@ describe("MissionService - Mutation", () => {
       expect(result).toBe(true);
     });
   });
+
+  describe("isAdmin 바이패스", () => {
+    it("updateMission - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "owner" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.updateMission("mission-1", { title: "수정" }, "non-owner", true);
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalled();
+    });
+
+    it("saveEditorDraft - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "owner" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.saveEditorDraft(
+        "mission-1",
+        { basic: { title: "제목" } },
+        "non-owner",
+        true,
+      );
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalled();
+    });
+
+    it("deleteMission - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "owner" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.delete.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.deleteMission("mission-1", "non-owner", true);
+
+      // Then
+      expect(mockRepository.delete).toHaveBeenCalled();
+    });
+
+    it("duplicateMission - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "owner" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockActionRepository.findDetailsByMissionId.mockResolvedValue([]);
+      mockRepository.duplicateMission.mockResolvedValue(mockMission);
+
+      // When
+      const result = await missionService.duplicateMission("mission-1", "non-owner", true);
+
+      // Then
+      expect(result).toBeDefined();
+    });
+
+    it("setPassword - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        creatorId: "owner",
+        password: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.setPassword("mission-1", "123456", "non-owner", true);
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalled();
+    });
+
+    it("removePassword - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        creatorId: "owner",
+        password: "encrypted:1234",
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.removePassword("mission-1", "non-owner", true);
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalledWith("mission-1", { password: null });
+    });
+
+    it("getPassword - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        creatorId: "owner",
+        password: "encrypted:1234",
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When
+      const result = await missionService.getPassword("mission-1", "non-owner", true);
+
+      // Then
+      expect(result).toBe("1234");
+    });
+  });
 });

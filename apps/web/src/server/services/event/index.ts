@@ -78,10 +78,15 @@ export class EventService {
     };
   }
 
-  async updateEvent(eventId: string, data: UpdateEventInput, userId: string): Promise<Event> {
+  async updateEvent(
+    eventId: string,
+    data: UpdateEventInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<Event> {
     const event = await this.getEvent(eventId);
 
-    if (event.creatorId !== userId) {
+    if (!isAdmin && event.creatorId !== userId) {
       const error = new Error("수정 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -98,10 +103,10 @@ export class EventService {
     return updatedEvent;
   }
 
-  async deleteEvent(eventId: string, userId: string): Promise<void> {
+  async deleteEvent(eventId: string, userId: string, isAdmin = false): Promise<void> {
     const event = await this.getEvent(eventId);
 
-    if (event.creatorId !== userId) {
+    if (!isAdmin && event.creatorId !== userId) {
       const error = new Error("삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
