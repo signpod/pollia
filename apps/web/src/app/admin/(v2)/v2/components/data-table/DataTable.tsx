@@ -1,5 +1,6 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -50,7 +51,7 @@ export function DataTable<TData>({
   });
 
   return (
-    <>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <TableContainer component={Paper} variant="outlined">
         <Table size="small">
           <TableHead>
@@ -94,6 +95,6 @@ export function DataTable<TData>({
         </Table>
       </TableContainer>
       <DataTablePagination table={table} total={total} />
-    </>
+    </Box>
   );
 }

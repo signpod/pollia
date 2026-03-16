@@ -1,5 +1,6 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import { Search } from "lucide-react";
@@ -34,7 +35,7 @@ export function DataTableToolbar({
   }, [localValue, searchValue, onSearchChange]);
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       <TextField
         placeholder={searchPlaceholder}
         value={localValue}
@@ -51,6 +52,6 @@ export function DataTableToolbar({
         }}
       />
       {children}
-    </div>
+    </Box>
   );
 }
