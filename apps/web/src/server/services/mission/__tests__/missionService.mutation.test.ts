@@ -29,6 +29,8 @@ describe("MissionService - Mutation", () => {
       findById: jest.fn(),
       findByUserId: jest.fn(),
       findAll: jest.fn(),
+      findAllPaged: jest.fn(),
+      countAll: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
       updateLikesCount: jest.fn(),
@@ -36,7 +38,7 @@ describe("MissionService - Mutation", () => {
       incrementShareCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
-    } as jest.Mocked<MissionRepository>;
+    } as unknown as jest.Mocked<MissionRepository>;
 
     mockResponseRepository = {
       findById: jest.fn(),

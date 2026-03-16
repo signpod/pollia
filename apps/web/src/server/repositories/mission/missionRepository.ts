@@ -73,6 +73,72 @@ export class MissionRepository {
     });
   }
 
+  async findAllPaged(options?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    category?: MissionCategory;
+    visibility?: "PUBLIC" | "LINK_ONLY" | "PRIVATE";
+    sortOrder?: SortOrderType;
+  }) {
+    const page = options?.page ?? 1;
+    const pageSize = options?.pageSize ?? 20;
+    const where = this.buildAdminWhereClause(options);
+
+    return prisma.mission.findMany({
+      where,
+      include: {
+        creator: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: options?.sortOrder === "oldest" ? "asc" : "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+  }
+
+  async countAll(options?: {
+    search?: string;
+    category?: MissionCategory;
+    visibility?: "PUBLIC" | "LINK_ONLY" | "PRIVATE";
+  }) {
+    const where = this.buildAdminWhereClause(options);
+    return prisma.mission.count({ where });
+  }
+
+  private buildAdminWhereClause(options?: {
+    search?: string;
+    category?: MissionCategory;
+    visibility?: "PUBLIC" | "LINK_ONLY" | "PRIVATE";
+  }): Prisma.MissionWhereInput {
+    const where: Prisma.MissionWhereInput = {};
+
+    if (options?.search) {
+      where.title = { contains: options.search, mode: "insensitive" as const };
+    }
+
+    if (options?.category) {
+      where.category = options.category;
+    }
+
+    if (options?.visibility) {
+      switch (options.visibility) {
+        case "PUBLIC":
+          where.isActive = true;
+          where.type = "GENERAL";
+          break;
+        case "LINK_ONLY":
+          where.isActive = true;
+          where.type = "EXPERIENCE_GROUP";
+          break;
+        case "PRIVATE":
+          where.isActive = false;
+          break;
+      }
+    }
+
+    return where;
+  }
+
   async createWithActions(
     data: Prisma.MissionUncheckedCreateInput,
     actionIds: string[],
