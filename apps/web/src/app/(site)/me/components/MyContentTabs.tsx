@@ -270,7 +270,7 @@ function ParticipationListItem({
       <div className="flex shrink-0 items-center gap-2">
         <ButtonV2 variant="secondary" size="medium" onClick={handleAction}>
           <Typo.ButtonText size="medium">
-            {filter === "in-progress" ? "다시 참여" : "결과보기"}
+            {filter === "in-progress" ? "이어서 참여" : "결과보기"}
           </Typo.ButtonText>
         </ButtonV2>
         <button
