@@ -1,4 +1,5 @@
 import prisma from "@/database/utils/prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { Prisma } from "@prisma/client";
 
 export class BannerRepository {
@@ -11,11 +12,23 @@ export class BannerRepository {
   }
 
   async create(data: Prisma.BannerUncheckedCreateInput) {
-    return prisma.banner.create({ data });
+    return prisma.$transaction(async tx => {
+      const banner = await tx.banner.create({ data });
+      if (data.imageFileUploadId) {
+        await confirmFileUploads(tx, undefined, data.imageFileUploadId as string);
+      }
+      return banner;
+    });
   }
 
   async update(id: string, data: Prisma.BannerUncheckedUpdateInput) {
-    return prisma.banner.update({ where: { id }, data });
+    return prisma.$transaction(async tx => {
+      const banner = await tx.banner.update({ where: { id }, data });
+      if (data.imageFileUploadId && typeof data.imageFileUploadId === "string") {
+        await confirmFileUploads(tx, undefined, data.imageFileUploadId);
+      }
+      return banner;
+    });
   }
 
   async delete(id: string) {
