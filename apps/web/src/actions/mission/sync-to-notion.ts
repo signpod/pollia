@@ -14,6 +14,12 @@ export async function syncMissionToNotion(missionId: string): Promise<SyncMissio
 
     const mission = await missionService.getMission(missionId);
 
+    if (!isAdmin && mission.creatorId !== user.id) {
+      const error = new Error("노션 동기화 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
     const actions = await missionService.getMissionActionsDetail(missionId);
     const responses = await missionResponseService.getMissionResponses(
       missionId,

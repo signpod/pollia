@@ -80,7 +80,12 @@ export class MissionCompletionService {
     }
 
     const mission = await this.missionRepo.findById(missionCompletion.missionId);
-    if (mission && !isAdmin && mission.creatorId !== userId) {
+    if (!mission) {
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("미션 완료 화면 수정 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -106,7 +111,12 @@ export class MissionCompletionService {
     }
 
     const mission = await this.missionRepo.findById(missionCompletion.missionId);
-    if (mission && !isAdmin && mission.creatorId !== userId) {
+    if (!mission) {
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+    if (!isAdmin && mission.creatorId !== userId) {
       const error = new Error("미션 완료 화면 삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
