@@ -28,6 +28,8 @@ describe("MissionLikeService", () => {
       findById: jest.fn(),
       findByUserId: jest.fn(),
       findAll: jest.fn(),
+      findAllPaged: jest.fn(),
+      countAll: jest.fn(),
       createWithActions: jest.fn(),
       updateLikesCount: jest.fn(),
       incrementViewCount: jest.fn(),
@@ -35,7 +37,7 @@ describe("MissionLikeService", () => {
       update: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
-    } as jest.Mocked<MissionRepository>;
+    } as unknown as jest.Mocked<MissionRepository>;
 
     missionLikeService = new MissionLikeService(mockLikeRepo, mockMissionRepo);
   });

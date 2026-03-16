@@ -1,7 +1,7 @@
 import { userRepository } from "@/server/repositories/user/userRepository";
 import { UserStatus } from "@prisma/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import type { CreateUserIfNotExistsInput, UpdateUserInput } from "./types";
+import type { CreateUserIfNotExistsInput, ListUsersOptions, UpdateUserInput } from "./types";
 
 export class UserService {
   constructor(private repo = userRepository) {}
@@ -79,9 +79,29 @@ export class UserService {
     return result;
   }
 
+  async listUsers(options?: ListUsersOptions) {
+    const [users, total] = await Promise.all([
+      this.repo.findMany(options),
+      this.repo.count(options),
+    ]);
+    return { users, total };
+  }
+
   async deleteUser(userId: string): Promise<void> {
     await this.getUserById(userId);
     await this.repo.delete(userId);
+  }
+
+  async adminForceWithdraw(userId: string) {
+    const user = await this.getUserById(userId);
+
+    if (user.status === UserStatus.WITHDRAWN) {
+      const error = new Error("이미 탈퇴한 사용자입니다.");
+      error.cause = 409;
+      throw error;
+    }
+
+    return this.repo.forceWithdrawal(userId);
   }
 
   /**

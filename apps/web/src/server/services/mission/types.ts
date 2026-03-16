@@ -24,6 +24,15 @@ export interface GetUserMissionsOptions {
   isActive?: boolean;
 }
 
+export interface ListAllMissionsOptions {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  category?: MissionCategory;
+  visibility?: "PUBLIC" | "LINK_ONLY" | "PRIVATE";
+  sortOrder?: SortOrderType;
+}
+
 export interface MissionWithParticipantInfo {
   mission: Mission;
   currentParticipants: number;

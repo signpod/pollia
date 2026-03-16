@@ -19,6 +19,8 @@ export function createMissionCompletionServiceTestContext() {
     findById: jest.fn(),
     findByUserId: jest.fn(),
     findAll: jest.fn(),
+    findAllPaged: jest.fn(),
+    countAll: jest.fn(),
     findActionIdsByMissionId: jest.fn(),
     findActionById: jest.fn(),
     findActionsByMissionId: jest.fn(),
@@ -29,7 +31,7 @@ export function createMissionCompletionServiceTestContext() {
     incrementShareCount: jest.fn(),
     delete: jest.fn(),
     duplicateMission: jest.fn(),
-  } as jest.Mocked<MissionRepository>;
+  } as unknown as jest.Mocked<MissionRepository>;
 
   const service = new MissionCompletionService(mockRepository, mockMissionRepository);
 

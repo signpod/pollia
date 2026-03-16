@@ -56,12 +56,15 @@ describe("UserService", () => {
   beforeEach(() => {
     mockRepo = {
       findById: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       startWithdrawal: jest.fn(),
       completeWithdrawal: jest.fn(),
-    } as jest.Mocked<UserRepository>;
+      forceWithdrawal: jest.fn(),
+    } as unknown as jest.Mocked<UserRepository>;
 
     service = new UserService(mockRepo);
   });
@@ -383,6 +386,128 @@ describe("UserService", () => {
       }
 
       expect(mockRepo.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("listUsers", () => {
+    it("유저 목록을 페이지 기반으로 조회한다", async () => {
+      // Given
+      const mockUsers = [createMockUser({ id: "user1" }), createMockUser({ id: "user2" })];
+      mockRepo.findMany.mockResolvedValue(mockUsers);
+      mockRepo.count.mockResolvedValue(2);
+
+      // When
+      const result = await service.listUsers({ page: 1, pageSize: 20 });
+
+      // Then
+      expect(result.users).toEqual(mockUsers);
+      expect(result.total).toBe(2);
+      expect(mockRepo.findMany).toHaveBeenCalledWith({ page: 1, pageSize: 20 });
+      expect(mockRepo.count).toHaveBeenCalledWith({ page: 1, pageSize: 20 });
+    });
+
+    it("옵션 없이 호출하면 기본값으로 조회한다", async () => {
+      // Given
+      mockRepo.findMany.mockResolvedValue([]);
+      mockRepo.count.mockResolvedValue(0);
+
+      // When
+      const result = await service.listUsers();
+
+      // Then
+      expect(result.users).toEqual([]);
+      expect(result.total).toBe(0);
+      expect(mockRepo.findMany).toHaveBeenCalledWith(undefined);
+      expect(mockRepo.count).toHaveBeenCalledWith(undefined);
+    });
+
+    it("검색어로 필터링하여 조회한다", async () => {
+      // Given
+      const mockUsers = [createMockUser({ id: "user1", name: "검색결과" })];
+      mockRepo.findMany.mockResolvedValue(mockUsers);
+      mockRepo.count.mockResolvedValue(1);
+
+      // When
+      const result = await service.listUsers({ search: "검색" });
+
+      // Then
+      expect(result.users).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(mockRepo.findMany).toHaveBeenCalledWith({ search: "검색" });
+    });
+  });
+
+  describe("adminForceWithdraw", () => {
+    it("ACTIVE 유저를 강제 탈퇴 처리한다", async () => {
+      // Given
+      const activeUser = createMockUser({ status: UserStatus.ACTIVE });
+      const withdrawnUser = createMockUser({
+        status: UserStatus.WITHDRAWN,
+        email: "withdrawn+user1@withdrawn.local",
+        name: "탈퇴한 사용자",
+        phone: null,
+      });
+      mockRepo.findById.mockResolvedValue(activeUser);
+      mockRepo.forceWithdrawal.mockResolvedValue(withdrawnUser);
+
+      // When
+      const result = await service.adminForceWithdraw("user1");
+
+      // Then
+      expect(result.status).toBe(UserStatus.WITHDRAWN);
+      expect(mockRepo.forceWithdrawal).toHaveBeenCalledWith("user1");
+    });
+
+    it("WITHDRAWING 유저를 강제 탈퇴 처리한다", async () => {
+      // Given
+      const withdrawingUser = createMockUser({ status: UserStatus.WITHDRAWING });
+      const withdrawnUser = createMockUser({ status: UserStatus.WITHDRAWN });
+      mockRepo.findById.mockResolvedValue(withdrawingUser);
+      mockRepo.forceWithdrawal.mockResolvedValue(withdrawnUser);
+
+      // When
+      const result = await service.adminForceWithdraw("user1");
+
+      // Then
+      expect(result.status).toBe(UserStatus.WITHDRAWN);
+      expect(mockRepo.forceWithdrawal).toHaveBeenCalledWith("user1");
+    });
+
+    it("이미 탈퇴한 유저는 409 에러를 던진다", async () => {
+      // Given
+      const withdrawnUser = createMockUser({ status: UserStatus.WITHDRAWN });
+      mockRepo.findById.mockResolvedValue(withdrawnUser);
+
+      // When & Then
+      await expect(service.adminForceWithdraw("user1")).rejects.toThrow(
+        "이미 탈퇴한 사용자입니다.",
+      );
+
+      try {
+        await service.adminForceWithdraw("user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(409);
+      }
+
+      expect(mockRepo.forceWithdrawal).not.toHaveBeenCalled();
+    });
+
+    it("존재하지 않는 유저는 404 에러를 던진다", async () => {
+      // Given
+      mockRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(service.adminForceWithdraw("invalid-id")).rejects.toThrow(
+        "사용자 정보를 찾을 수 없습니다.",
+      );
+
+      try {
+        await service.adminForceWithdraw("invalid-id");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(404);
+      }
+
+      expect(mockRepo.forceWithdrawal).not.toHaveBeenCalled();
     });
   });
 

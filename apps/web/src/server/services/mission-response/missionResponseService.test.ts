@@ -48,6 +48,8 @@ describe("MissionResponseService", () => {
 
     mockMissionRepo = {
       findById: jest.fn(),
+      findAllPaged: jest.fn(),
+      countAll: jest.fn(),
     } as unknown as jest.Mocked<MissionRepository>;
 
     mockActionRepo = {

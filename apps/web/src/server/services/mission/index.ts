@@ -18,6 +18,7 @@ import { Prisma } from "@prisma/client";
 import type {
   CreateMissionInput,
   GetUserMissionsOptions,
+  ListAllMissionsOptions,
   MissionDuplicateResult,
   MissionWithParticipantInfo,
   UpdateMissionInput,
@@ -134,6 +135,14 @@ export class MissionService {
     }
 
     return missions;
+  }
+
+  async listAllMissions(options?: ListAllMissionsOptions) {
+    const [missions, total] = await Promise.all([
+      this.repo.findAllPaged(options),
+      this.repo.countAll(options),
+    ]);
+    return { missions, total };
   }
 
   async createMission(input: CreateMissionInput, userId: string): Promise<Mission> {

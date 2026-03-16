@@ -64,6 +64,8 @@ export function createMockResponses(
 export function createTrackingActionServiceTestContext() {
   const mockMissionRepo = {
     findById: jest.fn(),
+    findAllPaged: jest.fn(),
+    countAll: jest.fn(),
   } as unknown as jest.Mocked<MissionRepository>;
 
   const mockActionRepo = {
