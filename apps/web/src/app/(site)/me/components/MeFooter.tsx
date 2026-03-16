@@ -1,24 +1,17 @@
 "use client";
 
 import { signOut } from "@/actions/common/auth";
-import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { Typo } from "@repo/ui/components";
-import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const PRIVACY_POLICY_URL = process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL;
 
 export function MeFooter() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  const handleLogout = async () => {
-    router.replace(ROUTES.HOME);
-    queryClient.setQueryData(userQueryKeys.currentUser(), { data: null });
-    await signOut();
+  const handleLogout = () => {
+    signOut();
+    window.location.href = ROUTES.HOME;
   };
 
   return (
