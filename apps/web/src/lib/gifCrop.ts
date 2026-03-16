@@ -46,11 +46,18 @@ export function prefetchFFmpeg(): void {
 }
 
 export interface GifCropParams {
+  rotation: number;
+  mode: "crop" | "scale-pad";
   cropX: number;
   cropY: number;
   cropWidth: number;
   cropHeight: number;
-  rotation: number;
+  scaleWidth?: number;
+  scaleHeight?: number;
+  padWidth?: number;
+  padHeight?: number;
+  padX?: number;
+  padY?: number;
 }
 
 export function calculateGifCropParams(
@@ -75,22 +82,51 @@ export function calculateGifCropParams(
     baseDisplayWidth = cropSize * imageAspect;
   }
 
+  if (zoom < 1) {
+    const baseScaleFactor = Math.min(
+      imageWidth / baseDisplayWidth,
+      imageHeight / baseDisplayHeight,
+    );
+    const outputSize = Math.round(cropSize * baseScaleFactor);
+
+    const scaledW = Math.round(baseDisplayWidth * zoom * baseScaleFactor);
+    const scaledH = Math.round(baseDisplayHeight * zoom * baseScaleFactor);
+
+    const padX = Math.round((outputSize - scaledW) / 2 - crop.x * baseScaleFactor);
+    const padY = Math.round((outputSize - scaledH) / 2 - crop.y * baseScaleFactor);
+
+    return {
+      rotation,
+      mode: "scale-pad",
+      cropX: 0,
+      cropY: 0,
+      cropWidth: outputSize,
+      cropHeight: outputSize,
+      scaleWidth: scaledW,
+      scaleHeight: scaledH,
+      padWidth: outputSize,
+      padHeight: outputSize,
+      padX: Math.max(0, padX),
+      padY: Math.max(0, padY),
+    };
+  }
+
   const displayWidth = baseDisplayWidth * zoom;
   const displayHeight = baseDisplayHeight * zoom;
 
   const scaleFactor = Math.min(imageWidth / displayWidth, imageHeight / displayHeight);
-
   const outputSize = Math.round(cropSize * scaleFactor);
 
   const cropX = Math.round(imageWidth / 2 - outputSize / 2 - crop.x * scaleFactor);
   const cropY = Math.round(imageHeight / 2 - outputSize / 2 - crop.y * scaleFactor);
 
   return {
+    rotation,
+    mode: "crop",
     cropX: Math.max(0, cropX),
     cropY: Math.max(0, cropY),
     cropWidth: Math.min(outputSize, imageWidth),
     cropHeight: Math.min(outputSize, imageHeight),
-    rotation,
   };
 }
 
@@ -108,7 +144,14 @@ export async function cropGif(file: File, params: GifCropParams): Promise<File> 
       filters.push(`rotate=${radians}:fillcolor=white`);
     }
 
-    filters.push(`crop=${params.cropWidth}:${params.cropHeight}:${params.cropX}:${params.cropY}`);
+    if (params.mode === "scale-pad") {
+      filters.push(`scale=${params.scaleWidth}:${params.scaleHeight}`);
+      filters.push(
+        `pad=${params.padWidth}:${params.padHeight}:${params.padX}:${params.padY}:color=0x00000000@0x00`,
+      );
+    } else {
+      filters.push(`crop=${params.cropWidth}:${params.cropHeight}:${params.cropX}:${params.cropY}`);
+    }
 
     const filterChain = filters.join(",");
     const gifFilter = `${filterChain},split[s0][s1];[s0]palettegen=stats_mode=full[p];[s1][p]paletteuse=dither=sierra2_4a`;

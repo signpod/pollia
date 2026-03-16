@@ -1,7 +1,7 @@
 import { getCroppedImg } from "@/lib/imageCrop";
 import { useCallback, useState } from "react";
 
-const ZOOM_MIN = 1;
+const ZOOM_MIN = 0.3;
 const ZOOM_MAX = 3;
 const ZOOM_DEFAULT = 1;
 const ROTATION_MIN = 0;
