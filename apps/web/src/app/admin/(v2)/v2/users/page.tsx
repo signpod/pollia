@@ -21,7 +21,7 @@ const STATUS_OPTIONS = [
 
 export default function AdminV2UsersPage() {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>(UserStatus.ACTIVE);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 20,
