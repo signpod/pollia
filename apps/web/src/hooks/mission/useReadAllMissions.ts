@@ -11,6 +11,7 @@ export const useReadAllMissions = (params?: { options?: { limit?: number } }) =>
         cursor: pageParam,
         limit: params?.options?.limit ?? 10,
         type: MissionType.GENERAL,
+        isActive: true,
       });
     },
     initialPageParam: undefined as string | undefined,
