@@ -25,10 +25,6 @@ export type UnifiedSaveGuardResult = { allowed: true } | { allowed: false };
 // Outcome Inputs
 // ---------------------------------------------------------------------------
 
-export interface DraftClearOutcomeInput {
-  serverDraftCleared: boolean;
-}
-
 export interface PostSectionSaveInput {
   mode: "manual" | "publish";
   summary: SectionSaveSummary;
@@ -39,8 +35,6 @@ export interface PostSectionSaveInput {
 // ---------------------------------------------------------------------------
 // Outcome Results (discriminated unions)
 // ---------------------------------------------------------------------------
-
-export type NoChangesOutcome = { type: "clear_failed" } | { type: "cleared" };
 
 export type UnifiedSaveResult = "saved" | "no_changes" | "failed";
 
@@ -72,14 +66,6 @@ export function checkUnifiedSaveGuard(input: UnifiedSaveGuardInput): UnifiedSave
 // ---------------------------------------------------------------------------
 // Outcome Functions
 // ---------------------------------------------------------------------------
-
-export function resolveNoChangesOutcome(input: DraftClearOutcomeInput): NoChangesOutcome {
-  if (!input.serverDraftCleared) {
-    return { type: "clear_failed" };
-  }
-
-  return { type: "cleared" };
-}
 
 export function shouldClearDraftAfterSave(summary: SectionSaveSummary): boolean {
   return (

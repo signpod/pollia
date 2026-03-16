@@ -18,6 +18,7 @@ import {
   toast,
   useModal,
 } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, ChevronDown, ChevronLeft, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
@@ -99,7 +100,12 @@ function VisibilityDropdown({ missionId }: { missionId: string }) {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "공개 상태 변경 중 오류가 발생했습니다.";
-      toast({ message, icon: AlertCircle, iconClassName: "text-red-500" });
+      toast({
+        message,
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+        id: "visibility-update-error",
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -110,7 +116,10 @@ function VisibilityDropdown({ missionId }: { missionId: string }) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${config.badgeClassName}`}
+          className={cn(
+            "flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+            config.badgeClassName,
+          )}
           disabled={isUpdating}
         >
           {config.label}
@@ -127,7 +136,10 @@ function VisibilityDropdown({ missionId }: { missionId: string }) {
           <button
             key={key}
             type="button"
-            className={`flex w-full flex-col gap-0.5 rounded-md px-3 py-2 text-left transition-colors hover:bg-zinc-100 ${current === key ? "bg-zinc-50" : ""}`}
+            className={cn(
+              "flex w-full flex-col gap-0.5 rounded-md px-3 py-2 text-left transition-colors hover:bg-zinc-100",
+              current === key && "bg-zinc-50",
+            )}
             onClick={() => void handleSelect(key)}
             disabled={isUpdating}
           >

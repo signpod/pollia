@@ -1,7 +1,6 @@
 import {
   buildManualSaveToastMessage,
   checkUnifiedSaveGuard,
-  resolveNoChangesOutcome,
   resolvePostSectionSaveOutcome,
   shouldClearDraftAfterSave,
 } from "../editorMissionSaveFlowModel";
@@ -41,24 +40,6 @@ describe("checkUnifiedSaveGuard", () => {
     expect(checkUnifiedSaveGuard({ ...baseInput, hasAnyBusySection: true })).toEqual({
       allowed: false,
     });
-  });
-});
-
-describe("resolveNoChangesOutcome", () => {
-  it("서버 정리 성공하면 cleared를 반환한다", () => {
-    expect(
-      resolveNoChangesOutcome({
-        serverDraftCleared: true,
-      }),
-    ).toEqual({ type: "cleared" });
-  });
-
-  it("서버 정리 실패 시 clear_failed를 반환한다", () => {
-    expect(
-      resolveNoChangesOutcome({
-        serverDraftCleared: false,
-      }),
-    ).toEqual({ type: "clear_failed" });
   });
 });
 
