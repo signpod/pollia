@@ -187,7 +187,7 @@ export default async function MissionPage({
   prefetchPromises.push(
     queryClient.prefetchQuery({
       queryKey: [...missionQueryKeys.allMissions(), "recommended"],
-      queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
+      queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL, isActive: true }),
     }),
   );
 

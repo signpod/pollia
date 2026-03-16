@@ -5,7 +5,7 @@ import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { Mission } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import { Typo, useModal } from "@repo/ui/components";
-import { GlobeIcon, LockIcon, Trash2Icon } from "lucide-react";
+import { GlobeIcon, LinkIcon, LockIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,7 +14,11 @@ import { useDeleteMission } from "../hooks/useDeleteMission";
 function MyContentListItem({ mission }: { mission: Mission }) {
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !mission.imageUrl;
-  const isPublic = mission.type === "GENERAL";
+  const visibilityConfig = !mission.isActive
+    ? { label: "나만 보기", icon: LockIcon, className: "bg-zinc-100 text-zinc-500" }
+    : mission.type === "EXPERIENCE_GROUP"
+      ? { label: "링크 공개", icon: LinkIcon, className: "bg-blue-50 text-blue-700" }
+      : { label: "전체 공개", icon: GlobeIcon, className: "bg-green-50 text-green-700" };
   const { showModal } = useModal();
   const deleteMutation = useDeleteMission();
 
@@ -53,12 +57,10 @@ function MyContentListItem({ mission }: { mission: Mission }) {
       <div className="flex shrink-0 items-center gap-2">
         <Typo.Body
           size="small"
-          className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${
-            isPublic ? "bg-green-50 text-green-700" : "bg-zinc-100 text-zinc-500"
-          }`}
+          className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${visibilityConfig.className}`}
         >
-          {isPublic ? <GlobeIcon className="size-3" /> : <LockIcon className="size-3" />}
-          {isPublic ? "공개" : "비공개"}
+          <visibilityConfig.icon className="size-3" />
+          {visibilityConfig.label}
         </Typo.Body>
         <button
           type="button"
