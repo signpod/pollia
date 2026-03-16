@@ -29,6 +29,7 @@ export interface GetAllMissionsRequest {
   sortOrder?: SortOrderType;
   category?: MissionCategory;
   type?: MissionType;
+  isActive?: boolean;
 }
 
 function toGetUserMissionsOptions(dto: GetUserMissionsRequest): GetUserMissionsOptions {
@@ -48,6 +49,7 @@ function toGetAllMissionsOptions(dto: GetAllMissionsRequest): GetUserMissionsOpt
     sortOrder: dto.sortOrder,
     category: dto.category,
     type: dto.type,
+    isActive: dto.isActive,
   };
 }
 
@@ -102,6 +104,21 @@ export async function getAllMissions(
 export async function getMission(missionId: string): Promise<GetMissionResponse> {
   try {
     const mission = await missionService.getMission(missionId);
+
+    if (!mission.isActive) {
+      let userId: string | null = null;
+      try {
+        const user = await requireActiveUser();
+        userId = user.id;
+      } catch {}
+
+      if (mission.creatorId !== userId) {
+        const error = new Error("미션을 찾을 수 없습니다.");
+        error.cause = 404;
+        throw error;
+      }
+    }
+
     return { data: mission };
   } catch (error) {
     return handleActionError(error, `${UBIQUITOUS_CONSTANTS.MISSION}을 불러올 수 없습니다.`);
