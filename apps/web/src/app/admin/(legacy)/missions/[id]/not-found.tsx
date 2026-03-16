@@ -1,8 +1,8 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { FileQuestion } from "lucide-react";
 import Link from "next/link";
-import { ADMIN_ROUTES } from "../../constants/routes";
 
 export default function MissionNotFound() {
   return (

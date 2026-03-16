@@ -123,19 +123,6 @@ describe("BannerService", () => {
       expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({ order: 0 }));
     });
 
-    it("제목이 비어있으면 400 에러를 던진다", async () => {
-      // When & Then
-      await expect(
-        service.createBanner({ title: "", imageUrl: "https://example.com/img.jpg" }),
-      ).rejects.toThrow("배너 제목은 필수입니다.");
-
-      try {
-        await service.createBanner({ title: "  ", imageUrl: "https://example.com/img.jpg" });
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(400);
-      }
-    });
-
     it("이미지 URL이 비어있으면 400 에러를 던진다", async () => {
       // When & Then
       await expect(service.createBanner({ title: "배너", imageUrl: "" })).rejects.toThrow(

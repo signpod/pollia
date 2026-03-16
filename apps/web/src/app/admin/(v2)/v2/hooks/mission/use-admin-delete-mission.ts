@@ -2,7 +2,7 @@
 
 import { assertActionSuccess } from "@/actions/common/error";
 import { deleteMission } from "@/actions/mission/delete";
-import { adminV2MissionQueryKeys } from "@/app/admin/v2/constants/queryKeys";
+import { adminV2MissionQueryKeys } from "@/app/admin/(v2)/v2/constants/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useAdminDeleteMission() {

@@ -6,7 +6,6 @@ export const BANNER_SUBTITLE_MAX_LENGTH = 200;
 export const bannerCreateSchema = z.object({
   title: z
     .string()
-    .min(1, "제목을 입력해주세요.")
     .max(BANNER_TITLE_MAX_LENGTH, `제목은 ${BANNER_TITLE_MAX_LENGTH}자를 초과할 수 없습니다.`)
     .trim(),
   subtitle: z

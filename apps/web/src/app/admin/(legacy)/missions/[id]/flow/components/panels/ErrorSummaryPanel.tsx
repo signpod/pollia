@@ -1,5 +1,6 @@
 "use client";
 
+import type { ValidationResult } from "@/app/admin/(legacy)/missions/[id]/flow/utils/flowValidation";
 import { Badge } from "@/app/admin/components/shadcn-ui/badge";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
@@ -8,7 +9,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/app/admin/components/shadcn-ui/collapsible";
-import type { ValidationResult } from "@/app/admin/missions/[id]/flow/utils/flowValidation";
 import { useReactFlow } from "@xyflow/react";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";

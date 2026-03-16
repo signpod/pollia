@@ -1,5 +1,6 @@
 "use client";
 
+import { CompletionEditDialog } from "@/app/admin/(legacy)/missions/[id]/components/edit/CompletionEditDialog";
 import {
   MobilePreviewPanel,
   useMobilePreviewRefresh,
@@ -8,7 +9,6 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadCompletions } from "@/app/admin/hooks/mission-completion";
-import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
 import { ROUTES } from "@/constants/routes";
 import type { MissionCompletionWithMission } from "@/types/dto";
 import {

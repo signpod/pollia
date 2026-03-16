@@ -1,7 +1,7 @@
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { EventList } from "./components/EventList";
-import { MissionList } from "./components/MissionList";
-import { Separator } from "./components/shadcn-ui/separator";
+import { EventList } from "../components/EventList";
+import { MissionList } from "../components/MissionList";
+import { Separator } from "../components/shadcn-ui/separator";
 
 export default function AdminPage() {
   return (

@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import "@xyflow/react/dist/style.css";
 
+import { getLayoutedElements } from "@/app/admin/(legacy)/missions/[id]/flow/utils/flowTransform";
 import { useFlowConnectionHandler } from "@/app/admin/hooks/flow/use-flow-connection-handler";
 import { useFlowConnections } from "@/app/admin/hooks/flow/use-flow-connections";
 import { useFlowEdgeHandler } from "@/app/admin/hooks/flow/use-flow-edge-handler";
@@ -18,7 +19,6 @@ import { useFlowGraph } from "@/app/admin/hooks/flow/use-flow-graph";
 import { useFlowNodeEnrichment } from "@/app/admin/hooks/flow/use-flow-node-enrichment";
 import { useFlowSelector } from "@/app/admin/hooks/flow/use-flow-selector";
 import { useFlowValidation } from "@/app/admin/hooks/flow/use-flow-validation";
-import { getLayoutedElements } from "@/app/admin/missions/[id]/flow/utils/flowTransform";
 import type { Edge, Node } from "@xyflow/react";
 
 import { ActionSelector } from "./ActionSelector";

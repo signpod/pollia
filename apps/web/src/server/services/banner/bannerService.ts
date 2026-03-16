@@ -21,12 +21,6 @@ export class BannerService {
   }
 
   async createBanner(input: CreateBannerInput) {
-    if (!input.title?.trim()) {
-      const error = new Error("배너 제목은 필수입니다.");
-      error.cause = 400;
-      throw error;
-    }
-
     if (!input.imageUrl?.trim()) {
       const error = new Error("배너 이미지 URL은 필수입니다.");
       error.cause = 400;
@@ -36,7 +30,7 @@ export class BannerService {
     const maxOrder = await this.repo.getMaxOrder();
 
     return this.repo.create({
-      title: input.title.trim(),
+      title: input.title?.trim() ?? "",
       subtitle: input.subtitle?.trim() || null,
       imageUrl: input.imageUrl.trim(),
       imageFileUploadId: input.imageFileUploadId ?? null,

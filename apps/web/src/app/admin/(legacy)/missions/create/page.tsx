@@ -3,6 +3,7 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
+import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { useCreateMission } from "@/app/admin/hooks/mission";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
@@ -13,7 +14,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ADMIN_ROUTES } from "../../constants/routes";
 import { BasicInfoCard } from "./components/BasicInfoCard";
 import { CompletionStep } from "./components/CompletionStep";
 import { ImageCard } from "./components/ImageCard";
