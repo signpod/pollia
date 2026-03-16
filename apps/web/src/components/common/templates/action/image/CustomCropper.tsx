@@ -114,8 +114,8 @@ export function CustomCropper({
       const deltaY = e.clientY - dragStart.y;
 
       const displaySize = getImageDisplaySize();
-      const maxX = Math.max(0, (displaySize.width - CROP_SIZE) / 2);
-      const maxY = Math.max(0, (displaySize.height - CROP_SIZE) / 2);
+      const maxX = Math.abs(displaySize.width - CROP_SIZE) / 2;
+      const maxY = Math.abs(displaySize.height - CROP_SIZE) / 2;
       const minX = -maxX;
       const minY = -maxY;
 
@@ -165,8 +165,8 @@ export function CustomCropper({
       const deltaY = (touch?.clientY ?? 0) - dragStart.y;
 
       const displaySize = getImageDisplaySize();
-      const maxX = Math.max(0, (displaySize.width - CROP_SIZE) / 2);
-      const maxY = Math.max(0, (displaySize.height - CROP_SIZE) / 2);
+      const maxX = Math.abs(displaySize.width - CROP_SIZE) / 2;
+      const maxY = Math.abs(displaySize.height - CROP_SIZE) / 2;
       const minX = -maxX;
       const minY = -maxY;
 

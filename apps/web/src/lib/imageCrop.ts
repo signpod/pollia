@@ -65,7 +65,8 @@ export async function getCroppedImg(
 
     const scaleFactorX = image.width / displayWidth;
     const scaleFactorY = image.height / displayHeight;
-    const scaleFactor = Math.min(scaleFactorX, scaleFactorY);
+    const maxScaleFactor = Math.min(image.width / cropSize.width, image.height / cropSize.height);
+    const scaleFactor = Math.min(scaleFactorX, scaleFactorY, maxScaleFactor);
 
     const outputWidth = Math.round(cropSize.width * scaleFactor);
     const outputHeight = Math.round(cropSize.height * scaleFactor);
