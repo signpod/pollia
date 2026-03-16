@@ -1,13 +1,10 @@
 "use client";
-import { ProgressBarV2 } from "@repo/ui/components";
-import { type ReactNode, createContext, useContext, useState } from "react";
 
-const PROGRESS_BAR_CONTAINER_HEIGHT = "h-[60px]";
+import { type ReactNode, createContext, useCallback, useContext, useRef, useState } from "react";
 
 interface ProgressBarContextValue {
-  setProgress: (value: number, currentOrder?: number, totalOrder?: number) => void;
-  setBadgeVariant: (variant: "success" | "error" | "loading" | undefined) => void;
-  setIsBadgeVisible: (visible: boolean) => void;
+  progress: number;
+  setProgress: (value: number) => void;
 }
 
 const ProgressBarContext = createContext<ProgressBarContextValue | null>(null);
@@ -25,42 +22,17 @@ interface ProgressBarProviderProps {
 }
 
 export function ProgressBarProvider({ children }: ProgressBarProviderProps) {
-  const [value, setValue] = useState<number>(0);
-  const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
-  const [totalOrder, setTotalOrder] = useState<number | undefined>(undefined);
-  const [badgeVariant, setBadgeVariant] = useState<"success" | "error" | "loading" | undefined>(
-    undefined,
-  );
-  const [isBadgeVisible, setIsBadgeVisible] = useState<boolean>(false);
+  const maxProgressRef = useRef(0);
+  const [progress, setProgressState] = useState(0);
 
-  const setProgress = (newValue: number, newCurrentOrder?: number, newTotalOrder?: number) => {
-    setValue(newValue);
-    if (newCurrentOrder !== undefined) {
-      setCurrentOrder(newCurrentOrder);
-    }
-    if (newTotalOrder !== undefined) {
-      setTotalOrder(newTotalOrder);
-    }
-  };
+  const setProgress = useCallback((newValue: number) => {
+    const clamped = Math.max(newValue, maxProgressRef.current);
+    maxProgressRef.current = clamped;
+    setProgressState(clamped);
+  }, []);
 
   return (
-    <ProgressBarContext.Provider
-      value={{
-        setProgress,
-        setBadgeVariant,
-        setIsBadgeVisible,
-      }}
-    >
-      <div className="pt-1">
-        <ProgressBarV2
-          value={value}
-          currentOrder={currentOrder}
-          totalOrder={totalOrder}
-          badgeVariant={badgeVariant}
-          isBadgeVisible={isBadgeVisible}
-        />
-      </div>
-
+    <ProgressBarContext.Provider value={{ progress, setProgress }}>
       {children}
     </ProgressBarContext.Provider>
   );
