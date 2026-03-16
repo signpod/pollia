@@ -102,8 +102,13 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
         id: "edit",
         header: "",
         cell: ({ row }) => (
-          <EditLink href={`/editor/missions/${row.original.id}`}>
-            <ExternalLink size={16} />
+          <EditLink
+            href={`/editor/missions/${row.original.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ExternalLink size={14} />
+            수정
           </EditLink>
         ),
       },
@@ -139,8 +144,12 @@ const VisibilityBadge = styled.span<{ $bg: string; $fg: string }>`
 const EditLink = styled(Link)`
   display: inline-flex;
   align-items: center;
-  color: ${color.gray400};
+  gap: 4px;
+  color: ${color.blue600};
+  font-size: ${fontSize.sm};
+  font-weight: 500;
+  text-decoration: none;
   &:hover {
-    color: ${color.gray700};
+    color: ${color.blue700};
   }
 `;
