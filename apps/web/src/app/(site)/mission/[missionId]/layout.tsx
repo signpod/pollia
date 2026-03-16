@@ -95,6 +95,10 @@ export default async function MissionLayout({
     getCachedMission(missionId).catch(handleNotFound),
   ]);
 
+  if ("error" in missionResult && missionResult.error?.cause === 404) {
+    notFound();
+  }
+
   const prefetchPromises: Promise<unknown>[] = [
     queryClient.prefetchQuery({
       queryKey: actionQueryKeys.actionsIds({ missionId }),
