@@ -24,7 +24,7 @@ function PurchaseLinkCard({ link }: { link: CompletionLinkData }) {
             />
           </div>
         )}
-        <Typo.SubTitle className="line-clamp-2 text-default break-keep">{link.name}</Typo.SubTitle>
+        <Typo.SubTitle className="text-default break-keep">{link.name}</Typo.SubTitle>
       </a>
     </div>
   );
