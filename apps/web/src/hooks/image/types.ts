@@ -18,6 +18,7 @@ export interface UseUploadImageReturn {
   isUploading: boolean;
   upload: (file: File) => void;
   discard: () => void;
+  reset: () => void;
 }
 
 export interface UseDeleteImageReturn {

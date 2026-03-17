@@ -54,7 +54,7 @@ export function BannerRow({
   const updateMutation = useUpdateBanner();
   const deleteMutation = useDeleteBanner();
   const cropper = useImageCropper({ fileNamePrefix: "banner" });
-  const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
+  const { previewUrl, uploadedData, isUploading, upload, discard, reset } = useUploadImage({
     bucket: STORAGE_BUCKETS.BANNER_IMAGES,
     onUploadError: () => toast.error("이미지 업로드에 실패했습니다."),
   });
@@ -63,9 +63,9 @@ export function BannerRow({
     if (isEditing) {
       setTitle(banner.title);
       setSubtitle(banner.subtitle ?? "");
-      discard();
+      reset();
     }
-  }, [isEditing, banner.title, banner.subtitle, discard]);
+  }, [isEditing, banner.title, banner.subtitle, reset]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -22,7 +22,7 @@ export function BannerAddRow() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createMutation = useCreateBanner();
   const cropper = useImageCropper({ fileNamePrefix: "banner" });
-  const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
+  const { previewUrl, uploadedData, isUploading, upload, reset } = useUploadImage({
     bucket: STORAGE_BUCKETS.BANNER_IMAGES,
     onUploadError: () => toast.error("이미지 업로드에 실패했습니다."),
   });
@@ -30,7 +30,7 @@ export function BannerAddRow() {
   const resetForm = () => {
     setTitle("");
     setSubtitle("");
-    discard();
+    reset();
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
