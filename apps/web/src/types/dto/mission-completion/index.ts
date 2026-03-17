@@ -35,6 +35,8 @@ export interface CreateMissionCompletionRequest {
   imageFileUploadId?: string;
   links?: CompletionLinkInput[];
   missionId: string;
+  minScoreRatio?: number | null;
+  maxScoreRatio?: number | null;
 }
 
 export interface UpdateMissionCompletionRequest {
@@ -43,6 +45,8 @@ export interface UpdateMissionCompletionRequest {
   imageUrl?: string | null;
   imageFileUploadId?: string | null;
   links?: CompletionLinkInput[];
+  minScoreRatio?: number | null;
+  maxScoreRatio?: number | null;
 }
 
 export interface GetMissionCompletionResponse {

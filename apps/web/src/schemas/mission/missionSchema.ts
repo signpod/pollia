@@ -1,5 +1,6 @@
 import { MissionCategory, MissionType } from "@prisma/client";
 import { z } from "zod";
+import { quizConfigSchema } from "./quizConfigSchema";
 
 export const MISSION_TITLE_MAX_LENGTH = 100;
 export const MISSION_DESCRIPTION_MAX_LENGTH = 2000;
@@ -95,6 +96,7 @@ export const missionInputSchema = z
     eventId: eventIdSchema,
     isActive: z.boolean().optional(),
     entryActionId: z.string().nullable().optional(),
+    quizConfig: quizConfigSchema.nullable().optional(),
   })
   .refine(dateRangeRefine, dateRangeError);
 
@@ -120,6 +122,7 @@ export const missionUpdateSchema = z
     rewardId: z.string().nullable().optional(),
     eventId: eventIdSchema,
     entryActionId: z.string().nullable().optional(),
+    quizConfig: quizConfigSchema.nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
