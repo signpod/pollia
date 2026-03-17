@@ -58,6 +58,15 @@ export type CreateBranchInput = BaseActionInputWithOptions & {
   hasOther: false;
 };
 
+export type CreateOXInput = BaseActionInputWithOptions & {
+  maxSelections: 1;
+  hasOther: false;
+  score?: number;
+  correctOptionId?: string | null;
+  matchMode?: "EXACT" | "CONTAINS" | null;
+  hint?: string | null;
+};
+
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
   id?: string;
   order: number;

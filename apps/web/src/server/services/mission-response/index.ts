@@ -8,8 +8,9 @@ import {
   missionResponseRepository,
 } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
-import type { Prisma } from "@prisma/client";
+import { MissionCategory, type Prisma } from "@prisma/client";
 import { type AiService, aiService } from "../ai";
+import { type QuizGradingService, quizGradingService } from "../quiz-grading/quizGradingService";
 import { buildCompletionInferenceInput } from "./buildCompletionInferenceInput";
 import { buildCompletionInferencePrompt } from "./buildCompletionInferencePrompt";
 import type {
@@ -44,6 +45,7 @@ export class MissionResponseService {
     private inferenceCacheRepo = missionCompletionInferenceCacheRepository,
     private aiClient: AiService = aiService,
     private completionStatRepo = missionCompletionStatRepository,
+    private quizGrading: QuizGradingService = quizGradingService,
   ) {}
 
   async getResponseById(responseId: string, actor: string | ResponseActor, isAdmin = false) {
@@ -328,6 +330,13 @@ export class MissionResponseService {
         throw error;
       }
       selectedCompletionId = branchCompletionId;
+    } else if (response.mission.category === MissionCategory.QUIZ) {
+      const gradeResult = await this.quizGrading.gradeResponse(response.id, response.missionId);
+      const quizCompletionId = this.quizGrading.resolveQuizCompletionId(
+        completions,
+        gradeResult.scoreRatio,
+      );
+      selectedCompletionId = quizCompletionId ?? firstCompletion.id;
     } else if (response.mission.useAiCompletion === true) {
       selectedCompletionId = await this.resolveCompletionIdByAi({
         missionId: response.missionId,
