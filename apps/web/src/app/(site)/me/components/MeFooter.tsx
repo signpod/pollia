@@ -9,8 +9,8 @@ import Link from "next/link";
 const PRIVACY_POLICY_URL = process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL;
 
 export function MeFooter() {
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await signOut();
     window.location.href = ROUTES.HOME;
   };
 
