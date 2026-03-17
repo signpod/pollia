@@ -35,6 +35,7 @@ export class BannerService {
       title: input.title?.trim() ?? "",
       subtitle: input.subtitle?.trim() || null,
       imageUrl: input.imageUrl.trim(),
+      linkUrl: input.linkUrl?.trim() || null,
       imageFileUploadId: input.imageFileUploadId ?? null,
       order: maxOrder + 1,
     };

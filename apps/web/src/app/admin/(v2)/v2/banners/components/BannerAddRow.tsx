@@ -18,6 +18,7 @@ import { BANNER_ASPECT } from "../constants";
 export function BannerAddRow() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createMutation = useCreateBanner();
   const cropper = useImageCropper({ fileNamePrefix: "banner" });
@@ -29,6 +30,7 @@ export function BannerAddRow() {
   const resetForm = () => {
     setTitle("");
     setSubtitle("");
+    setLinkUrl("");
     reset();
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -44,7 +46,13 @@ export function BannerAddRow() {
     const imageFileUploadId = uploadedData?.fileUploadId;
     if (!imageUrl) return;
     createMutation.mutate(
-      { title: title.trim(), subtitle: subtitle.trim() || null, imageUrl, imageFileUploadId },
+      {
+        title: title.trim(),
+        subtitle: subtitle.trim() || null,
+        imageUrl,
+        imageFileUploadId,
+        linkUrl: linkUrl.trim() || null,
+      },
       { onSuccess: () => resetForm() },
     );
   };
@@ -133,7 +141,14 @@ export function BannerAddRow() {
         size="small"
         value={subtitle}
         onChange={e => setSubtitle(e.target.value)}
-        placeholder="부제목 (선택)"
+        placeholder="이미지 설명 - 웹 접근성용 (선택)"
+        sx={{ flex: 1 }}
+      />
+      <TextField
+        size="small"
+        value={linkUrl}
+        onChange={e => setLinkUrl(e.target.value)}
+        placeholder="링크 URL (선택)"
         sx={{ flex: 1 }}
       />
       <Button
