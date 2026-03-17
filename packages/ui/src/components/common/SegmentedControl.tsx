@@ -43,7 +43,7 @@ export function SegmentedControl({
             type="button"
             onClick={() => onValueChange(item.value)}
             className={cn(
-              "relative z-10 flex h-9 shrink-0 flex-1 items-center justify-center rounded-sm px-3",
+              "relative flex h-9 shrink-0 flex-1 items-center justify-center rounded-sm px-3",
               "transition-colors",
               isActive ? "text-zinc-950" : "text-zinc-400",
             )}
