@@ -27,7 +27,7 @@ export function SegmentedControl({
   return (
     <div className={cn("relative flex items-center rounded-xl bg-zinc-100 p-1", className)}>
       <motion.div
-        className="absolute top-1 bottom-1 rounded-lg bg-white"
+        className="absolute top-1 bottom-1 rounded-sm bg-white"
         initial={false}
         animate={{
           left: `calc(${(activeIndex / items.length) * 100}% + 4px)`,
@@ -43,7 +43,7 @@ export function SegmentedControl({
             type="button"
             onClick={() => onValueChange(item.value)}
             className={cn(
-              "relative z-10 flex h-9 shrink-0 flex-1 items-center justify-center rounded-lg px-3",
+              "relative z-10 flex h-9 shrink-0 flex-1 items-center justify-center rounded-sm px-3",
               "transition-colors",
               isActive ? "text-zinc-950" : "text-zinc-400",
             )}
