@@ -1,6 +1,6 @@
 "use client";
 
-import { DateAndTimePicker, Toggle, Typo } from "@repo/ui/components";
+import { DateAndTimePicker, LabelText, Toggle, Typo } from "@repo/ui/components";
 import { useEffect, useState } from "react";
 
 interface DateTimeSettingRowProps {
@@ -59,8 +59,8 @@ export function DateTimeSettingRow({
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0 flex-1 flex flex-col gap-1 overflow-hidden">
-            <Typo.SubTitle>{label}</Typo.SubTitle>
-            <Typo.Body size="medium" className="text-zinc-500">
+            <LabelText required={false}>{label}</LabelText>
+            <Typo.Body size="medium" className="text-left text-zinc-400">
               {description}
             </Typo.Body>
           </div>

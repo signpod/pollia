@@ -1,4 +1,4 @@
-import { ImageSelector, Typo } from "@repo/ui/components";
+import { ImageSelector, LabelText, Typo } from "@repo/ui/components";
 
 interface ImageUploaderFieldProps {
   title: string;
@@ -23,8 +23,8 @@ export function ImageUploaderField({
     <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <Typo.SubTitle>{title}</Typo.SubTitle>
-          <Typo.Body size="medium" className="text-zinc-500">
+          <LabelText required={false}>{title}</LabelText>
+          <Typo.Body size="medium" className="text-left text-zinc-400">
             {description}
           </Typo.Body>
         </div>

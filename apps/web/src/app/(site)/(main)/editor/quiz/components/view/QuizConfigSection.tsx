@@ -1,8 +1,8 @@
 "use client";
 
+import { TimeLimitSettingRow } from "@/app/(site)/(main)/create/components/TimeLimitSettingRow";
 import { ToggleSettingRow } from "@/app/(site)/(main)/create/components/ToggleSettingRow";
 import {
-  Input,
   LabelText,
   Select,
   SelectContent,
@@ -109,7 +109,7 @@ export function QuizConfigSection() {
         control={control}
         name="quizConfig.timeLimitPerQuestion"
         render={({ field }) => (
-          <TimeLimitField
+          <TimeLimitSettingRow
             label="문항별 제한시간"
             description="각 문항에 제한시간을 설정합니다. (초 단위)"
             value={field.value}
@@ -122,7 +122,7 @@ export function QuizConfigSection() {
         control={control}
         name="quizConfig.timeLimitTotal"
         render={({ field }) => (
-          <TimeLimitField
+          <TimeLimitSettingRow
             label="전체 제한시간"
             description="퀴즈 전체에 제한시간을 설정합니다. (초 단위)"
             value={field.value}
@@ -130,55 +130,6 @@ export function QuizConfigSection() {
           />
         )}
       />
-    </div>
-  );
-}
-
-interface TimeLimitFieldProps {
-  label: string;
-  description: string;
-  value: number | null;
-  onChange: (value: number | null) => void;
-}
-
-function TimeLimitField({ label, description, value, onChange }: TimeLimitFieldProps) {
-  const isEnabled = value !== null;
-
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <Typo.SubTitle>{label}</Typo.SubTitle>
-            <Typo.Body size="medium" className="text-zinc-500">
-              {description}
-            </Typo.Body>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            placeholder="미설정"
-            value={isEnabled ? value.toString() : ""}
-            onChange={e => {
-              const raw = e.target.value;
-              if (raw === "") {
-                onChange(null);
-                return;
-              }
-              const parsed = Number.parseInt(raw, 10);
-              if (!Number.isNaN(parsed) && parsed > 0) {
-                onChange(parsed);
-              }
-            }}
-            containerClassName="flex-1"
-            showLength={false}
-          />
-          <Typo.Body size="medium" className="shrink-0 text-zinc-500">
-            초
-          </Typo.Body>
-        </div>
-      </div>
     </div>
   );
 }
