@@ -12,3 +12,5 @@ export function useAdminV2Missions(params?: GetAdminMissionsRequest) {
     placeholderData: keepPreviousData,
   });
 }
+
+export type UseAdminV2MissionsReturn = ReturnType<typeof useAdminV2Missions>;

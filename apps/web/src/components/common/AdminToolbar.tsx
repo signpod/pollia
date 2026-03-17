@@ -201,7 +201,7 @@ function MissionDevTools({ missionId, onClose }: MissionDevToolsProps) {
       </button>
 
       {confirmOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-10000 flex items-center justify-center bg-black/40">
           <div className="w-80 rounded-xl bg-white p-5 shadow-xl">
             <Typo.SubTitle className="text-default">응답 초기화</Typo.SubTitle>
             <Typo.Body size="small" className="mt-2 text-sub">
