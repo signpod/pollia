@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { actionService } from "@/server/services/action";
 import type { ActionCreatedResult } from "@/server/services/action/types";
@@ -35,12 +35,12 @@ import { revalidatePath } from "next/cache";
 
 async function createActionHandler<TRequest, TResponse extends BaseActionResponse>(
   request: TRequest,
-  serviceMethod: (req: TRequest, userId: string) => Promise<ActionCreatedResult>,
+  serviceMethod: (req: TRequest, userId: string, isAdmin: boolean) => Promise<ActionCreatedResult>,
   errorMessage: string,
 ): Promise<TResponse> {
   try {
-    const user = await requireActiveUser();
-    const action = await serviceMethod(request, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const action = await serviceMethod(request, user.id, isAdmin);
 
     if (action.missionId) {
       revalidatePath(`/mission/${action.missionId}`);
@@ -175,12 +175,13 @@ interface DuplicateActionRequest {
 
 export async function duplicateAction(request: DuplicateActionRequest) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
     const result = await actionService.duplicateAction(
       request.actionId,
       request.missionId,
       user.id,
+      isAdmin,
     );
 
     if (result.missionId) {

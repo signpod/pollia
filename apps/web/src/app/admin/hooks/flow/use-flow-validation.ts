@@ -1,6 +1,6 @@
 "use client";
 
-import { validateFlowGraph } from "@/app/admin/missions/[id]/flow/utils/flowValidation";
+import { validateFlowGraph } from "@/app/admin/(legacy)/missions/[id]/flow/utils/flowValidation";
 import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
 

@@ -5,16 +5,13 @@ import { ROUTES } from "@/constants/routes";
 import { Typo } from "@repo/ui/components";
 import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const PRIVACY_POLICY_URL = process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL;
 
 export function MeFooter() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await signOut();
-    router.push(ROUTES.HOME);
+  const handleLogout = () => {
+    signOut();
+    window.location.href = ROUTES.HOME;
   };
 
   return (

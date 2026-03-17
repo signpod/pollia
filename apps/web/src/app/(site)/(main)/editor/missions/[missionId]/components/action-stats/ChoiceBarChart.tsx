@@ -9,6 +9,64 @@ interface ChoiceBarChartProps {
 
 const BAR_HEIGHT = 36;
 const CHART_PADDING = 40;
+const Y_AXIS_WIDTH = 120;
+const FONT_SIZE = 12;
+const LINE_HEIGHT = 16;
+const MAX_LINES = 2;
+
+function splitLabel(text: string, maxWidth: number): string[] {
+  const charWidth = (char: string) =>
+    /[\u3000-\u9fff\uac00-\ud7af]/.test(char) ? FONT_SIZE : FONT_SIZE * 0.6;
+
+  const lines: string[] = [];
+  let currentLine = "";
+  let currentWidth = 0;
+
+  for (const char of text) {
+    const w = charWidth(char);
+    if (currentWidth + w > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = char;
+      currentWidth = w;
+    } else {
+      currentLine += char;
+      currentWidth += w;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+
+  if (lines.length > MAX_LINES) {
+    const lastLine = lines[MAX_LINES - 1] ?? "";
+    lines.length = MAX_LINES;
+    lines[MAX_LINES - 1] = `${lastLine.slice(0, -1)}…`;
+  }
+
+  return lines;
+}
+
+function renderYAxisTick(props: { x: number; y: number; payload: { value: string } }) {
+  const { x, y, payload } = props;
+  const lines = splitLabel(payload.value, Y_AXIS_WIDTH - 12);
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <title>{payload.value}</title>
+      {lines.map((line, i) => (
+        <text
+          key={i}
+          x={0}
+          y={0}
+          dy={i * LINE_HEIGHT - ((lines.length - 1) * LINE_HEIGHT) / 2 + 4}
+          textAnchor="end"
+          fontSize={FONT_SIZE}
+          fill="#71717a"
+        >
+          {line}
+        </text>
+      ))}
+    </g>
+  );
+}
 
 export function ChoiceBarChart({ data }: ChoiceBarChartProps) {
   if (data.totalResponses === 0) {
@@ -29,8 +87,8 @@ export function ChoiceBarChart({ data }: ChoiceBarChartProps) {
         <YAxis
           type="category"
           dataKey="label"
-          width={120}
-          tick={{ fontSize: 12, fill: "#71717a" }}
+          width={Y_AXIS_WIDTH}
+          tick={renderYAxisTick}
           tickLine={false}
           axisLine={false}
         />

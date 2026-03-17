@@ -43,6 +43,49 @@ describe("TrackingActionService", () => {
       );
     });
 
+    it("isAdmin이면 소유자가 아니어도 조회할 수 있다", async () => {
+      // Given
+      const mission = createMockMission({
+        id: TEST_MISSION_ID,
+        creatorId: "other-user",
+      });
+      context.mockMissionRepo.findById.mockResolvedValue(mission);
+
+      const actions = [
+        createMockAction(TEST_ACTION_1_ID, "질문 1", 1, TEST_MISSION_ID),
+        createMockAction(TEST_ACTION_2_ID, "질문 2", 2, TEST_MISSION_ID),
+      ];
+      context.mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions);
+
+      const entries = [
+        ...createMockEntries(TEST_ACTION_1_ID, TEST_MISSION_ID, 50),
+        ...createMockEntries(TEST_ACTION_2_ID, TEST_MISSION_ID, 40),
+      ];
+      context.mockEntryRepo.findByMissionId.mockResolvedValue(entries as TrackingActionEntry[]);
+
+      const responses = [
+        ...createMockResponses(TEST_ACTION_1_ID, TEST_MISSION_ID, 40),
+        ...createMockResponses(TEST_ACTION_2_ID, TEST_MISSION_ID, 35),
+      ];
+      context.mockResponseRepo.findByMissionId.mockResolvedValue(
+        responses as TrackingActionResponse[],
+      );
+
+      // When
+      const result = await context.service.getMissionFunnel(
+        TEST_MISSION_ID,
+        TEST_USER_ID,
+        {},
+        true,
+      );
+
+      // Then
+      expect(result).toBeDefined();
+      expect(result.nodes.length).toBeGreaterThan(0);
+      expect(result.metadata.totalStarted).toBe(50);
+      expect(result.metadata.totalCompleted).toBe(35);
+    });
+
     it("액션이 없으면 빈 퍼널 데이터를 반환한다", async () => {
       const mission = createMockMission({ id: TEST_MISSION_ID, creatorId: TEST_USER_ID });
       context.mockMissionRepo.findById.mockResolvedValue(mission);

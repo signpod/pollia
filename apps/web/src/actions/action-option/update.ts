@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { actionOptionService } from "@/server/services/action-option";
 import type { ActionOption } from "@prisma/client";
@@ -16,9 +16,9 @@ export async function updateOption(
   },
 ): Promise<{ data: ActionOption }> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
-    const updatedOption = await actionOptionService.updateOption(optionId, data, user.id);
+    const updatedOption = await actionOptionService.updateOption(optionId, data, user.id, isAdmin);
 
     return { data: updatedOption };
   } catch (error) {

@@ -6,7 +6,6 @@ import {
 describe("editorMissionPublishModel", () => {
   it("서버 데이터만으로 발행 가능 상태를 계산한다", () => {
     const result = computePublishAvailability({
-      isPublished: false,
       entryActionId: "action-1",
       serverActions: [
         {
@@ -28,7 +27,6 @@ describe("editorMissionPublishModel", () => {
 
   it("entryActionId가 없어도 itemOrderKeys의 첫 액션을 entry로 해석한다", () => {
     const result = computePublishAvailability({
-      isPublished: false,
       entryActionId: null,
       serverActions: [
         {
@@ -55,7 +53,6 @@ describe("editorMissionPublishModel", () => {
 
   it("entryActionId와 itemOrderKeys가 모두 없으면 missing-entry로 차단한다", () => {
     const result = computePublishAvailability({
-      isPublished: false,
       entryActionId: null,
       serverActions: [
         {
@@ -81,7 +78,6 @@ describe("editorMissionPublishModel", () => {
 
   it("draft 액션이 첫 entry인 경우도 정상 해석한다", () => {
     const result = computePublishAvailability({
-      isPublished: false,
       entryActionId: null,
       serverActions: [],
       serverCompletions: [],
@@ -140,7 +136,6 @@ describe("editorMissionPublishModel", () => {
 
   it("AI 완료화면 사용 시 completion 연결이 없어도 완료화면이 1개 이상이면 발행 가능하다", () => {
     const result = computePublishAvailability({
-      isPublished: false,
       entryActionId: "action-1",
       useAiCompletion: true,
       serverActions: [
@@ -162,7 +157,6 @@ describe("editorMissionPublishModel", () => {
 
   it("AI 완료화면 사용 시 완료화면이 없으면 발행 불가하다", () => {
     const result = computePublishAvailability({
-      isPublished: false,
       entryActionId: "action-1",
       useAiCompletion: true,
       serverActions: [

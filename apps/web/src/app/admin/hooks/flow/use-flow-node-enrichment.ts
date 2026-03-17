@@ -1,7 +1,7 @@
 "use client";
 
+import type { FlowNode } from "@/app/admin/(legacy)/missions/[id]/flow/utils/flowTransform";
 import type { UseFlowValidationReturn } from "@/app/admin/hooks/flow/use-flow-validation";
-import type { FlowNode } from "@/app/admin/missions/[id]/flow/utils/flowTransform";
 import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import "@/app/admin/admin.css";
+import "@/app/admin/(legacy)/admin.css";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,

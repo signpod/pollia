@@ -1,4 +1,5 @@
 import { getReward } from "@/actions/reward";
+import { AdminToolbar } from "@/components/common/AdminToolbar";
 import prisma from "@/database/utils/prisma/client";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
 
   return (
     <>
+      <AdminToolbar />
       <DevTools missionId={missionId} />
       <MissionClientWrapper dehydratedState={dehydrate(getQueryClient())}>
         <MissionPageWrapper

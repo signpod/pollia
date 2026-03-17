@@ -91,9 +91,6 @@ export function EditorMissionTabContent({
     completionsQueryData: completionsQuery.data?.data,
     isActionsLoading: actionsQuery.isLoading,
     isCompletionsLoading: completionsQuery.isLoading,
-    refetchMission: missionQuery.refetch,
-    refetchActions: actionsQuery.refetch,
-    refetchCompletions: completionsQuery.refetch,
   });
   const effectiveMission = missionQuery.data?.data ?? mission;
   const serverActions = actionsQuery.data?.data;
@@ -228,36 +225,20 @@ export function EditorMissionTabContent({
   const saveButtonNode = useMemo(
     () => (
       <EditorMissionActionBar
-        isPublished={viewState.isPublished}
         isSavingAll={viewState.isSavingAll}
-        isPublishing={viewState.isPublishing}
-        isUnpublishing={viewState.isUnpublishing}
         hasAnyBusySection={viewState.hasAnyBusySection}
         hasAnyPendingChanges={viewState.hasAnyPendingChanges}
         hasAnyValidationIssues={viewState.hasAnyValidationIssues}
-        canSave={viewState.canSave}
-        canPublish={viewState.canPublish}
         onSave={() => {
           void actions.onSave().then(() => bumpPreviewRefresh(v => v + 1));
-        }}
-        onPublish={() => {
-          void actions.onPublish().then(() => bumpPreviewRefresh(v => v + 1));
-        }}
-        onUnpublish={() => {
-          void actions.onUnpublish();
         }}
       />
     ),
     [
       actions,
-      viewState.canSave,
-      viewState.canPublish,
       viewState.hasAnyBusySection,
       viewState.hasAnyPendingChanges,
       viewState.hasAnyValidationIssues,
-      viewState.isPublished,
-      viewState.isPublishing,
-      viewState.isUnpublishing,
       viewState.isSavingAll,
     ],
   );

@@ -36,7 +36,7 @@ export function MissionRewardSection({
             <button
               type="button"
               onClick={() => setIsImageOpen(true)}
-              className="size-[120px] overflow-hidden rounded-xl bg-zinc-50 p-2 cursor-pointer"
+              className="size-[120px] overflow-hidden rounded-xl bg-zinc-50 cursor-pointer"
             >
               <AdaptiveImage src={rewardImageUrl} alt="reward" className="size-full rounded-xl" />
             </button>
@@ -80,23 +80,25 @@ export function MissionRewardSection({
             </AnimatePresence>
           </>
         )}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-full text-center">
           {rewardName && (
-            <Typo.SubTitle size="large" className="text-center">
+            <Typo.SubTitle size="large" className="truncate w-full">
               {rewardName}
             </Typo.SubTitle>
           )}
           {rewardDescription && (
-            <Typo.Body size="medium" className="text-center text-zinc-400">
+            <Typo.Body size="medium" className="truncate w-full text-zinc-500">
               {rewardDescription}
             </Typo.Body>
           )}
-          {formattedScheduledDate && (
-            <Typo.Body size="medium" className="text-center text-zinc-400 pt-4">
+        </div>
+        {formattedScheduledDate && (
+          <div className="rounded-[6px] border border-zinc-200 px-2 py-1">
+            <Typo.Body size="small" className="text-zinc-500">
               {`${formattedScheduledDate} 순차 지급`}
             </Typo.Body>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

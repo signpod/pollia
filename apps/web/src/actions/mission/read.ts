@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireActiveUser, requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
@@ -29,6 +29,7 @@ export interface GetAllMissionsRequest {
   sortOrder?: SortOrderType;
   category?: MissionCategory;
   type?: MissionType;
+  isActive?: boolean;
 }
 
 function toGetUserMissionsOptions(dto: GetUserMissionsRequest): GetUserMissionsOptions {
@@ -48,6 +49,7 @@ function toGetAllMissionsOptions(dto: GetAllMissionsRequest): GetUserMissionsOpt
     sortOrder: dto.sortOrder,
     category: dto.category,
     type: dto.type,
+    isActive: dto.isActive,
   };
 }
 
@@ -55,7 +57,7 @@ export async function getUserMissions(
   request?: GetUserMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    const user = await requireActiveUser();
+    const { user } = await requireContentManager();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetUserMissionsOptions({ ...request, limit: limit + 1 })
@@ -79,7 +81,7 @@ export async function getAllMissions(
   request?: GetAllMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    await requireActiveUser();
+    await requireContentManager();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetAllMissionsOptions({ ...request, limit: limit + 1 })
@@ -102,6 +104,21 @@ export async function getAllMissions(
 export async function getMission(missionId: string): Promise<GetMissionResponse> {
   try {
     const mission = await missionService.getMission(missionId);
+
+    if (!mission.isActive) {
+      let userId: string | null = null;
+      try {
+        const user = await requireActiveUser();
+        userId = user.id;
+      } catch {}
+
+      if (mission.creatorId !== userId) {
+        const error = new Error("미션을 찾을 수 없습니다.");
+        error.cause = 404;
+        throw error;
+      }
+    }
+
     return { data: mission };
   } catch (error) {
     return handleActionError(error, `${UBIQUITOUS_CONSTANTS.MISSION}을 불러올 수 없습니다.`);
@@ -110,8 +127,8 @@ export async function getMission(missionId: string): Promise<GetMissionResponse>
 
 export async function getMissionPassword(missionId: string) {
   try {
-    const user = await requireActiveUser();
-    const password = await missionService.getPassword(missionId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const password = await missionService.getPassword(missionId, user.id, isAdmin);
     return { data: password };
   } catch (error) {
     return handleActionError(error, "비밀번호 조회 중 오류가 발생했습니다.");
@@ -142,8 +159,12 @@ export async function getMissionNotionPage(
   missionId: string,
 ): Promise<GetMissionNotionPageResponse> {
   try {
-    const user = await requireActiveUser();
-    const notionPage = await missionNotionPageService.getByMissionIdWithAuth(missionId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const notionPage = await missionNotionPageService.getByMissionIdWithAuth(
+      missionId,
+      user.id,
+      isAdmin,
+    );
 
     if (!notionPage) {
       return { data: null };

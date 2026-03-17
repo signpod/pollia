@@ -14,7 +14,7 @@ interface RecommendedContentsProps {
 export function RecommendedContents({ userName }: RecommendedContentsProps) {
   const { data: missions } = useQuery({
     queryKey: [...missionQueryKeys.allMissions(), "recommended"],
-    queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
+    queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL, isActive: true }),
     select: data => data.data,
     staleTime: 5 * 60 * 1000,
   });

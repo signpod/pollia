@@ -11,7 +11,6 @@ import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCropperModal, useSingleImage } from "@/hooks/image";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MissionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
 import { useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
@@ -202,7 +201,6 @@ function ContentBasicInfoCardComponent(
         await updateMission(mission.id, {
           title: values.title,
           description: values.description,
-          type: MissionType.GENERAL,
           allowGuestResponse: values.allowGuestResponse,
           allowMultipleResponses: values.allowMultipleResponses,
           useAiCompletion: values.useAiCompletion,

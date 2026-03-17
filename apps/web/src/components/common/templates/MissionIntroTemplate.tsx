@@ -17,10 +17,28 @@ export interface MissionIntroTemplateProps {
   authorName?: string | null;
   authorImageUrl?: string | null;
   isRequirePassword?: boolean;
+  startDate?: Date | null;
+  deadline?: Date | null;
   viewCount?: number;
   likesCount?: number;
   titleRef?: RefObject<HTMLDivElement | null>;
   children?: ReactNode;
+}
+
+function formatDateRange(startDate?: Date | null, deadline?: Date | null): string | null {
+  if (!startDate && !deadline) return null;
+
+  const format = (date: Date) => {
+    const yy = String(date.getFullYear()).slice(2);
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yy}.${mm}.${dd}`;
+  };
+
+  if (startDate && deadline)
+    return `${format(new Date(startDate))} - ${format(new Date(deadline))}`;
+  if (startDate) return `${format(new Date(startDate))} ~`;
+  return `~ ${format(new Date(deadline!))}`;
 }
 
 export function MissionIntroTemplate({
@@ -30,6 +48,8 @@ export function MissionIntroTemplate({
   authorName,
   authorImageUrl,
   isRequirePassword,
+  startDate,
+  deadline,
   viewCount = 0,
   likesCount = 0,
   titleRef,
@@ -55,12 +75,19 @@ export function MissionIntroTemplate({
               {subtitle}
             </Typo.Body>
           )}
-          <div className="break-keep text-center">
-            <Typo.MainTitle size="small" className="inline line-clamp-2 text-ellipsis">
-              {title}
-            </Typo.MainTitle>
-            {isRequirePassword && (
-              <Lock className="ml-1 inline-block size-5 align-[0.1em] text-zinc-400" />
+          <div className="flex flex-col items-center">
+            <div className="break-keep text-center">
+              <Typo.MainTitle size="small" className="inline line-clamp-2 text-ellipsis">
+                {title}
+              </Typo.MainTitle>
+              {isRequirePassword && (
+                <Lock className="ml-1 inline-block size-5 align-[0.1em] text-zinc-400" />
+              )}
+            </div>
+            {formatDateRange(startDate, deadline) && (
+              <Typo.Body size="small" className="text-zinc-500">
+                {formatDateRange(startDate, deadline)}
+              </Typo.Body>
             )}
           </div>
         </div>

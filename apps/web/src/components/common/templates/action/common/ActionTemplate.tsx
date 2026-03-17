@@ -1,6 +1,6 @@
 import { AdaptiveImage } from "@/components/common/AdaptiveImage";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
-import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
+import { ButtonV2, FixedBottomLayout, ProgressBarV3, Typo } from "@repo/ui/components";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ChevronLeftIcon } from "lucide-react";
 import { type PropsWithChildren, useEffect, useRef } from "react";
@@ -34,7 +34,7 @@ export function SurveyQuestionTemplate({
   } = useActionContext();
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const { setProgress } = useProgressBar();
+  const { progress, setProgress } = useProgressBar();
 
   const nextRef = useRef(onNext);
   const canSubmitRef = useRef(false);
@@ -57,7 +57,7 @@ export function SurveyQuestionTemplate({
 
   useEffect(() => {
     const progress = ((currentOrder + 1) / totalActionCount) * 100 || 0;
-    setProgress(progress, currentOrder + 1, totalActionCount);
+    setProgress(progress);
   }, [currentOrder, totalActionCount, setProgress]);
 
   useEffect(() => {
@@ -75,7 +75,11 @@ export function SurveyQuestionTemplate({
     <FixedBottomLayout hasGradient>
       <div ref={contentRef} className="space-y-6 px-5 pb-5 pt-[28px]">
         <section className="flex flex-col gap-2 relative">
-          <RequiredIndicator isRequired={!!isRequired} />
+          <div className="flex items-center justify-between w-full">
+            <RequiredIndicator isRequired={!!isRequired} />
+            <ProgressBarV3 value={progress} />
+          </div>
+
           <div className="flex flex-col gap-1">
             <Typo.MainTitle size="medium" className="flex gap-1">
               {title}

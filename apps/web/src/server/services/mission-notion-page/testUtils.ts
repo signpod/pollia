@@ -14,6 +14,8 @@ export function createMissionNotionPageServiceTestContext() {
 
   const mockMissionRepository = {
     findById: jest.fn(),
+    findAllPaged: jest.fn(),
+    countAll: jest.fn(),
   } as unknown as jest.Mocked<MissionRepository>;
 
   const service = new MissionNotionPageService(mockRepository, mockMissionRepository);

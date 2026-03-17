@@ -1,33 +1,140 @@
 "use client";
 
+import { updateMission } from "@/actions/mission/update";
+import { VISIBILITY_CONFIG } from "@/constants/mission";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
 import { useReadMission } from "@/hooks/mission";
+import type { MissionVisibility } from "@/types/domain/mission";
+import { MissionType } from "@prisma/client";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
-import { IconButton, Typo, useModal } from "@repo/ui/components";
-import { ChevronLeft, ExternalLinkIcon, Trash2Icon } from "lucide-react";
+import {
+  IconButton,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Typo,
+  toast,
+  useModal,
+} from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, ChevronDown, ChevronLeft, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useDeleteMission } from "../../../../me/hooks/useDeleteMission";
 
-function PublishBadge({ missionId }: { missionId: string }) {
-  const { data } = useReadMission(missionId);
-  const isActive = data?.data?.isActive;
+function resolveVisibility(isActive: boolean, type: MissionType): MissionVisibility {
+  if (!isActive) return "private";
+  return type === MissionType.GENERAL ? "public" : "linkOnly";
+}
 
-  if (isActive == null) {
+function VisibilityDropdown({ missionId }: { missionId: string }) {
+  const { data, isLoading } = useReadMission(missionId);
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  if (isLoading || isUpdating) {
+    return (
+      <span className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-medium">
+        {"\u200b"}
+        <span className="flex items-center gap-0.5">
+          <span className="size-1 animate-bounce rounded-full bg-zinc-400 [animation-delay:0ms]" />
+          <span className="size-1 animate-bounce rounded-full bg-zinc-400 [animation-delay:150ms]" />
+          <span className="size-1 animate-bounce rounded-full bg-zinc-400 [animation-delay:300ms]" />
+        </span>
+      </span>
+    );
+  }
+
+  const mission = data?.data;
+  if (!mission || mission.isActive == null) {
     return null;
   }
 
-  return isActive ? (
-    <span className="rounded-full bg-green-100 px-3 py-1.5 text-sm font-medium text-green-700">
-      발행됨
-    </span>
-  ) : (
-    <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-500">
-      미발행
-    </span>
+  const current = resolveVisibility(mission.isActive, mission.type);
+  const config = VISIBILITY_CONFIG[current];
+
+  const handleSelect = async (next: MissionVisibility) => {
+    if (next === current || isUpdating) return;
+    setIsUpdating(true);
+    setOpen(false);
+
+    try {
+      switch (next) {
+        case "public":
+          await updateMission(missionId, { isActive: true, type: MissionType.GENERAL });
+          break;
+        case "linkOnly":
+          await updateMission(missionId, { isActive: true, type: MissionType.EXPERIENCE_GROUP });
+          break;
+        case "private":
+          await updateMission(missionId, { isActive: false });
+          break;
+      }
+      void queryClient.invalidateQueries({ queryKey: missionQueryKeys.mission(missionId) });
+      toast({ message: `${VISIBILITY_CONFIG[next].label}(으)로 변경되었습니다.` });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "공개 상태 변경 중 오류가 발생했습니다.";
+      toast({
+        message,
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+        id: "visibility-update-error",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+            config.badgeClassName,
+          )}
+          disabled={isUpdating}
+        >
+          {config.label}
+          <ChevronDown className="size-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-56 bg-white p-1 shadow-lg">
+        {(
+          Object.entries(VISIBILITY_CONFIG) as [
+            MissionVisibility,
+            (typeof VISIBILITY_CONFIG)[MissionVisibility],
+          ][]
+        ).map(([key, value]) => (
+          <button
+            key={key}
+            type="button"
+            className={cn(
+              "flex w-full flex-col gap-0.5 rounded-md px-3 py-2 text-left transition-colors hover:bg-zinc-100",
+              current === key && "bg-zinc-50",
+            )}
+            onClick={() => void handleSelect(key)}
+            disabled={isUpdating}
+          >
+            <Typo.Body size="medium" className="text-zinc-900">
+              {value.label}
+            </Typo.Body>
+            <Typo.Body size="small" className="text-zinc-500">
+              {value.description}
+            </Typo.Body>
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -52,7 +159,7 @@ function MissionActions({ missionId }: { missionId: string }) {
 
   return (
     <>
-      <PublishBadge missionId={missionId} />
+      <VisibilityDropdown missionId={missionId} />
       <Link
         href={ROUTES.MISSION(missionId)}
         className="flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200 sm:px-3"

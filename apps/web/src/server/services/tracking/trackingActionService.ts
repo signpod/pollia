@@ -23,8 +23,9 @@ export class TrackingActionService {
     missionId: string,
     userId: string,
     options: GetMissionFunnelOptions = {},
+    isAdmin = false,
   ): Promise<MissionFunnelData> {
-    await this.validateAccess(missionId, userId);
+    await this.validateAccess(missionId, userId, isAdmin);
 
     const actions = await this.getActions(missionId);
     if (actions.length === 0) {
@@ -47,7 +48,7 @@ export class TrackingActionService {
     };
   }
 
-  private async validateAccess(missionId: string, userId: string): Promise<void> {
+  private async validateAccess(missionId: string, userId: string, isAdmin = false): Promise<void> {
     const mission = await this.missionRepo.findById(missionId);
 
     if (!mission) {
@@ -56,8 +57,8 @@ export class TrackingActionService {
       throw error;
     }
 
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
+    if (!isAdmin && mission.creatorId !== userId) {
+      const error = new Error("퍼널 조회 권한이 없습니다.");
       error.cause = 403;
       throw error;
     }

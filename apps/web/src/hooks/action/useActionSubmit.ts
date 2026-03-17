@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 const SURVEY_SUBMIT_MODAL = {
-  title: "완료할까요?",
+  title: "제출할까요?",
   description: "제출 이후에는 답변을 수정할 수 없어요",
   confirmText: "제출하기",
   cancelText: "취소",

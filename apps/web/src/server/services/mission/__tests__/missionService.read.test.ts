@@ -15,6 +15,8 @@ describe("MissionService - Read", () => {
       findById: jest.fn(),
       findByUserId: jest.fn(),
       findAll: jest.fn(),
+      findAllPaged: jest.fn(),
+      countAll: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
       updateLikesCount: jest.fn(),
@@ -22,7 +24,7 @@ describe("MissionService - Read", () => {
       incrementShareCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
-    } as jest.Mocked<MissionRepository>;
+    } as unknown as jest.Mocked<MissionRepository>;
 
     mockResponseRepository = {
       findById: jest.fn(),
@@ -730,6 +732,61 @@ describe("MissionService - Read", () => {
       await expect(missionService.checkParticipantLimit("invalid-id")).rejects.toThrow(
         "미션을 찾을 수 없습니다.",
       );
+    });
+  });
+
+  describe("listAllMissions", () => {
+    it("페이지 기반으로 전체 미션 목록을 조회한다", async () => {
+      // Given
+      const mockMissions = [
+        { ...createMockMission({ id: "m1" }), creator: { id: "u1", name: "유저1" } },
+        { ...createMockMission({ id: "m2" }), creator: { id: "u2", name: "유저2" } },
+      ];
+      mockRepository.findAllPaged.mockResolvedValue(mockMissions);
+      mockRepository.countAll.mockResolvedValue(2);
+
+      // When
+      const result = await missionService.listAllMissions({ page: 1, pageSize: 20 });
+
+      // Then
+      expect(result.missions).toEqual(mockMissions);
+      expect(result.total).toBe(2);
+      expect(mockRepository.findAllPaged).toHaveBeenCalledWith({ page: 1, pageSize: 20 });
+      expect(mockRepository.countAll).toHaveBeenCalledWith({ page: 1, pageSize: 20 });
+    });
+
+    it("옵션 없이 호출하면 기본값으로 조회한다", async () => {
+      // Given
+      mockRepository.findAllPaged.mockResolvedValue([]);
+      mockRepository.countAll.mockResolvedValue(0);
+
+      // When
+      const result = await missionService.listAllMissions();
+
+      // Then
+      expect(result.missions).toEqual([]);
+      expect(result.total).toBe(0);
+    });
+
+    it("검색어와 카테고리로 필터링한다", async () => {
+      // Given
+      const mockMissions = [
+        {
+          ...createMockMission({ id: "m1", title: "이벤트 미션" }),
+          creator: { id: "u1", name: "유저1" },
+        },
+      ];
+      mockRepository.findAllPaged.mockResolvedValue(mockMissions);
+      mockRepository.countAll.mockResolvedValue(1);
+
+      // When
+      const options = { search: "이벤트", category: "EVENT" as const };
+      const result = await missionService.listAllMissions(options);
+
+      // Then
+      expect(result.missions).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(mockRepository.findAllPaged).toHaveBeenCalledWith(options);
     });
   });
 });

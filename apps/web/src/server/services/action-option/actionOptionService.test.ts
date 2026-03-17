@@ -28,6 +28,8 @@ describe("ActionOptionService", () => {
 
     mockMissionRepo = {
       findById: jest.fn(),
+      findAllPaged: jest.fn(),
+      countAll: jest.fn(),
     } as unknown as jest.Mocked<MissionRepository>;
 
     service = new ActionOptionService(mockOptionRepo, mockActionRepo, mockMissionRepo);
@@ -473,6 +475,42 @@ describe("ActionOptionService", () => {
       );
 
       expect(mockOptionRepo.deleteByActionId).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("isAdmin 바이패스", () => {
+    it("createOption - isAdmin이면 소유자가 아니어도 성공한다", async () => {
+      // Given
+      const createData = {
+        actionId: "action1",
+        title: "새 옵션",
+        order: 0,
+      };
+      const mockAction = createMockAction();
+      const mockMission = createMockMission({ creatorId: "owner" });
+      const mockCreatedOption = {
+        id: "option1",
+        ...createData,
+        description: null,
+        imageUrl: null,
+        fileUploadId: null,
+        nextActionId: null,
+        nextCompletionId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockActionRepo.findById.mockResolvedValue(mockAction);
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockOptionRepo.create.mockResolvedValue(mockCreatedOption);
+
+      // When
+      const result = await service.createOption(createData, "non-owner", true);
+
+      // Then
+      expect(result).toBeDefined();
+      expect(result).toEqual(mockCreatedOption);
+      expect(mockOptionRepo.create).toHaveBeenCalled();
     });
   });
 });

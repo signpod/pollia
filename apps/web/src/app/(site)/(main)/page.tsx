@@ -1,3 +1,4 @@
+import { bannerService } from "@/server/services/banner/bannerService";
 import { missionService } from "@/server/services/mission";
 import { MissionCategory, MissionType } from "@prisma/client";
 import { BannerSlider } from "./components/BannerSlider";
@@ -7,7 +8,7 @@ import { toSurveyCardData } from "./utils";
 export const dynamic = "force-dynamic";
 
 export default async function MainPage() {
-  const [testMissionsRaw, researchMissionsRaw] = await Promise.all([
+  const [testMissionsRaw, researchMissionsRaw, banners] = await Promise.all([
     missionService.getAllMissions({
       limit: 6,
       type: MissionType.GENERAL,
@@ -20,14 +21,22 @@ export default async function MainPage() {
       category: MissionCategory.RESEARCH,
       isActive: true,
     }),
+    bannerService.listBanners(),
   ]);
 
   const testMissions = testMissionsRaw.map(toSurveyCardData);
   const researchMissions = researchMissionsRaw.map(toSurveyCardData);
 
+  const bannerSlides = banners.map(b => ({
+    id: b.id,
+    imageUrl: b.imageUrl,
+    title: b.title,
+    subtitle: b.subtitle,
+  }));
+
   return (
     <main className="flex flex-1 flex-col bg-white pb-10">
-      <BannerSlider />
+      <BannerSlider slides={bannerSlides} />
       <div className="flex flex-col gap-10 pt-10">
         <CurationSection
           title="인기 심리 테스트"

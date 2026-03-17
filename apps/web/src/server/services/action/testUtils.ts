@@ -32,6 +32,8 @@ export function createActionServiceTestContext() {
 
   const mockMissionRepo = {
     findById: jest.fn(),
+    findAllPaged: jest.fn(),
+    countAll: jest.fn(),
     update: jest.fn(),
   } as unknown as jest.Mocked<MissionRepository>;
 

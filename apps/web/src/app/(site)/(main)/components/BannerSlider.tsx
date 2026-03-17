@@ -1,6 +1,5 @@
 "use client";
 
-import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import PauseIcon from "@public/svgs/pause-icon.svg";
 import PlayIcon from "@public/svgs/play-icon.svg";
@@ -8,24 +7,23 @@ import { Typo } from "@repo/ui/components";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// TODO: 데이터 수정 필요
-const FEATURED_MISSIONS = [
-  {
-    id: "cmmiuqm3h000hkz040g6ywtia",
-    imageUrl: "/images/01.jpg",
-  },
-  {
-    id: "cmme8bjkt0003jm04g04tdw8v",
-    imageUrl: "/images/02.jpg",
-  },
-];
+interface BannerSlide {
+  id: string;
+  imageUrl: string;
+  title: string;
+  subtitle: string | null;
+}
 
-export function BannerSlider() {
-  const total = FEATURED_MISSIONS.length;
+interface BannerSliderProps {
+  slides: BannerSlide[];
+}
+
+export function BannerSlider({ slides }: BannerSliderProps) {
+  const total = slides.length;
   const [displayIndex, setDisplayIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [swipeKey, setSwipeKey] = useState(0);
+  const swipeKeyRef = useRef(0);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const touchDeltaX = useRef(0);
@@ -35,13 +33,7 @@ export function BannerSlider() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const extendedSlides = [
-    FEATURED_MISSIONS[total - 1]!,
-    ...FEATURED_MISSIONS,
-    FEATURED_MISSIONS[0]!,
-  ];
-
-  const realIndex = (((displayIndex - 1) % total) + total) % total;
+  const realIndex = total > 0 ? (((displayIndex - 1) % total) + total) % total : 0;
 
   const goToNext = useCallback(() => {
     setIsTransitioning(true);
@@ -75,7 +67,7 @@ export function BannerSlider() {
     if (total <= 1 || !isPlaying) return;
     const interval = setInterval(goToNext, 3000);
     return () => clearInterval(interval);
-  }, [goToNext, total, isPlaying, swipeKey]);
+  }, [goToNext, total, isPlaying]);
 
   const finishDrag = useCallback(() => {
     if (!isDragging.current) return;
@@ -83,11 +75,11 @@ export function BannerSlider() {
     if (touchDeltaX.current < -50) {
       isSwiped.current = true;
       goToNext();
-      setSwipeKey(k => k + 1);
+      swipeKeyRef.current += 1;
     } else if (touchDeltaX.current > 50) {
       isSwiped.current = true;
       goToPrev();
-      setSwipeKey(k => k + 1);
+      swipeKeyRef.current += 1;
     }
     touchDeltaX.current = 0;
     isHorizontalSwipe.current = false;
@@ -157,13 +149,11 @@ export function BannerSlider() {
     };
   }, [finishDrag]);
 
-  const handleSlideClick = (missionId: string) => {
-    if (isSwiped.current) {
-      isSwiped.current = false;
-      return;
-    }
-    window.location.href = `https://pollia.me/${ROUTES.MISSION(missionId)}`;
-  };
+  if (total === 0) return null;
+
+  const lastSlide = slides[total - 1] as BannerSlide;
+  const firstSlide = slides[0] as BannerSlide;
+  const extendedSlides = [lastSlide, ...slides, firstSlide];
 
   return (
     <section>
@@ -181,26 +171,29 @@ export function BannerSlider() {
           style={{ transform: `translateX(-${displayIndex * 100}%)` }}
         >
           {extendedSlides.map((m, index) => (
-            <div
-              key={m.id + index}
-              className="relative size-full shrink-0 cursor-grab select-none active:cursor-grabbing"
-              role="button"
-              tabIndex={0}
-              onClick={() => handleSlideClick(m.id)}
-              onKeyDown={e => {
-                if (e.key === "Enter") handleSlideClick(m.id);
-              }}
-            >
+            <div key={`${m.id}-${index}`} className="relative size-full shrink-0 select-none">
               <Image
                 src={m.imageUrl}
-                alt={`Banner ${realIndex + 1}`}
+                alt={m.title}
                 fill
                 sizes="(max-width: 600px) 100vw, 600px"
                 className="pointer-events-none select-none object-cover"
                 draggable={false}
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
+              {(m.title || m.subtitle) && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 p-7 pb-14">
+                    <Typo.SubTitle className="text-white">{m.title}</Typo.SubTitle>
+                    {m.subtitle && (
+                      <Typo.Body size="small" className="mt-1 text-white/80">
+                        {m.subtitle}
+                      </Typo.Body>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

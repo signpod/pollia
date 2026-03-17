@@ -1,12 +1,12 @@
 "use client";
 
-import { useReadActionsDetail } from "@/app/admin/hooks/action/use-read-actions-detail";
-import { useReadCompletions } from "@/app/admin/hooks/mission-completion/use-read-completions";
-import { useReadMission } from "@/app/admin/hooks/mission/use-read-mission";
 import {
   type FlowGraphData,
   transformToFlowGraph,
-} from "@/app/admin/missions/[id]/flow/utils/flowTransform";
+} from "@/app/admin/(legacy)/missions/[id]/flow/utils/flowTransform";
+import { useReadActionsDetail } from "@/app/admin/hooks/action/use-read-actions-detail";
+import { useReadCompletions } from "@/app/admin/hooks/mission-completion/use-read-completions";
+import { useReadMission } from "@/app/admin/hooks/mission/use-read-mission";
 import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
 

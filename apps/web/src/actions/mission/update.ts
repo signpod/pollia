@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
@@ -14,9 +14,9 @@ function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
 
 export async function updateMission(missionId: string, request: UpdateMissionRequest) {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
     const input = toUpdateMissionInput(request);
-    const updatedMission = await missionService.updateMission(missionId, input, user.id);
+    const updatedMission = await missionService.updateMission(missionId, input, user.id, isAdmin);
 
     revalidatePath(`/mission/${missionId}`);
 
@@ -28,8 +28,8 @@ export async function updateMission(missionId: string, request: UpdateMissionReq
 
 export async function setMissionPassword(missionId: string, password: string) {
   try {
-    const user = await requireActiveUser();
-    await missionService.setPassword(missionId, password, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    await missionService.setPassword(missionId, password, user.id, isAdmin);
     revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
@@ -39,8 +39,8 @@ export async function setMissionPassword(missionId: string, password: string) {
 
 export async function removeMissionPassword(missionId: string) {
   try {
-    const user = await requireActiveUser();
-    await missionService.removePassword(missionId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    await missionService.removePassword(missionId, user.id, isAdmin);
     revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
@@ -50,6 +50,7 @@ export async function removeMissionPassword(missionId: string) {
 
 export async function incrementShareCount(missionId: string) {
   try {
+    await requireContentManager();
     await missionService.incrementShareCount(missionId);
     return { success: true };
   } catch (error) {

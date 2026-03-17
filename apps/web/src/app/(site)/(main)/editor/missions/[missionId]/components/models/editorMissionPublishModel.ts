@@ -13,7 +13,6 @@ export interface ResolvedEntryAction {
 }
 
 export interface PublishComputationInput {
-  isPublished: boolean;
   entryActionId: string | null | undefined;
   useAiCompletion?: boolean;
   serverActions: ServerActionLike[] | null | undefined;
@@ -201,7 +200,7 @@ export function computePublishAvailability(input: PublishComputationInput): Publ
   });
 
   return {
-    canPublish: !input.isPublished && validationResult.isValid,
+    canPublish: validationResult.isValid,
     isValidationDataReady,
     issues: validationResult.issues,
     blockingMessage: validationResult.isValid

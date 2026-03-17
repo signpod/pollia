@@ -1,13 +1,13 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireContentManager } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { updateMission } from "@/actions/mission/update";
 import { rewardService } from "@/server/services/reward/rewardService";
 
 export async function deleteReward(rewardId: string, missionId?: string) {
   try {
-    await requireActiveUser();
+    await requireContentManager();
 
     if (missionId) {
       await updateMission(missionId, { rewardId: null });

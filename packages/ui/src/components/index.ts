@@ -38,11 +38,15 @@ export * from "./common/Select";
 export * from "./common/Textarea";
 export * from "./common/ProgressBar";
 export * from "./common/ProgressBarV2";
+export * from "./common/ProgressBarV3";
 export * from "./common/PurchaseLinkCard";
 export * from "./common/RatingScale";
 export * from "./common/StarScale";
 export * from "./common/DateAndTimePicker";
 export * from "./common/TiptapEditor";
+export * from "./ui/popover";
+export * from "./common/SegmentedControl";
+export * from "./common/Pagination";
 // Hooks
 export * from "../hooks/useStep";
 

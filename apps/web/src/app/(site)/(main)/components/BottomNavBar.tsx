@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateMissionBottomSheet } from "@/components/common/CreateMissionBottomSheet";
 import { ROUTES } from "@/constants/routes";
 import { useAuth } from "@/hooks/user";
 import CommunityIcon from "@public/svgs/community-icon.svg";
@@ -11,7 +12,6 @@ import LikeIconFill from "@public/svgs/like-icon-fill.svg";
 import LikeIcon from "@public/svgs/like-icon.svg";
 import PickIcon from "@public/svgs/pick-icon.svg";
 import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
-import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -46,13 +46,6 @@ function BottomNavBarContent() {
     setIsEditorPopupOpen(prev => !prev);
   }, [isLoggedIn, openLoginDrawer]);
 
-  const handleCategorySelect = useCallback(
-    (category: "RESEARCH" | "TEST") => {
-      router.push(`${ROUTES.CREATE_MISSION}?category=${category}`);
-    },
-    [router],
-  );
-
   useEffect(() => {
     setIsEditorPopupOpen(false);
   }, [pathname]);
@@ -80,51 +73,10 @@ function BottomNavBarContent() {
 
   return (
     <div className="relative">
-      <AnimatePresence>
-        {isEditorPopupOpen && (
-          <motion.div
-            className="fixed inset-0 bg-black/50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setIsEditorPopupOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      <div className="absolute bottom-full left-0 right-0 overflow-hidden">
-        <AnimatePresence>
-          {isEditorPopupOpen && (
-            <motion.div
-              className="rounded-t-2xl bg-white"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ duration: 0.25, ease: [0.33, 1, 0.68, 1] }}
-            >
-              <div className="flex flex-col gap-1 p-4">
-                <button
-                  type="button"
-                  onClick={() => handleCategorySelect("RESEARCH")}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
-                >
-                  <span className="text-lg">📋</span>
-                  <span>설문조사/리서치</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleCategorySelect("TEST")}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
-                >
-                  <span className="text-lg">🧠</span>
-                  <span>심리/유형 테스트</span>
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <CreateMissionBottomSheet
+        isOpen={isEditorPopupOpen}
+        onClose={() => setIsEditorPopupOpen(false)}
+      />
 
       <nav className="relative z-50 flex w-full items-center border-t border-zinc-100 bg-white px-1 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
         <Link

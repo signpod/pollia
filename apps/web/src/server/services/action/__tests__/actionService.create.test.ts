@@ -235,6 +235,33 @@ describe("ActionService - Create", () => {
 
       expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
+
+    it("isAdmin이면 소유자가 아니어도 액션을 생성할 수 있다", async () => {
+      // Given - mock mission with different owner
+      const mockMission = createMockMission({ creatorId: "owner" });
+      const request = {
+        missionId: "mission1",
+        title: "좋아하는 색은?",
+        order: 0,
+        maxSelections: 1,
+        isRequired: true,
+        options: [
+          { title: "빨강", order: 0 },
+          { title: "파랑", order: 1 },
+        ],
+      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.MULTIPLE_CHOICE);
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
+
+      // When - call with isAdmin=true
+      const result = await ctx.service.createMultipleChoiceAction(request, "non-owner", true);
+
+      // Then - verify success
+      expect(result.id).toBe("action1");
+      expect(ctx.mockActionRepo.createMultipleChoice).toHaveBeenCalled();
+    });
   });
 
   describe("createScaleAction", () => {

@@ -140,6 +140,8 @@ export function MissionIntroPage({
   authorName,
   authorImageUrl,
   isRequirePassword,
+  startDate,
+  deadline,
   missionId,
   creatorId,
   missionType,
@@ -235,6 +237,8 @@ export function MissionIntroPage({
         authorName={authorName}
         authorImageUrl={authorImageUrl}
         isRequirePassword={isRequirePassword}
+        startDate={startDate}
+        deadline={deadline}
         viewCount={viewCount}
         likesCount={likesCount}
         titleRef={localTitleRef}

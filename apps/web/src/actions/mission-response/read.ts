@@ -1,6 +1,10 @@
 "use server";
 
-import { requireActiveUser, resolveMissionActor } from "@/actions/common/auth";
+import {
+  requireActiveUser,
+  requireContentManager,
+  resolveMissionActor,
+} from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseService } from "@/server/services/mission-response";
@@ -17,8 +21,8 @@ import type {
 
 export async function getMissionResponse(responseId: string): Promise<GetMissionResponseResponse> {
   try {
-    const user = await requireActiveUser();
-    const response = await missionResponseService.getResponseById(responseId, user.id);
+    const { user, isAdmin } = await requireContentManager();
+    const response = await missionResponseService.getResponseById(responseId, user.id, isAdmin);
     return { data: response };
   } catch (error) {
     return handleActionError(error, "응답 조회 중 오류가 발생했습니다.");
@@ -55,8 +59,13 @@ export async function getMissionResponses(
   options?: { membersOnly?: boolean },
 ): Promise<GetMissionResponsesResponse> {
   try {
-    const user = await requireActiveUser();
-    const responses = await missionResponseService.getMissionResponses(missionId, user.id, options);
+    const { user, isAdmin } = await requireContentManager();
+    const responses = await missionResponseService.getMissionResponses(
+      missionId,
+      user.id,
+      options,
+      isAdmin,
+    );
     return { data: responses };
   } catch (error) {
     return handleActionError(error, "응답 목록 조회 중 오류가 발생했습니다.");
@@ -68,11 +77,16 @@ export async function getMissionStats(
   dateRange?: DateRangeString,
 ): Promise<GetMissionStatsResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
     const parsedDateRange = dateRange
       ? { from: new Date(dateRange.from), to: new Date(dateRange.to) }
       : undefined;
-    const stats = await missionResponseService.getMissionStats(missionId, user.id, parsedDateRange);
+    const stats = await missionResponseService.getMissionStats(
+      missionId,
+      user.id,
+      parsedDateRange,
+      isAdmin,
+    );
     return { data: stats };
   } catch (error) {
     return handleActionError(error, "통계 조회 중 오류가 발생했습니다.");
@@ -84,7 +98,7 @@ export async function getDailyParticipationTrend(
   dateRange?: DateRangeString,
 ): Promise<GetDailyParticipationTrendResponse> {
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
     const parsedDateRange = dateRange
       ? { from: new Date(dateRange.from), to: new Date(dateRange.to) }
       : undefined;
@@ -92,6 +106,7 @@ export async function getDailyParticipationTrend(
       missionId,
       user.id,
       parsedDateRange,
+      isAdmin,
     );
     return { data: trend };
   } catch (error) {
@@ -108,7 +123,7 @@ export async function getMissionResponsesPage(
   const MAX_PAGE_SIZE = 100;
 
   try {
-    const user = await requireActiveUser();
+    const { user, isAdmin } = await requireContentManager();
 
     const page = Math.max(DEFAULT_PAGE, Math.floor(options?.page ?? DEFAULT_PAGE));
     const pageSize = Math.min(
@@ -116,11 +131,16 @@ export async function getMissionResponsesPage(
       Math.max(DEFAULT_PAGE, Math.floor(options?.pageSize ?? DEFAULT_PAGE_SIZE)),
     );
 
-    const pageResult = await missionResponseService.getMissionResponsesPage(missionId, user.id, {
-      page,
-      pageSize,
-      membersOnly: options?.membersOnly,
-    });
+    const pageResult = await missionResponseService.getMissionResponsesPage(
+      missionId,
+      user.id,
+      {
+        page,
+        pageSize,
+        membersOnly: options?.membersOnly,
+      },
+      isAdmin,
+    );
     const actions = await actionRepository.findDetailsByMissionId(missionId);
 
     const submissionRows = buildSubmissionTables({

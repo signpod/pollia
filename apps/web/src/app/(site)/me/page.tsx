@@ -18,8 +18,8 @@ import { MePageContent } from "./MePageContent";
 export default async function MePage() {
   const queryClient = getQueryClient();
 
-  const [myResponsesData, userData] = await Promise.all([
-    queryClient.fetchQuery({
+  const [, userData] = await Promise.all([
+    queryClient.prefetchQuery({
       queryKey: missionQueryKeys.myResponses(),
       queryFn: () => getMyResponses(),
     }),
@@ -29,7 +29,7 @@ export default async function MePage() {
     }),
     queryClient.prefetchQuery({
       queryKey: [...missionQueryKeys.allMissions(), "recommended"],
-      queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
+      queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL, isActive: true }),
     }),
     queryClient.prefetchQuery({
       queryKey: missionLikeQueryKeys.likedMissions(),

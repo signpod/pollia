@@ -115,7 +115,7 @@ export function MissionPageWrapper({
     responseId: missionResponse?.id ?? "",
   });
 
-  const { brandLogoUrl, title, deadline, imageUrl, isActive } = mission ?? {};
+  const { brandLogoUrl, title, startDate, deadline, imageUrl, isActive } = mission ?? {};
 
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -189,6 +189,8 @@ export function MissionPageWrapper({
             authorName={creatorName}
             authorImageUrl={creatorImageUrl}
             isRequirePassword={isRequirePassword}
+            startDate={startDate}
+            deadline={deadline}
             titleRef={titleRef}
             contextTitle={title}
             missionId={missionId}
