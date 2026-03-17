@@ -13,6 +13,7 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   DATE: "날짜",
   TIME: "시간",
   BRANCH: "분기",
+  OX: "OX",
 };
 
 export function getActionTypeLabel(type: ActionType): string {

@@ -51,6 +51,7 @@ const TYPE_ICONS: Record<ActionType, LucideIcon> = {
   [ActionType.DATE]: Calendar,
   [ActionType.TIME]: Clock,
   [ActionType.BRANCH]: GitBranch,
+  [ActionType.OX]: CheckSquare,
 };
 
 const TYPE_COLORS: Record<ActionType, string> = {
@@ -66,6 +67,7 @@ const TYPE_COLORS: Record<ActionType, string> = {
   [ActionType.DATE]: "text-cyan-500 bg-cyan-50",
   [ActionType.TIME]: "text-indigo-500 bg-indigo-50",
   [ActionType.BRANCH]: "text-amber-500 bg-amber-50",
+  [ActionType.OX]: "text-teal-500 bg-teal-50",
 };
 
 function getNextLabel(action: ActionDetail, allActions: ActionDetail[]): string | null {

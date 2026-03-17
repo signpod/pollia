@@ -97,6 +97,8 @@ export function buildPatchedCompletionForCache(params: {
     links: serverData.links ?? [],
     missionId: serverData.missionId ?? currentCompletion?.missionId ?? missionId,
     imageFileUploadId: serverData.imageFileUploadId ?? null,
+    minScoreRatio: currentCompletion?.minScoreRatio ?? null,
+    maxScoreRatio: currentCompletion?.maxScoreRatio ?? null,
     createdAt: toDateOrFallback(serverData.createdAt ?? currentCompletion?.createdAt, now),
     updatedAt: toDateOrFallback(serverData.updatedAt ?? currentCompletion?.updatedAt, now),
     imageFileUpload: serverData.imageFileUpload ?? currentCompletion?.imageFileUpload ?? null,

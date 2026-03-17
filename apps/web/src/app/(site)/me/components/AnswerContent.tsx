@@ -26,6 +26,7 @@ export const ACTION_TYPE_CONFIG: Record<ActionType, { icon: React.ReactNode; lab
   DATE: { icon: <CalendarIcon className="h-4 w-4" />, label: "날짜" },
   TIME: { icon: <CalendarIcon className="h-4 w-4" />, label: "시간" },
   BRANCH: { icon: <GitBranchIcon className="h-4 w-4" />, label: "분기" },
+  OX: { icon: <CheckSquareIcon className="h-4 w-4" />, label: "OX" },
 };
 
 export function formatDate(date: Date): string {

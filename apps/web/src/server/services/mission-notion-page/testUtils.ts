@@ -56,6 +56,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   updatedAt: new Date(),
   ...overrides,
   editorDraft: overrides.editorDraft ?? null,
+  quizConfig: overrides.quizConfig ?? null,
 });
 
 export type MissionNotionPageServiceTestContext = ReturnType<

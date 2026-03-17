@@ -41,6 +41,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   updatedAt: new Date(),
   ...overrides,
   editorDraft: overrides.editorDraft ?? null,
+  quizConfig: overrides.quizConfig ?? null,
 });
 
 export const createMockAction = (overrides: Partial<Action> = {}): Action => ({
@@ -57,6 +58,10 @@ export const createMockAction = (overrides: Partial<Action> = {}): Action => ({
   imageFileUploadId: null,
   nextActionId: null,
   nextCompletionId: null,
+  correctOptionId: null,
+  score: null,
+  matchMode: null,
+  hint: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -133,6 +138,10 @@ export const createMockActionResponse = (
   imageFileUploadId: null,
   nextActionId: null,
   nextCompletionId: null,
+  correctOptionId: null,
+  score: null,
+  matchMode: null,
+  hint: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -173,6 +182,8 @@ export const createMockMissionCompletion = (
   imageUrl: null,
   imageFileUploadId: null,
   missionId: "mission1",
+  minScoreRatio: null,
+  maxScoreRatio: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   imageFileUpload: null,

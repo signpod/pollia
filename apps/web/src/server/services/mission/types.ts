@@ -3,16 +3,25 @@ import type { Mission, MissionCategory, MissionType, Prisma } from "@prisma/clie
 
 type MissionCreateFields = Omit<
   Prisma.MissionUncheckedCreateInput,
-  "id" | "creatorId" | "createdAt" | "updatedAt" | "isActive" | "rewardId" | "password"
+  | "id"
+  | "creatorId"
+  | "createdAt"
+  | "updatedAt"
+  | "isActive"
+  | "rewardId"
+  | "password"
+  | "quizConfig"
 >;
 
 export type CreateMissionInput = MissionCreateFields & {
   actionIds?: string[];
+  quizConfig?: Record<string, unknown> | null;
 };
 
 export type UpdateMissionInput = Partial<MissionCreateFields> & {
   isActive?: boolean;
   rewardId?: string | null;
+  quizConfig?: Record<string, unknown> | null;
 };
 
 export interface GetUserMissionsOptions {
