@@ -4,8 +4,6 @@ import { toast } from "@/components/common/Toast";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useResetMissionResponse } from "@/hooks/mission-response/useResetMissionResponse";
-import { useCurrentUser } from "@/hooks/user";
-import { UserRole } from "@prisma/client";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,7 +19,6 @@ export function DevTools({ missionId }: DevToolsProps) {
 
   const [isOpen, setIsOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
-  const { data: currentUser } = useCurrentUser();
   const { data: missionResponse, isLoading: isLoadingResponse } = useReadMissionResponseForMission({
     missionId,
   });
@@ -31,12 +28,11 @@ export function DevTools({ missionId }: DevToolsProps) {
     setHasMounted(true);
   }, []);
 
-  const isAdmin = currentUser?.role === UserRole.ADMIN;
   const isDevEnvironment =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" || window.location.hostname === "dev.pollia.me");
 
-  if (!hasMounted || !isAdmin || !isDevEnvironment) {
+  if (!hasMounted || !isDevEnvironment) {
     return null;
   }
 
