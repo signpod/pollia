@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
+import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
 import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import type { BannerItem } from "@/types/dto/banner";
@@ -20,6 +22,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useDeleteBanner } from "../../hooks/banner/use-delete-banner";
 import { useUpdateBanner } from "../../hooks/banner/use-update-banner";
+
+const BANNER_ASPECT = 3 / 2;
 
 interface BannerRowProps {
   banner: BannerItem;
@@ -48,6 +52,7 @@ export function BannerRow({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateMutation = useUpdateBanner();
   const deleteMutation = useDeleteBanner();
+  const cropper = useImageCropper({ fileNamePrefix: "banner" });
   const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
     bucket: STORAGE_BUCKETS.BANNER_IMAGES,
   });
@@ -62,7 +67,8 @@ export function BannerRow({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) upload(file);
+    if (file) cropper.openWithFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSave = () => {
@@ -103,7 +109,7 @@ export function BannerRow({
         <Box
           sx={{
             width: 96,
-            height: 60,
+            height: 64,
             borderRadius: 1,
             overflow: "hidden",
             flexShrink: 0,
@@ -165,6 +171,18 @@ export function BannerRow({
         >
           취소
         </Button>
+        <AdminImageCropDialog
+          open={cropper.isOpen}
+          imageSrc={cropper.imageSrc}
+          aspect={BANNER_ASPECT}
+          title="배너 이미지 편집"
+          description="3:2 비율로 이미지를 편집합니다."
+          fileName={cropper.fileName ?? "banner.jpg"}
+          onOpenChange={open => {
+            if (!open) cropper.close();
+          }}
+          onConfirm={upload}
+        />
       </Card>
     );
   }
@@ -186,7 +204,7 @@ export function BannerRow({
         sx={{
           position: "relative",
           width: 96,
-          height: 60,
+          height: 64,
           borderRadius: 1,
           overflow: "hidden",
           flexShrink: 0,

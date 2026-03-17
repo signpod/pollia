@@ -181,15 +181,19 @@ export function BannerSlider({ slides }: BannerSliderProps) {
                 draggable={false}
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-7 pb-14">
-                <Typo.SubTitle className="text-white">{m.title}</Typo.SubTitle>
-                {m.subtitle && (
-                  <Typo.Body size="small" className="mt-1 text-white/80">
-                    {m.subtitle}
-                  </Typo.Body>
-                )}
-              </div>
+              {(m.title || m.subtitle) && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 p-7 pb-14">
+                    <Typo.SubTitle className="text-white">{m.title}</Typo.SubTitle>
+                    {m.subtitle && (
+                      <Typo.Body size="small" className="mt-1 text-white/80">
+                        {m.subtitle}
+                      </Typo.Body>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

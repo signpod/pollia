@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
+import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
 import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import Avatar from "@mui/material/Avatar";
@@ -11,11 +13,14 @@ import { Plus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useCreateBanner } from "../../hooks/banner/use-create-banner";
 
+const BANNER_ASPECT = 3 / 2;
+
 export function BannerAddRow() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createMutation = useCreateBanner();
+  const cropper = useImageCropper({ fileNamePrefix: "banner" });
   const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
     bucket: STORAGE_BUCKETS.BANNER_IMAGES,
   });
@@ -29,7 +34,8 @@ export function BannerAddRow() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) upload(file);
+    if (file) cropper.openWithFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = () => {
@@ -64,7 +70,7 @@ export function BannerAddRow() {
         <Box
           sx={{
             width: 96,
-            height: 60,
+            height: 64,
             borderRadius: 1,
             overflow: "hidden",
             flexShrink: 0,
@@ -81,7 +87,7 @@ export function BannerAddRow() {
           onClick={() => fileInputRef.current?.click()}
           sx={{
             width: 96,
-            height: 60,
+            height: 64,
             borderRadius: 1,
             border: "1px dashed",
             borderColor: "grey.300",
@@ -138,6 +144,18 @@ export function BannerAddRow() {
       >
         {isPending ? "추가 중..." : "추가"}
       </Button>
+      <AdminImageCropDialog
+        open={cropper.isOpen}
+        imageSrc={cropper.imageSrc}
+        aspect={BANNER_ASPECT}
+        title="배너 이미지 편집"
+        description="3:2 비율로 이미지를 편집합니다."
+        fileName={cropper.fileName ?? "banner.jpg"}
+        onOpenChange={open => {
+          if (!open) cropper.close();
+        }}
+        onConfirm={upload}
+      />
     </Card>
   );
 }
