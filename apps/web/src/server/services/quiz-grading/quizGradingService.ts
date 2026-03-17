@@ -58,7 +58,9 @@ export class QuizGradingService {
     }>,
     scoreRatio: number,
   ): string | null {
-    const matched = completions.find(c => {
+    const sorted = [...completions].sort((a, b) => (a.minScoreRatio ?? 0) - (b.minScoreRatio ?? 0));
+
+    const matched = sorted.find(c => {
       const min = c.minScoreRatio ?? 0;
       const max = c.maxScoreRatio ?? 100;
       return scoreRatio >= min && scoreRatio <= max;

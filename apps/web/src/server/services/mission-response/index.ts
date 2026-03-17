@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionCompletionInferenceCacheRepository } from "@/server/repositories/mission-completion-inference-cache/missionCompletionInferenceCacheRepository";
@@ -336,6 +337,11 @@ export class MissionResponseService {
         completions,
         gradeResult.scoreRatio,
       );
+      if (!quizCompletionId) {
+        logger.warning(
+          `Quiz completion 매칭 실패 - responseId: ${response.id}, scoreRatio: ${gradeResult.scoreRatio}`,
+        );
+      }
       selectedCompletionId = quizCompletionId ?? firstCompletion.id;
     } else if (response.mission.useAiCompletion === true) {
       selectedCompletionId = await this.resolveCompletionIdByAi({
