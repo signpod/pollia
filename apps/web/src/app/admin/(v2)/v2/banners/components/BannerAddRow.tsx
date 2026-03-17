@@ -141,7 +141,7 @@ export function BannerAddRow() {
         size="small"
         value={subtitle}
         onChange={e => setSubtitle(e.target.value)}
-        placeholder="부제목 (선택)"
+        placeholder="이미지 설명 - 웹 접근성용 (선택)"
         sx={{ flex: 1 }}
       />
       <TextField

@@ -11,6 +11,7 @@ interface BannerSlide {
   id: string;
   imageUrl: string;
   title: string;
+  /** 화면에 노출되지 않으며, 웹 접근성을 위한 이미지 alt 값으로 사용 */
   subtitle: string | null;
   linkUrl: string | null;
 }
@@ -192,51 +193,48 @@ export function BannerSlider({ slides }: BannerSliderProps) {
             >
               <Image
                 src={m.imageUrl}
-                alt={m.title}
+                alt={m.subtitle || m.title}
                 fill
                 sizes="(max-width: 600px) 100vw, 600px"
                 className="pointer-events-none select-none object-cover"
                 draggable={false}
                 priority
               />
-              {(m.title || m.subtitle) && (
-                <>
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 p-7 pb-14">
-                    <Typo.SubTitle className="text-white">{m.title}</Typo.SubTitle>
-                    {m.subtitle && (
-                      <Typo.Body size="small" className="mt-1 text-white/80">
-                        {m.subtitle}
-                      </Typo.Body>
-                    )}
-                  </div>
-                </>
+              {m.title && (
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
               )}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between p-7 gap-3">
+                {m.title ? (
+                  <Typo.MainTitle
+                    size="medium"
+                    className="min-w-0 flex-1 break-keep-all text-white"
+                  >
+                    {m.title}
+                  </Typo.MainTitle>
+                ) : (
+                  <div />
+                )}
+                <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex size-[26px] items-center justify-center rounded-full bg-black/20"
+                    onClick={() => setIsPlaying(prev => !prev)}
+                  >
+                    {isPlaying ? (
+                      <PauseIcon className="size-[18px] text-white" />
+                    ) : (
+                      <PlayIcon className="size-[18px] fill-white" />
+                    )}
+                  </button>
+                  <span className="rounded-full bg-black/20 px-2 py-1">
+                    <Typo.Body size="small" className="font-bold text-white">
+                      {realIndex + 1} / {total}
+                    </Typo.Body>
+                  </span>
+                </div>
+              </div>
             </div>
           ))}
-        </div>
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-7">
-          <div className="flex items-end justify-end">
-            <div className="pointer-events-auto flex shrink-0 items-center gap-2">
-              <button
-                type="button"
-                className="flex size-[26px] items-center justify-center rounded-full bg-black/20"
-                onClick={() => setIsPlaying(prev => !prev)}
-              >
-                {isPlaying ? (
-                  <PauseIcon className="size-[18px] text-white" />
-                ) : (
-                  <PlayIcon className="size-[18px] fill-white" />
-                )}
-              </button>
-              <span className="rounded-full bg-black/20 px-2 py-1">
-                <Typo.Body size="small" className="font-bold text-white">
-                  {realIndex + 1} / {total}
-                </Typo.Body>
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
