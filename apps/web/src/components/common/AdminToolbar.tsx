@@ -92,6 +92,7 @@ interface MissionDevToolsProps {
 
 function MissionDevTools({ missionId, onClose }: MissionDevToolsProps) {
   const queryClient = useQueryClient();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const { data: missionResponse, isLoading: isLoadingResponse } = useReadMissionResponseForMission({
     missionId,
   });
@@ -105,40 +106,39 @@ function MissionDevTools({ missionId, onClose }: MissionDevToolsProps) {
   const handleDeleteResponse = () => {
     if (!response?.id) return;
 
-    if (window.confirm("정말로 이 컨텐츠의 응답을 초기화하시겠습니까?")) {
-      resetResponse(response.id, {
-        onSuccess: async () => {
-          await Promise.all([
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.missionParticipant(missionId),
-            }),
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.missionResponseForMission(missionId),
-            }),
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.mission(missionId),
-            }),
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.userAnswerStatus(missionId),
-            }),
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.missionPassword(missionId),
-            }),
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.all(),
-            }),
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.userMissions(),
-            }),
-          ]);
-          toast.success("응답이 초기화되었습니다");
-          onClose();
-        },
-        onError: () => {
-          toast.warning("응답 초기화에 실패했습니다");
-        },
-      });
-    }
+    resetResponse(response.id, {
+      onSuccess: async () => {
+        setConfirmOpen(false);
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.missionParticipant(missionId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.missionResponseForMission(missionId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.mission(missionId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.userAnswerStatus(missionId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.missionPassword(missionId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.all(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.userMissions(),
+          }),
+        ]);
+        toast.success("응답이 초기화되었습니다");
+        onClose();
+      },
+      onError: () => {
+        toast.warning("응답 초기화에 실패했습니다");
+      },
+    });
   };
 
   return (
@@ -188,7 +188,7 @@ function MissionDevTools({ missionId, onClose }: MissionDevToolsProps) {
 
       <button
         type="button"
-        onClick={handleDeleteResponse}
+        onClick={() => setConfirmOpen(true)}
         disabled={!hasResponse || isResetting}
         className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-zinc-800 px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-700 active:bg-zinc-900 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-disabled"
       >
@@ -199,6 +199,36 @@ function MissionDevTools({ missionId, onClose }: MissionDevToolsProps) {
         )}
         초기화하기
       </button>
+
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40">
+          <div className="w-80 rounded-xl bg-white p-5 shadow-xl">
+            <Typo.SubTitle className="text-default">응답 초기화</Typo.SubTitle>
+            <Typo.Body size="small" className="mt-2 text-sub">
+              정말로 이 컨텐츠의 응답을 초기화하시겠습니까?
+            </Typo.Body>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                disabled={isResetting}
+                className="rounded-md px-3 py-1.5 text-sm font-medium text-default transition-colors hover:bg-zinc-100"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteResponse}
+                disabled={isResetting}
+                className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
+              >
+                {isResetting && <Loader2Icon className="size-3.5 animate-spin" />}
+                초기화
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

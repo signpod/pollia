@@ -1,6 +1,5 @@
 "use client";
 
-import type { BannerItem } from "@/types/dto/banner";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
@@ -18,11 +17,13 @@ export default function AdminV2BannersPage() {
 
   const handleMove = (index: number, direction: "up" | "down") => {
     const swapIndex = direction === "up" ? index - 1 : index + 1;
-    if (swapIndex < 0 || swapIndex >= banners.length) return;
+    const current = banners[index];
+    const target = banners[swapIndex];
+    if (!current || !target) return;
 
     const orders = banners.map((b, i) => {
-      if (i === index) return { id: b.id, order: (banners[swapIndex] as BannerItem).order };
-      if (i === swapIndex) return { id: b.id, order: (banners[index] as BannerItem).order };
+      if (i === index) return { id: b.id, order: target.order };
+      if (i === swapIndex) return { id: b.id, order: current.order };
       return { id: b.id, order: b.order };
     });
     reorderMutation.mutate({ orders });

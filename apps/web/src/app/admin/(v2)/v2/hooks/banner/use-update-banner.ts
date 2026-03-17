@@ -20,3 +20,5 @@ export function useUpdateBanner() {
     },
   });
 }
+
+export type UseUpdateBannerReturn = ReturnType<typeof useUpdateBanner>;

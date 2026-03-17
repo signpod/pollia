@@ -13,8 +13,7 @@ import { Plus } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useCreateBanner } from "../../hooks/banner/use-create-banner";
-
-const BANNER_ASPECT = 3 / 2;
+import { BANNER_ASPECT } from "../constants";
 
 export function BannerAddRow() {
   const [title, setTitle] = useState("");

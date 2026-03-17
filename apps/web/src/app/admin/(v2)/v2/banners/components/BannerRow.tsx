@@ -23,8 +23,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDeleteBanner } from "../../hooks/banner/use-delete-banner";
 import { useUpdateBanner } from "../../hooks/banner/use-update-banner";
-
-const BANNER_ASPECT = 3 / 2;
+import { BANNER_ASPECT } from "../constants";
 
 interface BannerRowProps {
   banner: BannerItem;
