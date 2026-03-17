@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
+import { cn } from "@repo/ui/lib";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -8,9 +9,14 @@ import { useCallback } from "react";
 interface CreateMissionBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
+  className?: string;
 }
 
-export function CreateMissionBottomSheet({ isOpen, onClose }: CreateMissionBottomSheetProps) {
+export function CreateMissionBottomSheet({
+  isOpen,
+  onClose,
+  className,
+}: CreateMissionBottomSheetProps) {
   const router = useRouter();
 
   const handleSelect = useCallback(
@@ -40,7 +46,7 @@ export function CreateMissionBottomSheet({ isOpen, onClose }: CreateMissionBotto
             exit={{ y: "100%" }}
             transition={{ duration: 0.25, ease: [0.33, 1, 0.68, 1] }}
           >
-            <div className="flex flex-col gap-1 p-4">
+            <div className={cn("flex flex-col gap-1 p-4", className)}>
               <button
                 type="button"
                 onClick={() => handleSelect("RESEARCH")}
