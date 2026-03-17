@@ -5,6 +5,7 @@ import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import { MissionClientWrapper } from "./MissionClientWrapper";
 import { MissionPageWrapper } from "./MissionPageWrapper";
+import { DevTools } from "./components";
 import { getCachedMission } from "./getCachedMission";
 
 export const revalidate = false;
@@ -23,7 +24,8 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
 
   return (
     <>
-      <AdminToolbar missionId={missionId} />
+      <AdminToolbar />
+      <DevTools missionId={missionId} />
       <MissionClientWrapper dehydratedState={dehydrate(getQueryClient())}>
         <MissionPageWrapper
           mission={mission.data}
