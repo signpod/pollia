@@ -45,6 +45,7 @@ export * from "./common/StarScale";
 export * from "./common/DateAndTimePicker";
 export * from "./common/TiptapEditor";
 export * from "./ui/popover";
+export * from "./common/Pagination";
 // Hooks
 export * from "../hooks/useStep";
 
