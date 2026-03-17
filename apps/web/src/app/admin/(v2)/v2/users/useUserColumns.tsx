@@ -1,53 +1,51 @@
 "use client";
 
 import type { AdminUserItem } from "@/types/dto/admin-user";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import { UserRole, UserStatus } from "@prisma/client";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  Badge,
-  Button,
-} from "../components/ui";
+import { useMemo, useState } from "react";
 import { useAdminForceWithdraw } from "../hooks/user/use-admin-force-withdraw";
 
 function WithdrawButton({ userId, status }: { userId: string; status: UserStatus }) {
   const mutation = useAdminForceWithdraw();
+  const [open, setOpen] = useState(false);
 
   if (status === UserStatus.WITHDRAWN) {
-    return <Badge variant="secondary">탈퇴됨</Badge>;
+    return <Chip label="탈퇴됨" size="small" />;
   }
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger>
-        <Button variant="destructive" size="sm">
-          탈퇴
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>유저 강제 탈퇴</AlertDialogTitle>
-          <AlertDialogDescription>
+    <>
+      <Button variant="outlined" color="error" size="small" onClick={() => setOpen(true)}>
+        탈퇴
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>유저 강제 탈퇴</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
             이 유저를 강제 탈퇴 처리합니다. 개인정보가 익명화되며 되돌릴 수 없습니다.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>취소</AlertDialogCancel>
-          <AlertDialogAction onClick={() => mutation.mutate(userId)} disabled={mutation.isPending}>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>취소</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => mutation.mutate(userId, { onSuccess: () => setOpen(false) })}
+            disabled={mutation.isPending}
+          >
             탈퇴 처리
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 
@@ -72,9 +70,9 @@ export function useUserColumns(): ColumnDef<AdminUserItem, unknown>[] {
         header: "어드민",
         cell: ({ row }) =>
           row.original.role === UserRole.ADMIN ? (
-            <Badge variant="default">ADMIN</Badge>
+            <Chip label="ADMIN" size="small" color="primary" />
           ) : (
-            <Badge variant="outline">USER</Badge>
+            <Chip label="USER" size="small" variant="outlined" />
           ),
       },
       {

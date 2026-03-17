@@ -50,6 +50,7 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
     onError: error => {
       revokeBlobUrl(previewUrlRef.current);
       setPreviewUrl(null);
+      setUploadedData(null);
       optionsRef.current.onUploadError?.(error instanceof Error ? error : new Error(String(error)));
     },
   });
@@ -74,14 +75,18 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
     [uploadMutation],
   );
 
+  const reset = useCallback(() => {
+    revokeBlobUrl(previewUrlRef.current);
+    setPreviewUrl(null);
+    setUploadedData(null);
+  }, []);
+
   const discard = useCallback(() => {
     if (uploadedData?.fileUploadId) {
       deleteMutation.mutate({ fileUploadId: uploadedData.fileUploadId });
     }
-    revokeBlobUrl(previewUrlRef.current);
-    setPreviewUrl(null);
-    setUploadedData(null);
-  }, [uploadedData, deleteMutation]);
+    reset();
+  }, [uploadedData, deleteMutation, reset]);
 
   return {
     previewUrl,
@@ -89,5 +94,6 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
     isUploading: uploadMutation.isPending,
     upload,
     discard,
+    reset,
   };
 }

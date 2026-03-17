@@ -20,3 +20,5 @@ export function useCreateBanner() {
     },
   });
 }
+
+export type UseCreateBannerReturn = ReturnType<typeof useCreateBanner>;

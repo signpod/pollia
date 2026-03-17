@@ -20,3 +20,5 @@ export function useReorderBanners() {
     },
   });
 }
+
+export type UseReorderBannersReturn = ReturnType<typeof useReorderBanners>;

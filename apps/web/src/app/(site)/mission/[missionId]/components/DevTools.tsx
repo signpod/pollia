@@ -85,7 +85,7 @@ export function DevTools({ missionId }: DevToolsProps) {
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="fixed bottom-24 right-4 z-9999 h-12 px-4 rounded-full bg-zinc-800 text-white shadow-lg flex items-center justify-center gap-2 hover:bg-zinc-700 active:bg-zinc-900 transition-colors"
+        className="fixed bottom-40 right-4 z-9998 flex h-12 items-center justify-center gap-2 rounded-full bg-zinc-800 px-4 text-white shadow-lg transition-colors hover:bg-zinc-700 active:bg-zinc-900"
         aria-label="개발 도구 열기"
       >
         {isOpen ? (
@@ -99,8 +99,8 @@ export function DevTools({ missionId }: DevToolsProps) {
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-40 right-4 z-9999 w-72 rounded-xl bg-white text-default shadow-2xl border border-default overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-zinc-800">
+        <div className="fixed bottom-56 right-4 z-9998 w-72 overflow-hidden rounded-xl border border-default bg-white text-default shadow-2xl">
+          <div className="flex items-center justify-between bg-zinc-800 px-4 py-3">
             <div className="flex items-center gap-2">
               <PollPollE className="size-5 text-white" />
               <Typo.SubTitle size="large" className="text-white">
@@ -109,12 +109,12 @@ export function DevTools({ missionId }: DevToolsProps) {
             </div>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="space-y-4 p-4">
             <div className="space-y-2">
               <Typo.Body size="small" className="text-info">
                 Mission ID
               </Typo.Body>
-              <code className="block text-xs bg-light px-2 py-1.5 rounded font-mono text-point break-all">
+              <code className="block break-all rounded bg-light px-2 py-1.5 font-mono text-xs text-point">
                 {missionId}
               </code>
             </div>
@@ -141,7 +141,7 @@ export function DevTools({ missionId }: DevToolsProps) {
                     </span>
                   </div>
                   <div className="text-xs text-info">답변 수: {answersCount}개</div>
-                  <code className="block text-xs bg-light px-2 py-1 rounded font-mono text-sub break-all">
+                  <code className="block break-all rounded bg-light px-2 py-1 font-mono text-xs text-sub">
                     ID: {response.id}
                   </code>
                 </div>
@@ -159,7 +159,7 @@ export function DevTools({ missionId }: DevToolsProps) {
               type="button"
               onClick={handleDeleteResponse}
               disabled={!hasResponse || isResetting}
-              className="w-full h-10 px-4 rounded-md bg-zinc-800 text-white text-sm font-medium flex items-center justify-center gap-2 hover:bg-zinc-700 active:bg-zinc-900 disabled:bg-zinc-100 disabled:text-disabled disabled:cursor-not-allowed transition-colors"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-zinc-800 px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-700 active:bg-zinc-900 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-disabled"
             >
               {isResetting ? (
                 <Loader2Icon className="size-4 animate-spin" />

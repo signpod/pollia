@@ -12,3 +12,5 @@ export function useAdminUsers(params?: GetAdminUsersRequest) {
     placeholderData: keepPreviousData,
   });
 }
+
+export type UseAdminUsersReturn = ReturnType<typeof useAdminUsers>;

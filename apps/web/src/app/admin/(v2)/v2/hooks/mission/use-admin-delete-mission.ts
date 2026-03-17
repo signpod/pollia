@@ -19,3 +19,5 @@ export function useAdminDeleteMission() {
     },
   });
 }
+
+export type UseAdminDeleteMissionReturn = ReturnType<typeof useAdminDeleteMission>;

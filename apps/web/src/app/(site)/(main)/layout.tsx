@@ -1,3 +1,4 @@
+import { AdminToolbar } from "@/components/common/AdminToolbar";
 import Providers from "@/components/providers/QueryProvider";
 import { FixedBottomLayout, ModalProvider } from "@repo/ui/components";
 import { Header } from "./components";
@@ -20,6 +21,7 @@ export default function MainLayout({
               <MainBottomContentStack />
             </FixedBottomLayout.Content>
           </FixedBottomLayout>
+          <AdminToolbar />
         </MainBottomSlotProvider>
       </Providers>
     </ModalProvider>

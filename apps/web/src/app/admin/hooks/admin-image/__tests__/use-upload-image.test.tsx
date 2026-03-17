@@ -225,7 +225,7 @@ describe("useUploadImage", () => {
       });
     });
 
-    it("업로드 실패 시 previewUrl은 blob URL로 유지된다", async () => {
+    it("업로드 실패 시 previewUrl이 null로 초기화된다", async () => {
       // Given
       mockGetUploadUrl.mockRejectedValue(new Error("Upload failed"));
 
@@ -243,7 +243,7 @@ describe("useUploadImage", () => {
         expect(result.current.isUploading).toBe(false);
       });
 
-      expect(result.current.previewUrl).toBe("blob:test-url");
+      expect(result.current.previewUrl).toBeNull();
       expect(result.current.uploadedData).toBeNull();
     });
 

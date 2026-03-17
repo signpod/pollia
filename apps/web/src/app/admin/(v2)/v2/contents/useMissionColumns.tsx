@@ -2,65 +2,56 @@
 
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import type { AdminMissionItem } from "@/types/dto/admin-mission";
-import styled from "@emotion/styled";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import MuiLink from "@mui/material/Link";
 import { MissionType } from "@prisma/client";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ExternalLink, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { useMemo } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  Badge,
-  Button,
-} from "../components/ui";
-import { color, fontSize, radius } from "../components/ui/tokens";
+import NextLink from "next/link";
+import { useMemo, useState } from "react";
 import { useAdminDeleteMission } from "../hooks/mission/use-admin-delete-mission";
 
-type VisibilityInfo = { label: string; bg: string; fg: string };
-
-function resolveVisibility(isActive: boolean, type: MissionType): VisibilityInfo {
-  if (!isActive) return { label: "나만보기", bg: color.zinc100, fg: color.zinc600 };
-  if (type === MissionType.GENERAL)
-    return { label: "전체공개", bg: color.green100, fg: color.green700 };
-  return { label: "링크만공개", bg: color.blue100, fg: color.blue700 };
+function resolveVisibility(isActive: boolean, type: MissionType) {
+  if (!isActive) return { label: "나만보기", color: "default" as const };
+  if (type === MissionType.GENERAL) return { label: "전체공개", color: "success" as const };
+  return { label: "링크만공개", color: "info" as const };
 }
 
 function DeleteMissionButton({ missionId }: { missionId: string }) {
   const mutation = useAdminDeleteMission();
+  const [open, setOpen] = useState(false);
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger>
-        <Button variant="ghost" size="icon">
-          <Trash2 size={16} />
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>콘텐츠 삭제</AlertDialogTitle>
-          <AlertDialogDescription>
+    <>
+      <Button size="small" color="error" onClick={() => setOpen(true)} sx={{ minWidth: 0, p: 0.5 }}>
+        <Trash2 size={16} />
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>콘텐츠 삭제</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
             이 콘텐츠를 삭제하면 참여자들의 응답 데이터도 함께 삭제됩니다. 되돌릴 수 없습니다.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>취소</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => mutation.mutate(missionId)}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>취소</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => mutation.mutate(missionId, { onSuccess: () => setOpen(false) })}
             disabled={mutation.isPending}
           >
             삭제
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 
@@ -70,15 +61,29 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
       {
         accessorKey: "title",
         header: "제목",
-        cell: ({ row }) => <TruncatedText>{row.original.title}</TruncatedText>,
+        cell: ({ row }) => (
+          <span
+            style={{
+              display: "block",
+              maxWidth: 300,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {row.original.title}
+          </span>
+        ),
       },
       {
         accessorKey: "category",
         header: "카테고리",
         cell: ({ row }) => (
-          <Badge variant="outline">
-            {MISSION_CATEGORY_LABELS[row.original.category] ?? row.original.category}
-          </Badge>
+          <Chip
+            label={MISSION_CATEGORY_LABELS[row.original.category] ?? row.original.category}
+            size="small"
+            variant="outlined"
+          />
         ),
       },
       {
@@ -86,11 +91,7 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
         header: "공개여부",
         cell: ({ row }) => {
           const v = resolveVisibility(row.original.isActive, row.original.type);
-          return (
-            <VisibilityBadge $bg={v.bg} $fg={v.fg}>
-              {v.label}
-            </VisibilityBadge>
-          );
+          return <Chip label={v.label} size="small" color={v.color} />;
         },
       },
       {
@@ -102,9 +103,23 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
         id: "edit",
         header: "",
         cell: ({ row }) => (
-          <EditLink href={`/editor/missions/${row.original.id}`}>
-            <ExternalLink size={16} />
-          </EditLink>
+          <MuiLink
+            component={NextLink}
+            href={`/editor/missions/${row.original.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            underline="hover"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.5,
+              fontSize: "0.875rem",
+              fontWeight: 500,
+            }}
+          >
+            <ExternalLink size={14} />
+            수정
+          </MuiLink>
         ),
       },
       {
@@ -116,31 +131,3 @@ export function useMissionColumns(): ColumnDef<AdminMissionItem, unknown>[] {
     [],
   );
 }
-
-const TruncatedText = styled.span`
-  display: block;
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const VisibilityBadge = styled.span<{ $bg: string; $fg: string }>`
-  display: inline-flex;
-  align-items: center;
-  border-radius: ${radius.full};
-  padding: 2px 8px;
-  font-size: ${fontSize.xs};
-  font-weight: 500;
-  background: ${({ $bg }) => $bg};
-  color: ${({ $fg }) => $fg};
-`;
-
-const EditLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  color: ${color.gray400};
-  &:hover {
-    color: ${color.gray700};
-  }
-`;

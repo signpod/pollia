@@ -19,3 +19,5 @@ export function useDeleteBanner() {
     },
   });
 }
+
+export type UseDeleteBannerReturn = ReturnType<typeof useDeleteBanner>;

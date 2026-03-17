@@ -16,10 +16,11 @@ export class UserRepository {
     pageSize?: number;
     search?: string;
     sortOrder?: SortOrderType;
+    status?: UserStatus;
   }) {
     const page = options?.page ?? 1;
     const pageSize = options?.pageSize ?? 20;
-    const where = this.buildSearchWhere(options?.search);
+    const where = this.buildWhere(options?.search, options?.status);
 
     return prisma.user.findMany({
       where,
@@ -29,21 +30,29 @@ export class UserRepository {
     });
   }
 
-  async count(options?: { search?: string }) {
-    const where = this.buildSearchWhere(options?.search);
+  async count(options?: { search?: string; status?: UserStatus }) {
+    const where = this.buildWhere(options?.search, options?.status);
     return prisma.user.count({ where });
   }
 
-  private buildSearchWhere(search?: string): Prisma.UserWhereInput {
-    if (!search) return {};
+  private buildWhere(search?: string, status?: UserStatus): Prisma.UserWhereInput {
+    const conditions: Prisma.UserWhereInput[] = [];
 
-    return {
-      OR: [
-        { name: { contains: search, mode: "insensitive" as const } },
-        { email: { contains: search, mode: "insensitive" as const } },
-        { phone: { contains: search } },
-      ],
-    };
+    if (search) {
+      conditions.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { email: { contains: search, mode: "insensitive" as const } },
+          { phone: { contains: search } },
+        ],
+      });
+    }
+
+    if (status) {
+      conditions.push({ status });
+    }
+
+    return conditions.length > 0 ? { AND: conditions } : {};
   }
 
   async create(data: Prisma.UserCreateInput) {

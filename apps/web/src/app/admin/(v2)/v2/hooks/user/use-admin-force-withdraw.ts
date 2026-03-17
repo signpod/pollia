@@ -19,3 +19,5 @@ export function useAdminForceWithdraw() {
     },
   });
 }
+
+export type UseAdminForceWithdrawReturn = ReturnType<typeof useAdminForceWithdraw>;

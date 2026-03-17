@@ -1,10 +1,10 @@
 "use client";
 
-import styled from "@emotion/styled";
+import Box from "@mui/material/Box";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Input } from "../ui/Input";
-import { color } from "../ui/tokens";
 
 interface DataTableToolbarProps {
   searchValue: string;
@@ -35,50 +35,23 @@ export function DataTableToolbar({
   }, [localValue, searchValue, onSearchChange]);
 
   return (
-    <Container>
-      <SearchGroup>
-        <SearchWrapper>
-          <SearchIcon>
-            <Search size={16} />
-          </SearchIcon>
-          <Input
-            placeholder={searchPlaceholder}
-            value={localValue}
-            onChange={e => setLocalValue(e.target.value)}
-            style={{ paddingLeft: 32, height: 36 }}
-          />
-        </SearchWrapper>
-        {children}
-      </SearchGroup>
-    </Container>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <TextField
+        placeholder={searchPlaceholder}
+        value={localValue}
+        onChange={e => setLocalValue(e.target.value)}
+        sx={{ maxWidth: 384, flex: 1 }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={18} />
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+      {children}
+    </Box>
   );
 }
-
-const Container = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const SearchGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-`;
-
-const SearchWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  max-width: 384px;
-`;
-
-const SearchIcon = styled.span`
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${color.gray400};
-  pointer-events: none;
-  display: flex;
-`;

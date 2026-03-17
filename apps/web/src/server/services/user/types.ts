@@ -1,5 +1,5 @@
 import type { SortOrderType } from "@/types/common/sort";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, UserStatus } from "@prisma/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface CreateUserIfNotExistsInput {
@@ -22,4 +22,5 @@ export interface ListUsersOptions {
   pageSize?: number;
   search?: string;
   sortOrder?: SortOrderType;
+  status?: UserStatus;
 }

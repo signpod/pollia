@@ -1,7 +1,7 @@
-export { useUploadImage } from "./use-upload-image";
-export { useDeleteImage } from "./use-delete-image";
-export { useSingleImage } from "./use-single-image";
-export { useMultipleImages } from "./use-multiple-images";
+export { useUploadImage } from "@/hooks/image/use-upload-image";
+export { useDeleteImage } from "@/hooks/image/use-delete-image";
+export { useSingleImage } from "@/hooks/image/use-single-image";
+export { useMultipleImages } from "@/hooks/image/use-multiple-images";
 export type {
   UploadedImageData,
   UseUploadImageOptions,
@@ -11,4 +11,4 @@ export type {
   UseSingleImageReturn,
   UseMultipleImagesOptions,
   UseMultipleImagesReturn,
-} from "./types";
+} from "@/hooks/image/types";

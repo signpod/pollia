@@ -1,21 +1,30 @@
 import prisma from "@/database/utils/prisma/client";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
+
+type TransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 export class BannerRepository {
-  async findById(id: string) {
-    return prisma.banner.findUnique({ where: { id } });
+  async findById(id: string, client: TransactionClient = prisma) {
+    return client.banner.findUnique({ where: { id } });
   }
 
   async findAll() {
     return prisma.banner.findMany({ orderBy: { order: "asc" } });
   }
 
-  async create(data: Prisma.BannerUncheckedCreateInput) {
-    return prisma.banner.create({ data });
+  async create(data: Prisma.BannerUncheckedCreateInput, client: TransactionClient = prisma) {
+    return client.banner.create({ data });
   }
 
-  async update(id: string, data: Prisma.BannerUncheckedUpdateInput) {
-    return prisma.banner.update({ where: { id }, data });
+  async update(
+    id: string,
+    data: Prisma.BannerUncheckedUpdateInput,
+    client: TransactionClient = prisma,
+  ) {
+    return client.banner.update({ where: { id }, data });
   }
 
   async delete(id: string) {
