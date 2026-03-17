@@ -76,6 +76,7 @@ function BottomNavBarContent() {
       <CreateMissionBottomSheet
         isOpen={isEditorPopupOpen}
         onClose={() => setIsEditorPopupOpen(false)}
+        className="pb-20"
       />
 
       <nav className="relative z-50 flex w-full items-center border-t border-zinc-100 bg-white px-1 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
