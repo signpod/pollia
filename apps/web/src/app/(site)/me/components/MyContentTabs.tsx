@@ -9,8 +9,16 @@ import type { Mission } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import PolliaFaceVeryGood from "@public/svgs/face/very-good-face-full.svg";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
-import { ButtonV2, EmptyState, Tab, Typo, useModal } from "@repo/ui/components";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ButtonV2,
+  EmptyState,
+  Pagination,
+  SegmentedControl,
+  Tab,
+  Typo,
+  useModal,
+} from "@repo/ui/components";
+import { PencilIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -26,6 +34,7 @@ import { SectionHeader } from "./SectionHeader";
 
 const MAX_PREVIEW = 4;
 const MAX_REWARDS_PREVIEW = 3;
+const PARTICIPATION_PAGE_SIZE = 5;
 const EMPTY_STATE_CLASS = "min-h-[420px] justify-center";
 
 function BrowseAction() {
@@ -111,9 +120,11 @@ function ParticipationTab({
       ? (initialFilter as ParticipationFilter)
       : "in-progress",
   );
+  const [page, setPage] = useState(1);
 
-  const handleFilterChange = useCallback((value: ParticipationFilter) => {
-    setFilter(value);
+  const handleFilterChange = useCallback((value: string) => {
+    setFilter(value as ParticipationFilter);
+    setPage(1);
     const url = new URL(window.location.href);
     if (value === "in-progress") {
       url.searchParams.delete("filter");
@@ -122,6 +133,7 @@ function ParticipationTab({
     }
     window.history.replaceState(null, "", url.toString());
   }, []);
+
   const allResponses = [...inProgressResponses, ...completedResponses];
 
   if (allResponses.length === 0) {
@@ -143,36 +155,23 @@ function ParticipationTab({
   }
 
   const filtered = filter === "in-progress" ? inProgressResponses : completedResponses;
+  const totalPages = Math.ceil(filtered.length / PARTICIPATION_PAGE_SIZE);
+  const paged = filtered.slice(
+    (page - 1) * PARTICIPATION_PAGE_SIZE,
+    page * PARTICIPATION_PAGE_SIZE,
+  );
 
   return (
-    <div className="flex min-h-[420px] flex-col gap-4">
-      <SectionHeader
-        label="총"
-        count={filtered.length}
-        showViewAll={false}
-        rightAction={
-          <div className="flex h-8 items-center rounded-full bg-zinc-100 p-0.5">
-            <button
-              type="button"
-              onClick={() => handleFilterChange("in-progress")}
-              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
-                filter === "in-progress" ? "bg-white text-violet-500" : "text-zinc-400"
-              }`}
-            >
-              진행 중 {inProgressResponses.length}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFilterChange("completed")}
-              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
-                filter === "completed" ? "bg-white text-violet-500" : "text-zinc-400"
-              }`}
-            >
-              완료 {completedResponses.length}
-            </button>
-          </div>
-        }
+    <div className="flex min-h-[420px] flex-col gap-6">
+      <SegmentedControl
+        items={[
+          { value: "in-progress", label: "진행 중" },
+          { value: "completed", label: "완료" },
+        ]}
+        value={filter}
+        onValueChange={handleFilterChange}
       />
+
       {filtered.length === 0 ? (
         <EmptyState
           className={EMPTY_STATE_CLASS}
@@ -192,10 +191,17 @@ function ParticipationTab({
           action={<BrowseAction />}
         />
       ) : (
-        <div className="flex flex-col">
-          {filtered.map(response => (
-            <ParticipationListItem key={response.id} response={response} filter={filter} />
-          ))}
+        <div className="flex flex-col gap-4">
+          <Typo.SubTitle size="large">총 {filtered.length}개</Typo.SubTitle>
+          <div className="flex min-h-[609px] flex-col">
+            {paged.map((response, index) => (
+              <div key={response.id}>
+                <ParticipationListItem response={response} filter={filter} />
+                {index < paged.length - 1 && <div className="h-px w-full bg-zinc-100" />}
+              </div>
+            ))}
+          </div>
+          <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
     </div>
@@ -248,40 +254,47 @@ function ParticipationListItem({
   );
 
   return (
-    <Link href={ROUTES.MISSION(mission.id)} className="flex items-center gap-3 py-3">
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-sm">
+    <div className="flex gap-3 py-4">
+      <Link
+        href={ROUTES.MISSION(mission.id)}
+        className="relative size-[89px] shrink-0 overflow-hidden rounded-xl border border-zinc-200"
+      >
         <Image
           src={showFallback ? thumbnailFallback : (mission.imageUrl ?? "")}
           alt={mission.title}
           fill
-          sizes="44px"
+          sizes="89px"
           className="object-cover"
           onError={() => setImageError(true)}
         />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <Typo.Body size="small" className="text-info">
-          {categoryLabel}
-        </Typo.Body>
-        <Typo.SubTitle size="large" className="truncate">
-          {mission.title}
-        </Typo.SubTitle>
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <ButtonV2 variant="secondary" size="medium" onClick={handleAction}>
-          <Typo.ButtonText size="medium">
-            {filter === "in-progress" ? "이어서 참여" : "결과보기"}
-          </Typo.ButtonText>
+      </Link>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex items-start gap-1">
+          <Link href={ROUTES.MISSION(mission.id)} className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <Typo.Body size="small" className="truncate font-bold text-zinc-500">
+              {categoryLabel}
+            </Typo.Body>
+            <Typo.Body size="medium" className="truncate">
+              {mission.title}
+            </Typo.Body>
+          </Link>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="shrink-0 p-0.5 text-zinc-400 transition-colors hover:text-red-500"
+          >
+            <XIcon className="size-5" />
+          </button>
+        </div>
+        <ButtonV2 variant="secondary" size="medium" className="w-full" onClick={handleAction}>
+          <div className="flex w-full items-center justify-center">
+            <Typo.ButtonText size="medium">
+              {filter === "in-progress" ? "이어하기" : "결과보기"}
+            </Typo.ButtonText>
+          </div>
         </ButtonV2>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="flex items-center justify-center text-zinc-300 transition-colors hover:text-red-500"
-        >
-          <Trash2Icon className="size-4" />
-        </button>
       </div>
-    </Link>
+    </div>
   );
 }
 
