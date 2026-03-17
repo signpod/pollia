@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import PauseIcon from "@public/svgs/pause-icon.svg";
 import PlayIcon from "@public/svgs/play-icon.svg";
 import { Typo } from "@repo/ui/components";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -36,6 +37,7 @@ export function BannerSlider({ slides }: BannerSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
 
   const realIndex = total > 0 ? (((displayIndex - 1) % total) + total) % total : 0;
+  const currentSlide = slides[realIndex] as BannerSlide | undefined;
 
   const goToNext = useCallback(() => {
     setIsTransitioning(true);
@@ -200,41 +202,58 @@ export function BannerSlider({ slides }: BannerSliderProps) {
                 draggable={false}
                 priority
               />
-              {m.title && (
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
-              )}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between p-7 gap-3">
-                {m.title ? (
-                  <Typo.MainTitle
-                    size="medium"
-                    className="min-w-0 flex-1 break-keep-all text-white"
-                  >
-                    {m.title}
-                  </Typo.MainTitle>
-                ) : (
-                  <div />
-                )}
-                <div className="pointer-events-auto flex shrink-0 items-center gap-2">
-                  <button
-                    type="button"
-                    className="flex size-[26px] items-center justify-center rounded-full bg-black/20"
-                    onClick={() => setIsPlaying(prev => !prev)}
-                  >
-                    {isPlaying ? (
-                      <PauseIcon className="size-[18px] text-white" />
-                    ) : (
-                      <PlayIcon className="size-[18px] fill-white" />
-                    )}
-                  </button>
-                  <span className="rounded-full bg-black/20 px-2 py-1">
-                    <Typo.Body size="small" className="font-bold text-white">
-                      {realIndex + 1} / {total}
-                    </Typo.Body>
-                  </span>
-                </div>
-              </div>
             </div>
           ))}
+        </div>
+        <AnimatePresence>
+          {currentSlide?.title && (
+            <motion.div
+              key="dimmed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]"
+            />
+          )}
+        </AnimatePresence>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-7">
+          <AnimatePresence mode="wait">
+            {currentSlide?.title ? (
+              <motion.div
+                key={realIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="min-w-0 flex-1"
+              >
+                <Typo.MainTitle size="medium" className="break-keep-all text-white">
+                  {currentSlide.title}
+                </Typo.MainTitle>
+              </motion.div>
+            ) : (
+              <div />
+            )}
+          </AnimatePresence>
+          <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              className="flex size-[26px] items-center justify-center rounded-full bg-black/20"
+              onClick={() => setIsPlaying(prev => !prev)}
+            >
+              {isPlaying ? (
+                <PauseIcon className="size-[18px] text-white" />
+              ) : (
+                <PlayIcon className="size-[18px] fill-white" />
+              )}
+            </button>
+            <span className="rounded-full bg-black/20 px-2 py-1">
+              <Typo.Body size="small" className="font-bold text-white">
+                {realIndex + 1} / {total}
+              </Typo.Body>
+            </span>
+          </div>
         </div>
       </div>
     </section>
