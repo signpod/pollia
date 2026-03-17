@@ -2,8 +2,8 @@
 
 import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
 import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
+import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { useUploadImage } from "@/hooks/image/use-upload-image";
 import type { BannerItem } from "@/types/dto/banner";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -84,7 +84,10 @@ export function BannerRow({
         imageUrl,
         imageFileUploadId,
       },
-      { onSuccess: () => onCancelEdit() },
+      {
+        onSuccess: () => onCancelEdit(),
+        onError: () => toast.error("배너 수정에 실패했습니다."),
+      },
     );
   };
 

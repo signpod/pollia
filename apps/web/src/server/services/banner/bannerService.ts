@@ -1,4 +1,6 @@
+import prisma from "@/database/utils/prisma/client";
 import { bannerRepository } from "@/server/repositories/banner/bannerRepository";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { CreateBannerInput, UpdateBannerInput } from "./types";
 
 export class BannerService {
@@ -29,17 +31,37 @@ export class BannerService {
 
     const maxOrder = await this.repo.getMaxOrder();
 
-    return this.repo.create({
+    const data = {
       title: input.title?.trim() ?? "",
       subtitle: input.subtitle?.trim() || null,
       imageUrl: input.imageUrl.trim(),
       imageFileUploadId: input.imageFileUploadId ?? null,
       order: maxOrder + 1,
+    };
+
+    return prisma.$transaction(async tx => {
+      const banner = await this.repo.create(data, tx);
+      if (data.imageFileUploadId) {
+        await confirmFileUploads(tx, undefined, data.imageFileUploadId);
+      }
+      return banner;
     });
   }
 
   async updateBanner(id: string, input: UpdateBannerInput) {
     await this.getBanner(id);
+
+    const fileUploadId =
+      typeof input.imageFileUploadId === "string" ? input.imageFileUploadId : undefined;
+
+    if (fileUploadId) {
+      return prisma.$transaction(async tx => {
+        const banner = await this.repo.update(id, input, tx);
+        await confirmFileUploads(tx, undefined, fileUploadId);
+        return banner;
+      });
+    }
+
     return this.repo.update(id, input);
   }
 
