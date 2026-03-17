@@ -50,6 +50,7 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
     onError: error => {
       revokeBlobUrl(previewUrlRef.current);
       setPreviewUrl(null);
+      setUploadedData(null);
       optionsRef.current.onUploadError?.(error instanceof Error ? error : new Error(String(error)));
     },
   });

@@ -3,6 +3,7 @@
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
+import { Toaster } from "sonner";
 import { SidebarProvider, V2Sidebar } from "./V2Sidebar";
 import { adminTheme } from "./ui/theme";
 
@@ -14,6 +15,7 @@ export function V2Layout({ children }: V2LayoutProps) {
   return (
     <ThemeProvider theme={adminTheme}>
       <CssBaseline />
+      <Toaster />
       <SidebarProvider>
         <Box sx={{ display: "flex", height: "100vh" }}>
           <V2Sidebar />

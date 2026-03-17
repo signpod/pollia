@@ -2,8 +2,8 @@
 
 import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
 import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
-import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { useUploadImage } from "@/hooks/image/use-upload-image";
 import type { BannerItem } from "@/types/dto/banner";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -20,6 +20,7 @@ import Typography from "@mui/material/Typography";
 import { ArrowDown, ArrowUp, Check, Pencil, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useDeleteBanner } from "../../hooks/banner/use-delete-banner";
 import { useUpdateBanner } from "../../hooks/banner/use-update-banner";
 
@@ -55,6 +56,7 @@ export function BannerRow({
   const cropper = useImageCropper({ fileNamePrefix: "banner" });
   const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
     bucket: STORAGE_BUCKETS.BANNER_IMAGES,
+    onUploadError: () => toast.error("이미지 업로드에 실패했습니다."),
   });
 
   useEffect(() => {
@@ -86,7 +88,6 @@ export function BannerRow({
     );
   };
 
-  const currentImageUrl = previewUrl ?? banner.imageUrl;
   const isPending = updateMutation.isPending;
 
   if (isEditing) {
@@ -108,6 +109,7 @@ export function BannerRow({
         </Avatar>
         <Box
           sx={{
+            position: "relative",
             width: 96,
             height: 64,
             borderRadius: 1,
@@ -115,11 +117,21 @@ export function BannerRow({
             flexShrink: 0,
           }}
         >
-          <img
-            src={currentImageUrl}
-            alt="배너"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt="배너"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <Image
+              src={banner.imageUrl}
+              alt={banner.title}
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="96px"
+            />
+          )}
         </Box>
         <input
           ref={fileInputRef}

@@ -2,8 +2,8 @@
 
 import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
 import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
-import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { useUploadImage } from "@/hooks/image/use-upload-image";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -11,6 +11,7 @@ import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
 import { Plus } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { useCreateBanner } from "../../hooks/banner/use-create-banner";
 
 const BANNER_ASPECT = 3 / 2;
@@ -23,6 +24,7 @@ export function BannerAddRow() {
   const cropper = useImageCropper({ fileNamePrefix: "banner" });
   const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
     bucket: STORAGE_BUCKETS.BANNER_IMAGES,
+    onUploadError: () => toast.error("이미지 업로드에 실패했습니다."),
   });
 
   const resetForm = () => {
