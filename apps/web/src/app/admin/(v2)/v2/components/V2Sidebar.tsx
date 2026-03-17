@@ -15,7 +15,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
-import { ArrowLeft, Image, LogOut, Menu, ScrollText, Users } from "lucide-react";
+import { ArrowLeft, Home, Image, LogOut, Menu, ScrollText, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useState } from "react";
@@ -132,6 +132,32 @@ export function V2Sidebar() {
       <Divider />
 
       <List sx={{ py: 1 }}>
+        <ListItem disablePadding sx={{ display: "block" }}>
+          <Tooltip title={expanded ? "" : "홈으로가기"} placement="right" arrow>
+            <ListItemButton
+              component={Link}
+              href="/"
+              sx={{
+                minHeight: 40,
+                justifyContent: expanded ? "initial" : "center",
+                px: expanded ? 2 : 1.5,
+                borderRadius: 1,
+                mx: 0.5,
+                mb: 0.25,
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 1.5 : 0, justifyContent: "center" }}>
+                <Home size={20} />
+              </ListItemIcon>
+              {expanded && (
+                <ListItemText
+                  primary="홈으로가기"
+                  primaryTypographyProps={{ fontSize: "0.875rem" }}
+                />
+              )}
+            </ListItemButton>
+          </Tooltip>
+        </ListItem>
         <ListItem disablePadding sx={{ display: "block" }}>
           <Tooltip title={expanded ? "" : "기존 Admin"} placement="right" arrow>
             <ListItemButton

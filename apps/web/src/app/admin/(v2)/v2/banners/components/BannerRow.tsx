@@ -1,6 +1,7 @@
 "use client";
 
 import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import type { BannerItem } from "@/types/dto/banner";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -48,7 +49,7 @@ export function BannerRow({
   const updateMutation = useUpdateBanner();
   const deleteMutation = useDeleteBanner();
   const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
-    onUploadSuccess: () => {},
+    bucket: STORAGE_BUCKETS.BANNER_IMAGES,
   });
 
   useEffect(() => {
@@ -101,7 +102,6 @@ export function BannerRow({
         </Avatar>
         <Box
           sx={{
-            position: "relative",
             width: 96,
             height: 60,
             borderRadius: 1,
@@ -109,12 +109,10 @@ export function BannerRow({
             flexShrink: 0,
           }}
         >
-          <Image
+          <img
             src={currentImageUrl}
             alt="배너"
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="96px"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </Box>
         <input

@@ -7,6 +7,7 @@ export const STORAGE_BUCKETS = {
   ACTION_ANSWER_VIDEOS: "action-answer-videos",
   REWARD_IMAGES: "reward-images",
   USER_PROFILE_IMAGES: "user-profile-images",
+  BANNER_IMAGES: "banner-images",
   FALLBACK: "pollia-images",
 } as const;
 

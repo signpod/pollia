@@ -44,6 +44,18 @@ jest.mock("@/actions/common/files", () => ({
   deleteFileByPath: (...args: unknown[]) => mockDeleteFileByPath(...args),
 }));
 
-jest.mock("../upload-file-to-storage", () => ({
+jest.mock("@/hooks/image/upload-file-to-storage", () => ({
   uploadFileToStorage: (...args: unknown[]) => mockUploadFileToStorage(...args),
+}));
+
+jest.mock("@/hooks/image/preprocess-file", () => ({
+  preprocessFile: (file: File) => Promise.resolve(file),
+}));
+
+jest.mock("@/hooks/image/blob-url", () => ({
+  revokeBlobUrl: (url: string | null | undefined) => {
+    if (url?.startsWith("blob:")) {
+      URL.revokeObjectURL(url);
+    }
+  },
 }));

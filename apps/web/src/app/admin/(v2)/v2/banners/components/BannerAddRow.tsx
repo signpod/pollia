@@ -1,13 +1,13 @@
 "use client";
 
 import { useUploadImage } from "@/app/admin/hooks/admin-image/use-upload-image";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
 import { Plus } from "lucide-react";
-import Image from "next/image";
 import { useRef, useState } from "react";
 import { useCreateBanner } from "../../hooks/banner/use-create-banner";
 
@@ -17,7 +17,7 @@ export function BannerAddRow() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createMutation = useCreateBanner();
   const { previewUrl, uploadedData, isUploading, upload, discard } = useUploadImage({
-    onUploadSuccess: () => {},
+    bucket: STORAGE_BUCKETS.BANNER_IMAGES,
   });
 
   const resetForm = () => {
@@ -63,7 +63,6 @@ export function BannerAddRow() {
       {previewUrl ? (
         <Box
           sx={{
-            position: "relative",
             width: 96,
             height: 60,
             borderRadius: 1,
@@ -71,7 +70,11 @@ export function BannerAddRow() {
             flexShrink: 0,
           }}
         >
-          <Image src={previewUrl} alt="새 배너" fill style={{ objectFit: "cover" }} sizes="96px" />
+          <img
+            src={previewUrl}
+            alt="새 배너"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         </Box>
       ) : (
         <Box
