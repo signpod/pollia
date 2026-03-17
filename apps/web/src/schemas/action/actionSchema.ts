@@ -170,17 +170,22 @@ export const branchInputSchema = baseActionSchema
   })
   .omit({ nextActionId: true, nextCompletionId: true });
 
-export const oxInputSchema = baseActionSchema.extend({
-  maxSelections: z.literal(OX_MAX_SELECTIONS),
-  hasOther: z.literal(OX_HAS_OTHER),
-  options: z
-    .array(actionOptionSchema)
-    .length(OX_OPTIONS_COUNT, `OX 액션은 정확히 ${OX_OPTIONS_COUNT}개의 선택지가 필요합니다.`),
-  score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").optional(),
-  correctOptionId: z.string().nullable().optional(),
-  matchMode: z.nativeEnum(MatchMode).nullable().optional(),
-  hint: z.string().nullable().optional(),
-});
+export const oxInputSchema = baseActionSchema
+  .extend({
+    maxSelections: z.literal(OX_MAX_SELECTIONS),
+    hasOther: z.literal(OX_HAS_OTHER),
+    options: z
+      .array(actionOptionSchema)
+      .length(OX_OPTIONS_COUNT, `OX 액션은 정확히 ${OX_OPTIONS_COUNT}개의 선택지가 필요합니다.`),
+    score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").optional(),
+    correctOptionId: z.string().nullable().optional(),
+    matchMode: z.nativeEnum(MatchMode).nullable().optional(),
+    hint: z.string().nullable().optional(),
+  })
+  .refine(data => !(data.score != null && !data.correctOptionId), {
+    message: "배점이 있으면 정답을 설정해야 합니다.",
+    path: ["correctOptionId"],
+  });
 
 export const actionUpdateSchema = z
   .object({

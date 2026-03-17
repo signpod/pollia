@@ -1,4 +1,4 @@
-import type { Action, ActionType, Prisma } from "@prisma/client";
+import type { Action, ActionType, MatchMode, Prisma } from "@prisma/client";
 
 export type BaseActionInput = Omit<
   Prisma.ActionUncheckedCreateInput,
@@ -63,7 +63,7 @@ export type CreateOXInput = BaseActionInputWithOptions & {
   hasOther: false;
   score?: number;
   correctOptionId?: string | null;
-  matchMode?: "EXACT" | "CONTAINS" | null;
+  matchMode?: MatchMode | null;
   hint?: string | null;
 };
 
