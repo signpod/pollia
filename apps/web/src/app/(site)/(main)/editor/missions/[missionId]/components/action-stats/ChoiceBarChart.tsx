@@ -36,9 +36,9 @@ function splitLabel(text: string, maxWidth: number): string[] {
   if (currentLine) lines.push(currentLine);
 
   if (lines.length > MAX_LINES) {
-    const truncated = lines[MAX_LINES - 1];
+    const lastLine = lines[MAX_LINES - 1] ?? "";
     lines.length = MAX_LINES;
-    lines[MAX_LINES - 1] = `${truncated.slice(0, -1)}…`;
+    lines[MAX_LINES - 1] = `${lastLine.slice(0, -1)}…`;
   }
 
   return lines;
