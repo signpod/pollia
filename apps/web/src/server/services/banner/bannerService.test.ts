@@ -2,6 +2,17 @@ import type { BannerRepository } from "@/server/repositories/banner/bannerReposi
 import type { Banner } from "@prisma/client";
 import { BannerService } from "./bannerService";
 
+jest.mock("@/database/utils/prisma/client", () => ({
+  __esModule: true,
+  default: {
+    $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn({}),
+  },
+}));
+
+jest.mock("@/server/repositories/common/confirmFileUploads", () => ({
+  confirmFileUploads: jest.fn(),
+}));
+
 const createMockBanner = (overrides: Partial<Banner> = {}): Banner => ({
   id: "banner1",
   title: "테스트 배너",
@@ -98,13 +109,16 @@ describe("BannerService", () => {
 
       // Then
       expect(result).toEqual(newBanner);
-      expect(mockRepo.create).toHaveBeenCalledWith({
-        title: "새 배너",
-        subtitle: null,
-        imageUrl: "https://example.com/new.jpg",
-        imageFileUploadId: null,
-        order: 3,
-      });
+      expect(mockRepo.create).toHaveBeenCalledWith(
+        {
+          title: "새 배너",
+          subtitle: null,
+          imageUrl: "https://example.com/new.jpg",
+          imageFileUploadId: null,
+          order: 3,
+        },
+        expect.anything(),
+      );
     });
 
     it("첫 번째 배너는 order 0으로 생성된다", async () => {
@@ -120,7 +134,10 @@ describe("BannerService", () => {
       });
 
       // Then
-      expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({ order: 0 }));
+      expect(mockRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ order: 0 }),
+        expect.anything(),
+      );
     });
 
     it("이미지 URL이 비어있으면 400 에러를 던진다", async () => {
