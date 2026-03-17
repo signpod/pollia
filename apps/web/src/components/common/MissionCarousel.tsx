@@ -30,7 +30,7 @@ function MissionCarouselCard({ mission, className }: MissionCarouselCardProps) {
   const categoryLabel = MISSION_CATEGORY_LABELS[mission.category] ?? mission.category;
 
   return (
-    <div className="shrink-0 pl-2 sm:pl-4 first:pl-5">
+    <div className="shrink-0">
       <Link href={ROUTES.MISSION(mission.id)} className={cn("flex w-[200px] flex-col", className)}>
         <div className="relative aspect-square w-full overflow-hidden rounded-2xl ring-1 ring-zinc-100">
           <Image
@@ -72,12 +72,10 @@ export function MissionCarousel({ title, missions, cardClassName }: MissionCarou
   if (missions.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-6">
-      <Typo.MainTitle size="small" className="px-5">
-        {title}
-      </Typo.MainTitle>
+    <section className="flex flex-col gap-4 px-5">
+      <Typo.MainTitle size="small">{title}</Typo.MainTitle>
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
+        <div className="flex gap-2">
           {missions.map(mission => (
             <MissionCarouselCard key={mission.id} mission={mission} className={cardClassName} />
           ))}

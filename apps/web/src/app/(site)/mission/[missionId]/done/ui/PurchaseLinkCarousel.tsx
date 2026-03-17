@@ -11,15 +11,20 @@ interface PurchaseLinkCarouselProps {
 
 function PurchaseLinkCard({ link }: { link: CompletionLinkData }) {
   return (
-    <div className="min-w-0 shrink-0 grow-0 basis-[40%] sm:basis-[calc(100%/3.5)]">
-      <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex flex-col gap-2">
+    <div className="shrink-0">
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-[159.5px] flex-col gap-2 sm:w-[200px]"
+      >
         {link.imageUrl && (
-          <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-zinc-200">
+          <div className="relative aspect-square w-full overflow-hidden rounded-2xl ring-1 ring-zinc-100">
             <Image
               src={link.imageUrl}
               alt={link.name}
               fill
-              sizes="(min-width: 640px) calc(100vw / 3.5), calc(100vw / 2.5)"
+              sizes="200px"
               className="object-cover"
             />
           </div>
