@@ -35,6 +35,7 @@ import { SectionHeader } from "./SectionHeader";
 const MAX_PREVIEW = 4;
 const MAX_REWARDS_PREVIEW = 3;
 const PARTICIPATION_PAGE_SIZE = 5;
+const LIKED_PAGE_SIZE = 5;
 const EMPTY_STATE_CLASS = "min-h-[420px] justify-center";
 
 function BrowseAction() {
@@ -302,19 +303,17 @@ function ParticipationListItem({
 
 function LikedSkeleton() {
   return (
-    <div className="flex flex-col gap-4 min-h-[420px]">
-      <div className="flex h-9 items-center">
-        <div className="h-5 w-16 animate-pulse rounded bg-zinc-100" />
-      </div>
-      <div className="flex flex-col">
-        {Array.from({ length: MAX_PREVIEW }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 py-3">
-            <div className="size-11 shrink-0 animate-pulse rounded-sm bg-zinc-100" />
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+    <div className="flex min-h-[420px] flex-col gap-4">
+      <div className="h-6 w-16 animate-pulse rounded bg-zinc-100" />
+      <div className="flex flex-col gap-4">
+        {Array.from({ length: LIKED_PAGE_SIZE }).map((_, i) => (
+          <div key={i} className="flex items-start gap-3">
+            <div className="size-[89px] shrink-0 animate-pulse rounded-xl bg-zinc-100" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">
               <div className="h-3 w-12 animate-pulse rounded bg-zinc-100" />
               <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+              <div className="h-3 w-20 animate-pulse rounded bg-zinc-100" />
             </div>
-            <div className="size-8 animate-pulse rounded-full bg-zinc-100" />
           </div>
         ))}
       </div>
@@ -324,6 +323,7 @@ function LikedSkeleton() {
 
 const LikedTab = memo(function LikedTab() {
   const { data: likedMissions, isLoading } = useLikedMissions();
+  const [page, setPage] = useState(1);
 
   if (isLoading) return <LikedSkeleton />;
 
@@ -345,16 +345,26 @@ const LikedTab = memo(function LikedTab() {
     );
   }
 
+  const totalPages = Math.ceil(likedMissions.length / LIKED_PAGE_SIZE);
+  const paged = likedMissions.slice((page - 1) * LIKED_PAGE_SIZE, page * LIKED_PAGE_SIZE);
+
   return (
-    <TabSection count={likedMissions.length} emptyMessage="" label="총" href={ROUTES.ME_LIKED_TAB}>
-      <div className="flex flex-col">
-        {likedMissions.slice(0, MAX_PREVIEW).map(mission => (
+    <div className="flex flex-col gap-4">
+      <Typo.SubTitle size="large">총 {likedMissions.length}개</Typo.SubTitle>
+      <div className="flex min-h-[509px] flex-col gap-4">
+        {paged.map(mission => (
           <LikedListItem key={mission.id} mission={mission} />
         ))}
       </div>
-    </TabSection>
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+    </div>
   );
 });
+
+function formatCount(count: number): string {
+  if (count >= 1000) return `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}K`;
+  return String(count);
+}
 
 function LikedListItem({ mission }: { mission: Mission }) {
   const [imageError, setImageError] = useState(false);
@@ -364,8 +374,11 @@ function LikedListItem({ mission }: { mission: Mission }) {
     mission.category;
 
   return (
-    <Link href={ROUTES.MISSION(mission.id)} className="flex items-center gap-3 py-3">
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-sm">
+    <div className="flex items-start gap-3">
+      <Link
+        href={ROUTES.MISSION(mission.id)}
+        className="relative size-[89px] shrink-0 overflow-hidden rounded-xl border border-zinc-200"
+      >
         {showFallback ? (
           <div className="flex size-full items-center justify-center bg-zinc-50">
             <PollPollE className="size-6 text-zinc-200" />
@@ -375,22 +388,28 @@ function LikedListItem({ mission }: { mission: Mission }) {
             src={mission.imageUrl!}
             alt={mission.title}
             fill
-            sizes="44px"
+            sizes="89px"
             className="object-cover"
             onError={() => setImageError(true)}
           />
         )}
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <Typo.Body size="small" className="text-info">
+      </Link>
+      <Link
+        href={ROUTES.MISSION(mission.id)}
+        className="flex min-w-0 flex-1 flex-col gap-0.5 self-stretch"
+      >
+        <Typo.Body size="small" className="truncate font-bold text-zinc-500">
           {categoryLabel}
         </Typo.Body>
-        <Typo.SubTitle size="large" className="truncate">
+        <Typo.Body size="medium" className="truncate">
           {mission.title}
-        </Typo.SubTitle>
-      </div>
+        </Typo.Body>
+        <Typo.Body size="small" className="text-[11px] font-bold text-zinc-400">
+          조회 {formatCount(mission.viewCount)} · 찜 {formatCount(mission.likesCount)}
+        </Typo.Body>
+      </Link>
       <MissionLikeButton missionId={mission.id} />
-    </Link>
+    </div>
   );
 }
 
