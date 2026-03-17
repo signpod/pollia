@@ -1,21 +1,26 @@
 model Action {
-  id            String     @id @default(cuid())
-  title         String
-  description   String?
-  imageUrl      String?    @map("image_url")
-  type          ActionType
-  order         Int?
-  maxSelections Int?       @map("max_selections")
-  isRequired    Boolean    @default(true) @map("is_required")
-  hasOther      Boolean    @default(false) @map("has_other")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  id              String     @id @default(cuid())
+  title           String
+  description     String?
+  imageUrl        String?    @map("image_url")
+  type            ActionType
+  order           Int?
+  maxSelections   Int?       @map("max_selections")
+  isRequired      Boolean    @default(true) @map("is_required")
+  hasOther        Boolean    @default(false) @map("has_other")
+  correctOptionId String?    @unique @map("correct_option_id")
+  score           Int?
+  matchMode       MatchMode? @map("match_mode")
+  hint            String?
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
 
   missionId String?  @map("mission_id")
   mission   Mission? @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
-  answers ActionAnswer[]
-  options ActionOption[]
+  answers       ActionAnswer[]
+  options       ActionOption[]
+  correctOption ActionOption?  @relation("CorrectOption", fields: [correctOptionId], references: [id], onDelete: SetNull)
 
   nextActionId     String? @map("next_action_id")
   nextCompletionId String? @map("next_completion_id")
@@ -35,6 +40,7 @@ model Action {
   @@index([missionId])
   @@index([nextActionId])
   @@index([nextCompletionId])
+  @@index([correctOptionId])
   @@map("actions")
 }
 
@@ -52,9 +58,15 @@ enum ActionType {
   DATE
   TIME
   BRANCH
+  OX
   // PRIVACY_CONSENT
   // NAME
   // ADDRESS
   // PHONE
   // EMAIL
+}
+
+enum MatchMode {
+  EXACT
+  CONTAINS
 }

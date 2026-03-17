@@ -7,6 +7,7 @@ import {
   eitherOrInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
+  oxInputSchema,
   pdfInputSchema,
   ratingInputSchema,
   scaleInputSchema,
@@ -37,6 +38,7 @@ import type {
   CreateEitherOrInput,
   CreateImageInput,
   CreateMultipleChoiceInput,
+  CreateOXInput,
   CreatePdfInput,
   CreateRatingInput,
   CreateScaleInput,
@@ -385,6 +387,14 @@ export class ActionService {
     );
   }
 
+  async createOXAction(
+    input: CreateOXInput,
+    userId: string,
+    isAdmin = false,
+  ): Promise<ActionCreatedResult> {
+    return this.createActionWithOptions(input, oxInputSchema, ActionType.OX, userId, 1, isAdmin);
+  }
+
   async createBranchAction(
     input: CreateBranchInput,
     userId: string,
@@ -458,7 +468,8 @@ export class ActionService {
       type === ActionType.MULTIPLE_CHOICE ||
       type === ActionType.SCALE ||
       type === ActionType.TAG ||
-      type === ActionType.BRANCH
+      type === ActionType.BRANCH ||
+      type === ActionType.OX
     );
   }
 

@@ -1,9 +1,11 @@
 model MissionCompletion {
-  id          String           @id @default(cuid())
-  title       String
-  description String
-  imageUrl    String?          @map("image_url")
-  links       CompletionLink[]
+  id            String           @id @default(cuid())
+  title         String
+  description   String
+  imageUrl      String?          @map("image_url")
+  minScoreRatio Int?             @map("min_score_ratio")
+  maxScoreRatio Int?             @map("max_score_ratio")
+  links         CompletionLink[]
 
   missionId String  @map("mission_id")
   mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)

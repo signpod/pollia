@@ -9,3 +9,5 @@ export {
   type MissionUpdate,
   type MissionPasswordInput,
 } from "./missionSchema";
+
+export { quizConfigSchema, type QuizConfig } from "./quizConfigSchema";
