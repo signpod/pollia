@@ -48,6 +48,7 @@ export function BannerRow({
 }: BannerRowProps) {
   const [title, setTitle] = useState(banner.title);
   const [subtitle, setSubtitle] = useState(banner.subtitle ?? "");
+  const [linkUrl, setLinkUrl] = useState(banner.linkUrl ?? "");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateMutation = useUpdateBanner();
@@ -62,9 +63,10 @@ export function BannerRow({
     if (isEditing) {
       setTitle(banner.title);
       setSubtitle(banner.subtitle ?? "");
+      setLinkUrl(banner.linkUrl ?? "");
       reset();
     }
-  }, [isEditing, banner.title, banner.subtitle, reset]);
+  }, [isEditing, banner.title, banner.subtitle, banner.linkUrl, reset]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,6 +82,7 @@ export function BannerRow({
         id: banner.id,
         title: title.trim(),
         subtitle: subtitle.trim() || null,
+        linkUrl: linkUrl.trim() || null,
         imageUrl,
         imageFileUploadId,
       },
@@ -164,6 +167,13 @@ export function BannerRow({
           placeholder="부제목 (선택)"
           sx={{ flex: 1 }}
         />
+        <TextField
+          size="small"
+          value={linkUrl}
+          onChange={e => setLinkUrl(e.target.value)}
+          placeholder="링크 URL (선택)"
+          sx={{ flex: 1 }}
+        />
         <Button
           size="small"
           variant="contained"
@@ -239,6 +249,11 @@ export function BannerRow({
         {banner.subtitle && (
           <Typography variant="body2" color="text.secondary" noWrap>
             {banner.subtitle}
+          </Typography>
+        )}
+        {banner.linkUrl && (
+          <Typography variant="caption" color="primary" noWrap>
+            {banner.linkUrl}
           </Typography>
         )}
       </Box>

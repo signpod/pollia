@@ -12,6 +12,7 @@ interface BannerSlide {
   imageUrl: string;
   title: string;
   subtitle: string | null;
+  linkUrl: string | null;
 }
 
 interface BannerSliderProps {
@@ -171,7 +172,24 @@ export function BannerSlider({ slides }: BannerSliderProps) {
           style={{ transform: `translateX(-${displayIndex * 100}%)` }}
         >
           {extendedSlides.map((m, index) => (
-            <div key={`${m.id}-${index}`} className="relative size-full shrink-0 select-none">
+            <div
+              key={`${m.id}-${index}`}
+              role={m.linkUrl ? "link" : undefined}
+              tabIndex={m.linkUrl ? 0 : undefined}
+              className={cn(
+                "relative size-full shrink-0 select-none",
+                m.linkUrl && "cursor-pointer",
+              )}
+              onClick={() => {
+                if (isSwiped.current || !m.linkUrl) return;
+                window.open(m.linkUrl, "_blank", "noopener,noreferrer");
+              }}
+              onKeyDown={e => {
+                if (e.key === "Enter" && m.linkUrl) {
+                  window.open(m.linkUrl, "_blank", "noopener,noreferrer");
+                }
+              }}
+            >
               <Image
                 src={m.imageUrl}
                 alt={m.title}

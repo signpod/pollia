@@ -5,6 +5,7 @@ export interface BannerItem {
   title: string;
   subtitle: string | null;
   imageUrl: string;
+  linkUrl: string | null;
   order: number;
   imageFileUploadId: string | null;
   createdAt: Date;

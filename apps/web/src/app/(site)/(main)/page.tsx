@@ -32,6 +32,7 @@ export default async function MainPage() {
     imageUrl: b.imageUrl,
     title: b.title,
     subtitle: b.subtitle,
+    linkUrl: b.linkUrl,
   }));
 
   return (

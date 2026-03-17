@@ -3,6 +3,7 @@ export interface CreateBannerRequest {
   subtitle?: string | null;
   imageUrl: string;
   imageFileUploadId?: string | null;
+  linkUrl?: string | null;
 }
 
 export interface UpdateBannerRequest {
@@ -10,6 +11,7 @@ export interface UpdateBannerRequest {
   subtitle?: string | null;
   imageUrl?: string;
   imageFileUploadId?: string | null;
+  linkUrl?: string | null;
 }
 
 export interface ReorderBannersRequest {
