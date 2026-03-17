@@ -2,6 +2,34 @@ import type { ActionAnswerRepository } from "@/server/repositories/action-answer
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import { QuizGradingService } from "./quizGradingService";
 
+function createAnswer(
+  actionId: string,
+  score: number | null,
+  correctOptionId: string | null,
+  selectedOptionId: string,
+) {
+  return {
+    action: { id: actionId, score, correctOptionId },
+    options: [{ id: selectedOptionId }],
+  };
+}
+
+function createActions(count: number, score: number) {
+  return Array.from({ length: count }, (_, i) => ({ id: `a${i + 1}`, score }));
+}
+
+function createCorrectAnswers(count: number, score: number) {
+  return Array.from({ length: count }, (_, i) =>
+    createAnswer(`a${i + 1}`, score, `opt${i + 1}`, `opt${i + 1}`),
+  );
+}
+
+function createWrongAnswers(count: number, score: number) {
+  return Array.from({ length: count }, (_, i) =>
+    createAnswer(`a${i + 1}`, score, `opt${i + 1}`, `wrong${i + 1}`),
+  );
+}
+
 describe("QuizGradingService", () => {
   let service: QuizGradingService;
   let mockActionRepo: jest.Mocked<ActionRepository>;
@@ -265,6 +293,219 @@ describe("QuizGradingService", () => {
 
     it("빈 배열이면 null을 반환한다", () => {
       expect(service.resolveQuizCompletionId([], 50)).toBeNull();
+    });
+  });
+
+  describe("대규모 퀴즈 채점", () => {
+    it("10문항 균등 배점 만점", async () => {
+      // Given
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(10, 10) as never);
+      mockAnswerRepo.findByResponseId.mockResolvedValue(createCorrectAnswers(10, 10) as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.totalScore).toBe(100);
+      expect(result.perfectScore).toBe(100);
+      expect(result.scoreRatio).toBe(100);
+      expect(result.gradedItems).toHaveLength(10);
+      expect(result.gradedItems.every(item => item.isCorrect)).toBe(true);
+    });
+
+    it("10문항 균등 배점 0점", async () => {
+      // Given
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(10, 10) as never);
+      mockAnswerRepo.findByResponseId.mockResolvedValue(createWrongAnswers(10, 10) as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.totalScore).toBe(0);
+      expect(result.perfectScore).toBe(100);
+      expect(result.scoreRatio).toBe(0);
+      expect(result.gradedItems.every(item => !item.isCorrect)).toBe(true);
+    });
+
+    it("10문항 균등 배점 절반 정답", async () => {
+      // Given
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(10, 10) as never);
+
+      const answers = [
+        ...Array.from({ length: 5 }, (_, i) =>
+          createAnswer(`a${i + 1}`, 10, `opt${i + 1}`, `opt${i + 1}`),
+        ),
+        ...Array.from({ length: 5 }, (_, i) =>
+          createAnswer(`a${i + 6}`, 10, `opt${i + 6}`, `wrong${i + 6}`),
+        ),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.totalScore).toBe(50);
+      expect(result.perfectScore).toBe(100);
+      expect(result.scoreRatio).toBe(50);
+    });
+
+    it("혼합 배점 부분 정답 - 고배점만 정답", async () => {
+      // Given: 1+2+3+4+5+5 = 만점 20
+      const actions = [
+        { id: "a1", score: 1 },
+        { id: "a2", score: 2 },
+        { id: "a3", score: 3 },
+        { id: "a4", score: 4 },
+        { id: "a5", score: 5 },
+        { id: "a6", score: 5 },
+      ];
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions as never);
+
+      const answers = [
+        createAnswer("a1", 1, "opt1", "wrong1"),
+        createAnswer("a2", 2, "opt2", "wrong2"),
+        createAnswer("a3", 3, "opt3", "wrong3"),
+        createAnswer("a4", 4, "opt4", "wrong4"),
+        createAnswer("a5", 5, "opt5", "opt5"),
+        createAnswer("a6", 5, "opt6", "opt6"),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.totalScore).toBe(10);
+      expect(result.perfectScore).toBe(20);
+      expect(result.scoreRatio).toBe(50);
+      expect(result.gradedItems.filter(item => item.isCorrect)).toHaveLength(2);
+      expect(result.gradedItems.filter(item => !item.isCorrect)).toHaveLength(4);
+    });
+
+    it("채점 불가 문항 혼합 - score 있는 문항만 채점 대상", async () => {
+      // Given: score 있는 문항 3개(10점씩 = 만점 30), score 없는 문항 2개
+      const actions = [
+        { id: "a1", score: 10 },
+        { id: "a2", score: 10 },
+        { id: "a3", score: 10 },
+        { id: "a4", score: null },
+        { id: "a5", score: null },
+      ];
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions as never);
+
+      const answers = [
+        createAnswer("a1", 10, "opt1", "opt1"),
+        createAnswer("a2", 10, "opt2", "opt2"),
+        createAnswer("a3", 10, "opt3", "wrong3"),
+        createAnswer("a4", null, null, "any4"),
+        createAnswer("a5", null, null, "any5"),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.totalScore).toBe(20);
+      expect(result.perfectScore).toBe(30);
+      expect(result.scoreRatio).toBe(67);
+      expect(result.gradedItems).toHaveLength(3);
+      expect(result.gradedItems.filter(item => item.isCorrect)).toHaveLength(2);
+    });
+  });
+
+  describe("scoreRatio 반올림 정확성", () => {
+    it("1/3 정답 -> 33%", async () => {
+      // Given: 3문항 x 10점 = 만점 30, 1문항 정답 = 10/30 = 33.33...%
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(3, 10) as never);
+
+      const answers = [
+        createAnswer("a1", 10, "opt1", "opt1"),
+        createAnswer("a2", 10, "opt2", "wrong2"),
+        createAnswer("a3", 10, "opt3", "wrong3"),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.scoreRatio).toBe(33);
+    });
+
+    it("2/3 정답 -> 67%", async () => {
+      // Given: 3문항 x 10점, 2문항 정답 = 20/30 = 66.66...%
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(3, 10) as never);
+
+      const answers = [
+        createAnswer("a1", 10, "opt1", "opt1"),
+        createAnswer("a2", 10, "opt2", "opt2"),
+        createAnswer("a3", 10, "opt3", "wrong3"),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.scoreRatio).toBe(67);
+    });
+
+    it("1/7 정답 -> 14%", async () => {
+      // Given: 7문항 x 10점, 1문항 정답 = 10/70 = 14.28...%
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(7, 10) as never);
+
+      const answers = [
+        createAnswer("a1", 10, "opt1", "opt1"),
+        ...Array.from({ length: 6 }, (_, i) =>
+          createAnswer(`a${i + 2}`, 10, `opt${i + 2}`, `wrong${i + 2}`),
+        ),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.scoreRatio).toBe(14);
+    });
+
+    it("6/7 정답 -> 86%", async () => {
+      // Given: 7문항 x 10점, 6문항 정답 = 60/70 = 85.71...%
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(7, 10) as never);
+
+      const answers = [
+        ...Array.from({ length: 6 }, (_, i) =>
+          createAnswer(`a${i + 1}`, 10, `opt${i + 1}`, `opt${i + 1}`),
+        ),
+        createAnswer("a7", 10, "opt7", "wrong7"),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.scoreRatio).toBe(86);
+    });
+
+    it("1/2 정답 -> 정확히 50%", async () => {
+      // Given: 2문항 x 10점, 1문항 정답 = 10/20 = 50%
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(createActions(2, 10) as never);
+
+      const answers = [
+        createAnswer("a1", 10, "opt1", "opt1"),
+        createAnswer("a2", 10, "opt2", "wrong2"),
+      ];
+      mockAnswerRepo.findByResponseId.mockResolvedValue(answers as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.scoreRatio).toBe(50);
     });
   });
 });
