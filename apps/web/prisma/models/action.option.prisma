@@ -1,16 +1,17 @@
 model ActionOption {
-  id           String         @id @default(cuid())
-  title        String
-  description  String?
-  imageUrl     String?        @map("image_url")
-  order        Int
-  actionId     String         @map("action_id")
-  fileUploadId String?        @map("file_upload_id")
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  answers      ActionAnswer[]
-  action       Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
-  fileUpload   FileUpload?    @relation(fields: [fileUploadId], references: [id])
+  id               String         @id @default(cuid())
+  title            String
+  description      String?
+  imageUrl         String?        @map("image_url")
+  order            Int
+  actionId         String         @map("action_id")
+  fileUploadId     String?        @map("file_upload_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  answers          ActionAnswer[]
+  action           Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  correctForAction Action?        @relation("CorrectOption")
+  fileUpload       FileUpload?    @relation(fields: [fileUploadId], references: [id])
 
   nextAction       Action?            @relation("OptionToAction", fields: [nextActionId], references: [id], onDelete: SetNull)
   nextCompletion   MissionCompletion? @relation("OptionToCompletion", fields: [nextCompletionId], references: [id], onDelete: SetNull)
