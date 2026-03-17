@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateMissionBottomSheet } from "@/components/common/CreateMissionBottomSheet";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
@@ -9,23 +10,33 @@ import type { Mission } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import PolliaFaceVeryGood from "@public/svgs/face/very-good-face-full.svg";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
-import { ButtonV2, EmptyState, Tab, Typo, useModal } from "@repo/ui/components";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ButtonV2,
+  EmptyState,
+  Pagination,
+  SegmentedControl,
+  Tab,
+  Typo,
+  useModal,
+} from "@repo/ui/components";
+import { PlusIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
 import { MissionLikeButton } from "../../(main)/components/MissionLikeButton";
+import { useDeleteMission } from "../hooks/useDeleteMission";
 import { useDeleteMissionResponse } from "../hooks/useDeleteMissionResponse";
 import { useGroupedRewards } from "../hooks/useGroupedRewards";
 import { useLikedMissions } from "../hooks/useLikedMissions";
 import { useMyContentTabs } from "../hooks/useMyContentTabs";
-import { MyContentList } from "./MyContentList";
-import { SectionHeader } from "./SectionHeader";
 
-const MAX_PREVIEW = 4;
 const MAX_REWARDS_PREVIEW = 3;
+const PARTICIPATION_PAGE_SIZE = 5;
+const LIKED_PAGE_SIZE = 5;
+const REWARD_PAGE_SIZE = 5;
+const MY_CONTENT_PAGE_SIZE = 5;
 const EMPTY_STATE_CLASS = "min-h-[420px] justify-center";
 
 function BrowseAction() {
@@ -38,15 +49,6 @@ function BrowseAction() {
       </Link>
     </div>
   );
-}
-
-interface TabSectionProps {
-  count: number;
-  emptyMessage: string;
-  label: string;
-  href: string;
-  children: ReactNode;
-  rightAction?: ReactNode;
 }
 
 export function MyContentTabs() {
@@ -111,9 +113,11 @@ function ParticipationTab({
       ? (initialFilter as ParticipationFilter)
       : "in-progress",
   );
+  const [page, setPage] = useState(1);
 
-  const handleFilterChange = useCallback((value: ParticipationFilter) => {
-    setFilter(value);
+  const handleFilterChange = useCallback((value: string) => {
+    setFilter(value as ParticipationFilter);
+    setPage(1);
     const url = new URL(window.location.href);
     if (value === "in-progress") {
       url.searchParams.delete("filter");
@@ -122,6 +126,7 @@ function ParticipationTab({
     }
     window.history.replaceState(null, "", url.toString());
   }, []);
+
   const allResponses = [...inProgressResponses, ...completedResponses];
 
   if (allResponses.length === 0) {
@@ -143,36 +148,23 @@ function ParticipationTab({
   }
 
   const filtered = filter === "in-progress" ? inProgressResponses : completedResponses;
+  const totalPages = Math.ceil(filtered.length / PARTICIPATION_PAGE_SIZE);
+  const paged = filtered.slice(
+    (page - 1) * PARTICIPATION_PAGE_SIZE,
+    page * PARTICIPATION_PAGE_SIZE,
+  );
 
   return (
-    <div className="flex min-h-[420px] flex-col gap-4">
-      <SectionHeader
-        label="총"
-        count={filtered.length}
-        showViewAll={false}
-        rightAction={
-          <div className="flex h-8 items-center rounded-full bg-zinc-100 p-0.5">
-            <button
-              type="button"
-              onClick={() => handleFilterChange("in-progress")}
-              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
-                filter === "in-progress" ? "bg-white text-violet-500" : "text-zinc-400"
-              }`}
-            >
-              진행 중 {inProgressResponses.length}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFilterChange("completed")}
-              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
-                filter === "completed" ? "bg-white text-violet-500" : "text-zinc-400"
-              }`}
-            >
-              완료 {completedResponses.length}
-            </button>
-          </div>
-        }
+    <div className="flex min-h-[420px] flex-col gap-6">
+      <SegmentedControl
+        items={[
+          { value: "in-progress", label: "진행 중" },
+          { value: "completed", label: "완료" },
+        ]}
+        value={filter}
+        onValueChange={handleFilterChange}
       />
+
       {filtered.length === 0 ? (
         <EmptyState
           className={EMPTY_STATE_CLASS}
@@ -192,10 +184,17 @@ function ParticipationTab({
           action={<BrowseAction />}
         />
       ) : (
-        <div className="flex flex-col">
-          {filtered.map(response => (
-            <ParticipationListItem key={response.id} response={response} filter={filter} />
-          ))}
+        <div className="flex flex-col gap-4">
+          <Typo.SubTitle size="large">총 {filtered.length}개</Typo.SubTitle>
+          <div className="flex min-h-[609px] flex-col">
+            {paged.map((response, index) => (
+              <div key={response.id}>
+                <ParticipationListItem response={response} filter={filter} />
+                {index < paged.length - 1 && <div className="h-px w-full bg-zinc-100" />}
+              </div>
+            ))}
+          </div>
+          <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
     </div>
@@ -248,40 +247,47 @@ function ParticipationListItem({
   );
 
   return (
-    <Link href={ROUTES.MISSION(mission.id)} className="flex items-center gap-3 py-3">
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-sm">
+    <div className="flex gap-3 py-4">
+      <Link
+        href={ROUTES.MISSION(mission.id)}
+        className="relative size-[89px] shrink-0 overflow-hidden rounded-xl border border-zinc-200"
+      >
         <Image
           src={showFallback ? thumbnailFallback : (mission.imageUrl ?? "")}
           alt={mission.title}
           fill
-          sizes="44px"
+          sizes="89px"
           className="object-cover"
           onError={() => setImageError(true)}
         />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <Typo.Body size="small" className="text-info">
-          {categoryLabel}
-        </Typo.Body>
-        <Typo.SubTitle size="large" className="truncate">
-          {mission.title}
-        </Typo.SubTitle>
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <ButtonV2 variant="secondary" size="medium" onClick={handleAction}>
-          <Typo.ButtonText size="medium">
-            {filter === "in-progress" ? "이어서 참여" : "결과보기"}
-          </Typo.ButtonText>
+      </Link>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex items-start gap-1">
+          <Link href={ROUTES.MISSION(mission.id)} className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <Typo.Body size="small" className="truncate font-bold text-zinc-500">
+              {categoryLabel}
+            </Typo.Body>
+            <Typo.Body size="medium" className="truncate">
+              {mission.title}
+            </Typo.Body>
+          </Link>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="shrink-0 p-0.5 text-zinc-400 transition-colors hover:text-red-500"
+          >
+            <XIcon className="size-5" />
+          </button>
+        </div>
+        <ButtonV2 variant="secondary" size="medium" className="w-full" onClick={handleAction}>
+          <div className="flex w-full items-center justify-center">
+            <Typo.ButtonText size="medium">
+              {filter === "in-progress" ? "이어하기" : "결과보기"}
+            </Typo.ButtonText>
+          </div>
         </ButtonV2>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="flex items-center justify-center text-zinc-300 transition-colors hover:text-red-500"
-        >
-          <Trash2Icon className="size-4" />
-        </button>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -289,19 +295,17 @@ function ParticipationListItem({
 
 function LikedSkeleton() {
   return (
-    <div className="flex flex-col gap-4 min-h-[420px]">
-      <div className="flex h-9 items-center">
-        <div className="h-5 w-16 animate-pulse rounded bg-zinc-100" />
-      </div>
-      <div className="flex flex-col">
-        {Array.from({ length: MAX_PREVIEW }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 py-3">
-            <div className="size-11 shrink-0 animate-pulse rounded-sm bg-zinc-100" />
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+    <div className="flex min-h-[420px] flex-col gap-4">
+      <div className="h-6 w-16 animate-pulse rounded bg-zinc-100" />
+      <div className="flex flex-col gap-4">
+        {Array.from({ length: LIKED_PAGE_SIZE }).map((_, i) => (
+          <div key={i} className="flex items-start gap-3">
+            <div className="size-[89px] shrink-0 animate-pulse rounded-xl bg-zinc-100" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">
               <div className="h-3 w-12 animate-pulse rounded bg-zinc-100" />
               <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+              <div className="h-3 w-20 animate-pulse rounded bg-zinc-100" />
             </div>
-            <div className="size-8 animate-pulse rounded-full bg-zinc-100" />
           </div>
         ))}
       </div>
@@ -311,6 +315,7 @@ function LikedSkeleton() {
 
 const LikedTab = memo(function LikedTab() {
   const { data: likedMissions, isLoading } = useLikedMissions();
+  const [page, setPage] = useState(1);
 
   if (isLoading) return <LikedSkeleton />;
 
@@ -332,16 +337,26 @@ const LikedTab = memo(function LikedTab() {
     );
   }
 
+  const totalPages = Math.ceil(likedMissions.length / LIKED_PAGE_SIZE);
+  const paged = likedMissions.slice((page - 1) * LIKED_PAGE_SIZE, page * LIKED_PAGE_SIZE);
+
   return (
-    <TabSection count={likedMissions.length} emptyMessage="" label="총" href={ROUTES.ME_LIKED_TAB}>
-      <div className="flex flex-col">
-        {likedMissions.slice(0, MAX_PREVIEW).map(mission => (
+    <div className="flex flex-col gap-4">
+      <Typo.SubTitle size="large">총 {likedMissions.length}개</Typo.SubTitle>
+      <div className="flex min-h-[509px] flex-col gap-4">
+        {paged.map(mission => (
           <LikedListItem key={mission.id} mission={mission} />
         ))}
       </div>
-    </TabSection>
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+    </div>
   );
 });
+
+function formatCount(count: number): string {
+  if (count >= 1000) return `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}K`;
+  return String(count);
+}
 
 function LikedListItem({ mission }: { mission: Mission }) {
   const [imageError, setImageError] = useState(false);
@@ -351,8 +366,11 @@ function LikedListItem({ mission }: { mission: Mission }) {
     mission.category;
 
   return (
-    <Link href={ROUTES.MISSION(mission.id)} className="flex items-center gap-3 py-3">
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-sm">
+    <div className="flex items-start gap-3">
+      <Link
+        href={ROUTES.MISSION(mission.id)}
+        className="relative size-[89px] shrink-0 overflow-hidden rounded-xl border border-zinc-200"
+      >
         {showFallback ? (
           <div className="flex size-full items-center justify-center bg-zinc-50">
             <PollPollE className="size-6 text-zinc-200" />
@@ -362,31 +380,34 @@ function LikedListItem({ mission }: { mission: Mission }) {
             src={mission.imageUrl!}
             alt={mission.title}
             fill
-            sizes="44px"
+            sizes="89px"
             className="object-cover"
             onError={() => setImageError(true)}
           />
         )}
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <Typo.Body size="small" className="text-info">
+      </Link>
+      <Link
+        href={ROUTES.MISSION(mission.id)}
+        className="flex min-w-0 flex-1 flex-col gap-0.5 self-stretch"
+      >
+        <Typo.Body size="small" className="truncate font-bold text-zinc-500">
           {categoryLabel}
         </Typo.Body>
-        <Typo.SubTitle size="large" className="truncate">
+        <Typo.Body size="medium" className="truncate">
           {mission.title}
-        </Typo.SubTitle>
-      </div>
+        </Typo.Body>
+        <Typo.Body size="small" className="text-[11px] font-bold text-zinc-400">
+          조회 {formatCount(mission.viewCount)} · 찜 {formatCount(mission.likesCount)}
+        </Typo.Body>
+      </Link>
       <MissionLikeButton missionId={mission.id} />
-    </Link>
+    </div>
   );
 }
 
 // ─── 리워드 탭 ───
 
-const REWARD_SECTIONS_CONFIG = [
-  { key: "pending", label: "지급 예정 총", href: ROUTES.ME_REWARDS_PENDING },
-  { key: "paid", label: "지급 완료 총", href: ROUTES.ME_REWARDS_PAID },
-] as const;
+type RewardFilter = "pending" | "paid";
 
 function formatDate(date: Date): string {
   const d = new Date(date);
@@ -419,8 +440,8 @@ function RewardListItem({ reward }: RewardItemProps) {
   const missionId = reward.missions[0]?.id;
 
   const content = (
-    <div className="flex items-center gap-3 py-3">
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-sm border border-zinc-100">
+    <div className="flex items-start gap-3">
+      <div className="relative size-[89px] shrink-0 overflow-hidden rounded-xl border border-zinc-200">
         {showFallback ? (
           <div className="flex size-full items-center justify-center bg-zinc-50">
             <PollPollE className="size-6 text-zinc-200" />
@@ -430,25 +451,23 @@ function RewardListItem({ reward }: RewardItemProps) {
             src={reward.imageUrl ?? ""}
             alt={reward.name}
             fill
-            sizes="44px"
-            className="object-contain"
+            sizes="89px"
+            className="object-cover"
             onError={() => setImageError(true)}
           />
         )}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <Typo.SubTitle size="large" className="truncate">
-          {reward.name}
-        </Typo.SubTitle>
+      <div className="flex min-w-0 flex-1 flex-col gap-1 self-stretch">
+        <Typo.Body
+          size="small"
+          className={`w-fit rounded-[6px] px-2 py-0.5 font-bold ${
+            isPaid ? "bg-zinc-100 text-zinc-500" : "bg-violet-50 text-violet-500"
+          }`}
+        >
+          {badgeText}
+        </Typo.Body>
+        <Typo.Body size="medium">{reward.name}</Typo.Body>
       </div>
-      <Typo.Body
-        size="small"
-        className={`shrink-0 rounded-md px-2 py-1 ${
-          isPaid ? "bg-zinc-100 text-zinc-500" : "bg-orange-50 text-orange-600"
-        }`}
-      >
-        {badgeText}
-      </Typo.Body>
     </div>
   );
 
@@ -461,20 +480,21 @@ function RewardListItem({ reward }: RewardItemProps) {
 
 function RewardsSkeleton() {
   return (
-    <div className="flex flex-col gap-4 min-h-[420px]">
-      <div className="flex h-9 items-center">
-        <div className="h-5 w-20 animate-pulse rounded bg-zinc-100" />
-      </div>
-      <div className="flex flex-col">
-        {Array.from({ length: MAX_REWARDS_PREVIEW }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 py-3">
-            <div className="size-11 shrink-0 animate-pulse rounded-sm bg-zinc-100" />
-            <div className="flex-1">
-              <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-100" />
+    <div className="flex flex-col gap-6">
+      <div className="h-11 w-full animate-pulse rounded-xl bg-zinc-100" />
+      <div className="flex flex-col gap-4">
+        <div className="h-6 w-16 animate-pulse rounded bg-zinc-100" />
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: REWARD_PAGE_SIZE }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="size-[89px] shrink-0 animate-pulse rounded-xl bg-zinc-100" />
+              <div className="flex flex-1 flex-col gap-1.5 pt-1">
+                <div className="h-5 w-28 animate-pulse rounded-md bg-zinc-100" />
+                <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+              </div>
             </div>
-            <div className="h-6 w-24 animate-pulse rounded-md bg-zinc-100" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -482,6 +502,13 @@ function RewardsSkeleton() {
 
 const RewardsTab = memo(function RewardsTab() {
   const { rewards, grouped, isLoading } = useGroupedRewards();
+  const [filter, setFilter] = useState<RewardFilter>("pending");
+  const [page, setPage] = useState(1);
+
+  const handleFilterChange = useCallback((value: string) => {
+    setFilter(value as RewardFilter);
+    setPage(1);
+  }, []);
 
   if (isLoading) return <RewardsSkeleton />;
 
@@ -503,62 +530,122 @@ const RewardsTab = memo(function RewardsTab() {
     );
   }
 
+  const filtered = grouped[filter] ?? [];
+  const totalPages = Math.ceil(filtered.length / REWARD_PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * REWARD_PAGE_SIZE, page * REWARD_PAGE_SIZE);
+
   return (
-    <div className="flex flex-col gap-10">
-      {REWARD_SECTIONS_CONFIG.map(({ key, label, href }) => {
-        const items = grouped[key];
-        if (items?.length === 0) return null;
-        return (
-          <TabSection
-            key={key}
-            count={items?.length ?? 0}
-            emptyMessage=""
-            label={label}
-            href={href}
-          >
-            <div className="flex flex-col">
-              {items?.slice(0, MAX_REWARDS_PREVIEW).map(reward => (
-                <RewardListItem key={reward.id} reward={reward} />
-              ))}
-            </div>
-          </TabSection>
-        );
-      })}
+    <div className="flex flex-col gap-6">
+      <SegmentedControl
+        items={[
+          { value: "pending", label: "지급 예정" },
+          { value: "paid", label: "지급 완료" },
+        ]}
+        value={filter}
+        onValueChange={handleFilterChange}
+      />
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          className={EMPTY_STATE_CLASS}
+          icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
+          title={filter === "pending" ? "지급 예정 리워드가 없어요" : "지급 완료 리워드가 없어요"}
+          description={
+            <>
+              아래 버튼을 눌러
+              <br />
+              리워드가 있는 {UBIQUITOUS_CONSTANTS.MISSION}를 찾아보세요
+            </>
+          }
+          action={<BrowseAction />}
+        />
+      ) : (
+        <div className="flex flex-col gap-4">
+          <Typo.SubTitle size="large">총 {filtered.length}개</Typo.SubTitle>
+          <div className="flex min-h-[509px] flex-col gap-4">
+            {paged.map(reward => (
+              <RewardListItem key={reward.id} reward={reward} />
+            ))}
+          </div>
+          <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+        </div>
+      )}
     </div>
   );
 });
 
 // ─── 내 콘텐츠 탭 ───
 
+type MyContentFilter = "public" | "link-only" | "private";
+
+function filterMissionsByVisibility(missions: Mission[], filter: MyContentFilter) {
+  switch (filter) {
+    case "public":
+      return missions.filter(m => m.isActive && m.type === "GENERAL");
+    case "link-only":
+      return missions.filter(m => m.isActive && m.type === "EXPERIENCE_GROUP");
+    case "private":
+      return missions.filter(m => !m.isActive);
+  }
+}
+
 function MyContentSkeleton() {
   return (
-    <div className="flex flex-col gap-4 min-h-[420px]">
-      <div className="flex h-9 items-center">
-        <div className="h-5 w-16 animate-pulse rounded bg-zinc-100" />
-      </div>
-      <div className="flex flex-col">
-        {Array.from({ length: MAX_PREVIEW }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 py-3">
-            <div className="size-11 shrink-0 animate-pulse rounded-sm bg-zinc-100" />
-            <div className="flex-1">
-              <div className="h-4 w-3/5 animate-pulse rounded bg-zinc-100" />
+    <div className="flex flex-col gap-6">
+      <div className="h-11 w-full animate-pulse rounded-xl bg-zinc-100" />
+      <div className="flex flex-col gap-4">
+        <div className="h-6 w-16 animate-pulse rounded bg-zinc-100" />
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: MY_CONTENT_PAGE_SIZE }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="size-[89px] shrink-0 animate-pulse rounded-xl bg-zinc-100" />
+              <div className="flex flex-1 flex-col gap-1.5 pt-1">
+                <div className="h-3 w-12 animate-pulse rounded bg-zinc-100" />
+                <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+                <div className="h-3 w-20 animate-pulse rounded bg-zinc-100" />
+              </div>
             </div>
-            <div className="h-6 w-14 animate-pulse rounded-full bg-zinc-100" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
 const MyContentTab = memo(function MyContentTab() {
-  const { data, isLoading } = useReadMissions({ options: { limit: MAX_PREVIEW } });
+  const { data, isLoading } = useReadMissions({ options: { limit: 100 } });
+  const [filter, setFilter] = useState<MyContentFilter>("public");
+  const [page, setPage] = useState(1);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { showModal } = useModal();
+  const deleteMutation = useDeleteMission();
+
+  const handleFilterChange = useCallback((value: string) => {
+    setFilter(value as MyContentFilter);
+    setPage(1);
+  }, []);
+
+  const handleDelete = useCallback(
+    (missionId: string) => {
+      showModal({
+        title: `${UBIQUITOUS_CONSTANTS.MISSION} 삭제`,
+        description: `${UBIQUITOUS_CONSTANTS.MISSION}를 삭제하면 참여자들의 응답 데이터도 함께 삭제됩니다.\n되돌릴 수 없습니다.`,
+        confirmText: "삭제하기",
+        cancelText: "취소",
+        showCancelButton: true,
+        onConfirm: async () => {
+          await deleteMutation.mutateAsync(missionId);
+        },
+      });
+    },
+    [showModal, deleteMutation],
+  );
 
   if (isLoading) return <MyContentSkeleton />;
 
-  const missions = data?.pages.flatMap(page => page.data) ?? [];
+  const allMissions = data?.pages.flatMap(p => p.data) ?? [];
 
-  if (missions.length === 0) {
+  if (allMissions.length === 0) {
     return (
       <EmptyState
         className={EMPTY_STATE_CLASS}
@@ -568,19 +655,19 @@ const MyContentTab = memo(function MyContentTab() {
           <>
             나만의 {UBIQUITOUS_CONSTANTS.MISSION}를 만들어
             <br />
-            다양한 사람들의 의견을 모아보세요 ✨
+            다양한 사람들의 의견을 모아보세요
           </>
         }
         action={
           <div className="flex justify-center gap-2">
             <Link href={`${ROUTES.CREATE_MISSION}?category=RESEARCH`}>
               <ButtonV2 variant="primary" className="w-auto">
-                <Typo.ButtonText size="large">📋 설문조사/리서치</Typo.ButtonText>
+                <Typo.ButtonText size="large">설문조사/리서치</Typo.ButtonText>
               </ButtonV2>
             </Link>
             <Link href={`${ROUTES.CREATE_MISSION}?category=TEST`}>
               <ButtonV2 variant="secondary" className="w-auto">
-                <Typo.ButtonText size="large">🧠 심리/유형 테스트</Typo.ButtonText>
+                <Typo.ButtonText size="large">심리/유형 테스트</Typo.ButtonText>
               </ButtonV2>
             </Link>
           </div>
@@ -589,40 +676,121 @@ const MyContentTab = memo(function MyContentTab() {
     );
   }
 
+  const filtered = filterMissionsByVisibility(allMissions, filter);
+  const totalPages = Math.ceil(filtered.length / MY_CONTENT_PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * MY_CONTENT_PAGE_SIZE, page * MY_CONTENT_PAGE_SIZE);
+
   return (
-    <TabSection
-      count={missions.length}
-      emptyMessage=""
-      label="총"
-      href={ROUTES.ME_MY_CONTENT}
-      rightAction={
-        <Link
-          href={ROUTES.CREATE_MISSION}
-          className="flex items-center gap-1.5 rounded-full bg-violet-50 px-3.5 py-1.5 text-sm font-semibold text-violet-600 transition-colors hover:bg-violet-100"
-        >
-          <PencilIcon className="size-[13px]" />새 {UBIQUITOUS_CONSTANTS.MISSION}
-        </Link>
-      }
-    >
-      <MyContentList missions={missions.slice(0, MAX_PREVIEW)} />
-    </TabSection>
+    <div className="flex flex-col gap-6">
+      <SegmentedControl
+        items={[
+          { value: "public", label: "전체 공개" },
+          { value: "link-only", label: "링크 공개" },
+          { value: "private", label: "나만 보기" },
+        ]}
+        value={filter}
+        onValueChange={handleFilterChange}
+      />
+
+      {filtered.length === 0 ? (
+        <div className="flex min-h-[509px] flex-col">
+          <EmptyState
+            className="flex-1 justify-center"
+            icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
+            title={`해당하는 ${UBIQUITOUS_CONSTANTS.MISSION}가 없어요`}
+            description={
+              <>
+                아래 버튼을 눌러
+                <br />
+                새로운 {UBIQUITOUS_CONSTANTS.MISSION}를 만들어보세요
+              </>
+            }
+            action={
+              <div className="flex justify-center gap-2">
+                <Link href={`${ROUTES.CREATE_MISSION}?category=RESEARCH`}>
+                  <ButtonV2 variant="primary" className="w-auto">
+                    <Typo.ButtonText size="large">설문조사/리서치</Typo.ButtonText>
+                  </ButtonV2>
+                </Link>
+                <Link href={`${ROUTES.CREATE_MISSION}?category=TEST`}>
+                  <ButtonV2 variant="secondary" className="w-auto">
+                    <Typo.ButtonText size="large">심리/유형 테스트</Typo.ButtonText>
+                  </ButtonV2>
+                </Link>
+              </div>
+            }
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <Typo.SubTitle size="large">총 {filtered.length}개</Typo.SubTitle>
+            <ButtonV2 variant="secondary" size="medium" onClick={() => setIsCreateOpen(true)}>
+              <PlusIcon className="size-4" />
+              <Typo.ButtonText size="medium">새 콘텐츠</Typo.ButtonText>
+            </ButtonV2>
+          </div>
+          <div className="flex min-h-[509px] flex-col gap-4">
+            {paged.map(mission => (
+              <MyContentListItem key={mission.id} mission={mission} onDelete={handleDelete} />
+            ))}
+          </div>
+          <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+        </div>
+      )}
+
+      <CreateMissionBottomSheet isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+    </div>
   );
 });
 
-// ─── 공통 ───
+function MyContentListItem({
+  mission,
+  onDelete,
+}: { mission: Mission; onDelete: (id: string) => void }) {
+  const [imageError, setImageError] = useState(false);
+  const showFallback = imageError || !mission.imageUrl;
+  const categoryLabel =
+    MISSION_CATEGORY_LABELS[mission.category as keyof typeof MISSION_CATEGORY_LABELS] ??
+    mission.category;
 
-function TabSection({ count, emptyMessage, label, href, children, rightAction }: TabSectionProps) {
-  if (count === 0) return <EmptyState title={emptyMessage} />;
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete(mission.id);
+  };
+
   return (
-    <div className="flex flex-col gap-4 min-h-[420px]">
-      <SectionHeader
-        label={label}
-        count={count}
-        href={href}
-        showViewAll={count >= MAX_PREVIEW}
-        rightAction={rightAction}
-      />
-      {children}
+    <div className="flex items-start gap-2">
+      <Link href={ROUTES.EDITOR_MISSION(mission.id)} className="flex min-w-0 flex-1 gap-3">
+        <div className="relative size-[89px] shrink-0 overflow-hidden rounded-xl border border-zinc-200">
+          <Image
+            src={showFallback ? thumbnailFallback : (mission.imageUrl ?? "")}
+            alt={mission.title}
+            fill
+            sizes="89px"
+            className="object-cover"
+            onError={() => setImageError(true)}
+          />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 self-stretch">
+          <Typo.Body size="small" className="truncate font-bold text-zinc-500">
+            {categoryLabel}
+          </Typo.Body>
+          <Typo.Body size="medium">{mission.title}</Typo.Body>
+          <Typo.Body size="small" className="text-[11px] font-bold text-zinc-400">
+            조회 {formatCount(mission.viewCount)} · 찜 {formatCount(mission.likesCount)}
+          </Typo.Body>
+        </div>
+      </Link>
+      <button
+        type="button"
+        onClick={handleDelete}
+        className="shrink-0 p-0.5 text-zinc-400 transition-colors hover:text-red-500"
+        aria-label={`${UBIQUITOUS_CONSTANTS.MISSION} 삭제`}
+      >
+        <XIcon className="size-5" />
+      </button>
     </div>
   );
 }

@@ -18,8 +18,8 @@ import { MePageContent } from "./MePageContent";
 export default async function MePage() {
   const queryClient = getQueryClient();
 
-  const [myResponsesData, userData] = await Promise.all([
-    queryClient.fetchQuery({
+  const [, userData] = await Promise.all([
+    queryClient.prefetchQuery({
       queryKey: missionQueryKeys.myResponses(),
       queryFn: () => getMyResponses(),
     }),

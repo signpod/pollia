@@ -1,12 +1,14 @@
 "use client";
 
-import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
+import PolliaIcon from "@public/svgs/pollia-icon.svg";
+import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon, SettingsIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
@@ -48,7 +50,25 @@ export function MeLayoutShell({ children }: { children: React.ReactNode }) {
           </Typo.SubTitle>
         </header>
       ) : (
-        <ProfileHeader />
+        <header className="sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-1">
+          {canGoBack ? (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex size-12 items-center justify-center"
+            >
+              <ChevronLeftIcon className="size-6" />
+            </button>
+          ) : (
+            <Link href={ROUTES.HOME} className="flex items-center gap-[2.775px] px-3 py-3">
+              <PolliaIcon className="size-4 text-primary" />
+              <PolliaWordmark className="h-[22px] text-black" />
+            </Link>
+          )}
+          <Link href={ROUTES.ME_ACCOUNT} className="flex size-12 items-center justify-center">
+            <SettingsIcon className="size-6" />
+          </Link>
+        </header>
       )}
       <div className="flex flex-1 flex-col">{children}</div>
     </div>
