@@ -22,6 +22,7 @@ interface SortableOptionItemProps {
   showDelete: boolean;
   showIsCorrect?: boolean;
   isCorrect?: boolean;
+  isCorrectDisabled?: boolean;
   disabled: boolean;
   isImageUploading: boolean;
   titleMaxLength: number;
@@ -52,6 +53,7 @@ export function SortableOptionItem({
   showDelete,
   showIsCorrect,
   isCorrect,
+  isCorrectDisabled,
   disabled,
   isImageUploading,
   titleMaxLength,
@@ -129,6 +131,7 @@ export function SortableOptionItem({
               <Toggle
                 checked={isCorrect ?? false}
                 onCheckedChange={val => onIsCorrectChange?.(val)}
+                disabled={isCorrectDisabled}
               />
             </div>
           )}
