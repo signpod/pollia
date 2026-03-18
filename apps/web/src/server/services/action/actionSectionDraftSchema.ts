@@ -1,4 +1,4 @@
-import { ActionType } from "@prisma/client";
+import { ActionType, MatchMode } from "@prisma/client";
 import { z } from "zod";
 
 const actionTypeSchema = z.enum(ActionType);
@@ -9,6 +9,7 @@ const saveActionOptionInputSchema = z.object({
   description: z.string().nullable().optional(),
   imageUrl: z.string().nullable().optional(),
   order: z.number(),
+  isCorrect: z.boolean().optional(),
   fileUploadId: z.string().nullable().optional(),
   nextActionId: z.string().nullable().optional(),
   nextCompletionId: z.string().nullable().optional(),
@@ -25,6 +26,9 @@ const actionFormValuesSchema = z.object({
   options: z.array(saveActionOptionInputSchema).optional(),
   nextActionId: z.string().nullable().optional(),
   nextCompletionId: z.string().nullable().optional(),
+  score: z.number().nullable().optional(),
+  matchMode: z.nativeEnum(MatchMode).nullable().optional(),
+  hint: z.string().nullable().optional(),
 });
 
 const actionFormRawSnapshotSchema = z.object({

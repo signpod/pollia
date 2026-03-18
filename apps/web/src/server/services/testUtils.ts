@@ -77,6 +77,7 @@ export const createMockActionOption = (overrides: Partial<ActionOption> = {}): A
   imageUrl: null,
   fileUploadId: null,
   order: 0,
+  isCorrect: false,
   nextActionId: null,
   nextCompletionId: null,
   createdAt: new Date(),

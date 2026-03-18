@@ -10,6 +10,7 @@ interface ActionOptionInput {
   description?: string | null;
   imageUrl?: string | null;
   order: number;
+  isCorrect?: boolean;
   imageFileUploadId?: string | null;
   nextActionId?: string | null;
   nextCompletionId?: string | null;
@@ -21,6 +22,8 @@ export type BaseActionInputWithOptions = BaseActionInput & {
 
 export type CreateMultipleChoiceInput = BaseActionInputWithOptions & {
   maxSelections: number;
+  score?: number | null;
+  hint?: string | null;
 };
 
 export type CreateScaleInput = BaseActionInputWithOptions;
@@ -31,7 +34,12 @@ export type CreateTagInput = BaseActionInputWithOptions & {
 
 export type CreateSubjectiveInput = BaseActionInput;
 
-export type CreateShortTextInput = BaseActionInput;
+export type CreateShortTextInput = BaseActionInput & {
+  options?: ActionOptionInput[];
+  score?: number | null;
+  matchMode?: MatchMode | null;
+  hint?: string | null;
+};
 
 export type CreateEitherOrInput = BaseActionInput;
 
@@ -61,15 +69,15 @@ export type CreateBranchInput = BaseActionInputWithOptions & {
 export type CreateOXInput = BaseActionInputWithOptions & {
   maxSelections: 1;
   hasOther: false;
-  score?: number;
+  score?: number | null;
   correctOptionId?: string | null;
-  matchMode?: MatchMode | null;
   hint?: string | null;
 };
 
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
   id?: string;
   order: number;
+  isCorrect?: boolean;
 };
 
 export type UpdateActionInput = Omit<Prisma.ActionUncheckedUpdateInput, "options"> & {
@@ -137,6 +145,9 @@ export interface ActionFormValuesInput {
   options?: SaveActionOptionInput[];
   nextActionId?: string | null;
   nextCompletionId?: string | null;
+  score?: number | null;
+  matchMode?: MatchMode | null;
+  hint?: string | null;
 }
 
 export interface SaveActionOptionInput {
@@ -145,6 +156,7 @@ export interface SaveActionOptionInput {
   description?: string | null;
   imageUrl?: string | null;
   order: number;
+  isCorrect?: boolean;
   fileUploadId?: string | null;
   nextActionId?: string | null;
   nextCompletionId?: string | null;
