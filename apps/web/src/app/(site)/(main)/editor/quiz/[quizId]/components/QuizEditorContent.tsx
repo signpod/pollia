@@ -1,13 +1,18 @@
 "use client";
 
+import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { Separator } from "@/components/ui/separator";
+import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import { useReadActionsDetail } from "@/hooks/action";
+import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
-import { Button } from "@repo/ui/components";
-import { Save } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
 import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
+import { completionDraftsAtom } from "../../../missions/[missionId]/atoms/editorCompletionAtoms";
 import { CompletionSettingsCard } from "../../../missions/[missionId]/components/CompletionSettingsCard";
 import { ContentBasicInfoCard } from "../../../missions/[missionId]/components/ContentBasicInfoCard";
 import { EditorBottomSaveSlot } from "../../../missions/[missionId]/components/EditorBottomSaveSlot";
@@ -17,12 +22,12 @@ import {
   RewardSettingsCard,
   type RewardSnapshot,
 } from "../../../missions/[missionId]/components/RewardSettingsCard";
-import type {
-  SectionSaveHandle,
-  SectionSaveState,
-} from "../../../missions/[missionId]/components/editor-save.types";
+import type { SectionSaveState } from "../../../missions/[missionId]/components/editor-save.types";
+import { EditorMissionActionBar } from "../../../missions/[missionId]/components/views/EditorMissionActionBar";
+import { quizActionDraftItemsAtom } from "../atoms/quizActionAtoms";
 import { QuizConfigSettingsCard } from "./QuizConfigSettingsCard";
 import { QuizQuestionSettingsCard } from "./QuizQuestionSettingsCard";
+import { useEditorQuizController } from "./controllers/useEditorQuizController";
 
 interface QuizEditorContentProps {
   missionId: string;
@@ -35,45 +40,9 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const actionSectionRef = useRef<HTMLDivElement>(null);
   useEditorBootstrapScrollController(missionId, actionSectionRef);
 
-  const basicInfoRef = useRef<SectionSaveHandle>(null);
-  const rewardRef = useRef<SectionSaveHandle>(null);
-  const quizConfigRef = useRef<SectionSaveHandle>(null);
-  const questionRef = useRef<SectionSaveHandle>(null);
-  const completionRef = useRef<SectionSaveHandle>(null);
-
-  const [basicState, setBasicState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-  const [rewardState, setRewardState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-  const [quizConfigState, setQuizConfigState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-  const [questionState, setQuestionState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-  const [completionState, setCompletionState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-
   const [editorHasReward, setEditorHasReward] = useState(!!reward);
-  const [isSavingAll, setIsSavingAll] = useState(false);
+  const [basicValidationCount, setBasicValidationCount] = useState(0);
+  const [rewardValidationCount, setRewardValidationCount] = useState(0);
 
   const initialShowHint =
     mission.quizConfig &&
@@ -83,56 +52,65 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
       : true;
   const [showHint, setShowHint] = useState(initialShowHint);
 
-  const hasAnyPendingChanges =
-    basicState.hasPendingChanges ||
-    rewardState.hasPendingChanges ||
-    quizConfigState.hasPendingChanges ||
-    questionState.hasPendingChanges ||
-    completionState.hasPendingChanges;
+  const missionQuery = useReadMission(missionId);
+  const actionsQuery = useReadActionsDetail(missionId);
+  const completionsQuery = useQuery({
+    queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+    queryFn: () => getCompletionsByMissionId(missionId),
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const hasAnyBusySection =
-    basicState.isBusy ||
-    rewardState.isBusy ||
-    quizConfigState.isBusy ||
-    questionState.isBusy ||
-    completionState.isBusy;
+  const questionDraftItems = useAtomValue(quizActionDraftItemsAtom);
+  const completionDrafts = useAtomValue(completionDraftsAtom);
 
-  const hasAnyValidationIssues =
-    basicState.hasValidationIssues ||
-    rewardState.hasValidationIssues ||
-    quizConfigState.hasValidationIssues ||
-    questionState.hasValidationIssues ||
-    completionState.hasValidationIssues;
+  const { refs, sectionBindings, viewState, actions } = useEditorQuizController({
+    quizId: missionId,
+    mission,
+    currentTab,
+    missionQueryData: missionQuery.data?.data,
+    serverActionsCount: actionsQuery.data?.data?.length ?? 0,
+    serverCompletionsCount: completionsQuery.data?.data?.length ?? 0,
+    questionDraftCount: questionDraftItems.length,
+    completionDraftCount: completionDrafts.length,
+    isActionsLoading: actionsQuery.isLoading,
+    isCompletionsLoading: completionsQuery.isLoading,
+  });
 
-  const handleSaveAll = useCallback(async () => {
-    setIsSavingAll(true);
-    try {
-      const refs = [basicInfoRef, rewardRef, quizConfigRef, questionRef, completionRef];
-      await Promise.all(refs.map(r => r.current?.save({ silent: true })));
-    } finally {
-      setIsSavingAll(false);
-    }
-  }, []);
+  const handleBasicStateChange = useCallback(
+    (state: SectionSaveState) => {
+      setBasicValidationCount(state.validationIssueCount);
+      sectionBindings.onBasicStateChange(state);
+    },
+    [sectionBindings.onBasicStateChange],
+  );
+
+  const handleRewardStateChange = useCallback(
+    (state: SectionSaveState) => {
+      setRewardValidationCount(state.validationIssueCount);
+      sectionBindings.onRewardStateChange(state);
+    },
+    [sectionBindings.onRewardStateChange],
+  );
 
   const saveButtonNode = useMemo(
     () => (
-      <div className="flex gap-2 px-5 py-3">
-        <Button
-          variant="primary"
-          fullWidth
-          inlineIcon
-          leftIcon={<Save className="size-4" />}
-          onClick={() => void handleSaveAll()}
-          loading={isSavingAll}
-          disabled={
-            isSavingAll || hasAnyBusySection || !hasAnyPendingChanges || hasAnyValidationIssues
-          }
-        >
-          저장하기
-        </Button>
-      </div>
+      <EditorMissionActionBar
+        isSavingAll={viewState.isSavingAll}
+        hasAnyBusySection={viewState.hasAnyBusySection}
+        hasAnyPendingChanges={viewState.hasAnyPendingChanges}
+        hasAnyValidationIssues={viewState.hasAnyValidationIssues}
+        onSave={() => {
+          void actions.onSave();
+        }}
+      />
     ),
-    [handleSaveAll, hasAnyBusySection, hasAnyPendingChanges, hasAnyValidationIssues, isSavingAll],
+    [
+      actions,
+      viewState.hasAnyBusySection,
+      viewState.hasAnyPendingChanges,
+      viewState.hasAnyValidationIssues,
+      viewState.isSavingAll,
+    ],
   );
 
   return (
@@ -147,35 +125,31 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         <EditorSectionCard
           title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
           description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
-          validationIssueCount={basicState.validationIssueCount + rewardState.validationIssueCount}
+          validationIssueCount={basicValidationCount + rewardValidationCount}
         >
           <ContentBasicInfoCard
-            ref={basicInfoRef}
+            ref={refs.basicInfoRef}
             mission={mission}
-            onSaveStateChange={setBasicState}
+            onSaveStateChange={handleBasicStateChange}
             hasReward={editorHasReward}
             showAiCompletionToggle={false}
           />
           <RewardSettingsCard
-            ref={rewardRef}
+            ref={refs.rewardRef}
             mission={mission}
             initialReward={reward}
-            onSaveStateChange={setRewardState}
+            onSaveStateChange={handleRewardStateChange}
             onHasRewardChange={setEditorHasReward}
           />
         </EditorSectionCard>
 
         <Separator className="h-2" />
 
-        <EditorSectionCard
-          title="퀴즈 설정"
-          description="퀴즈 진행 방식을 설정합니다."
-          validationIssueCount={quizConfigState.validationIssueCount}
-        >
+        <EditorSectionCard title="퀴즈 설정" description="퀴즈 진행 방식을 설정합니다.">
           <QuizConfigSettingsCard
-            ref={quizConfigRef}
+            ref={refs.quizConfigRef}
             mission={mission}
-            onSaveStateChange={setQuizConfigState}
+            onSaveStateChange={sectionBindings.onQuizConfigStateChange}
             onShowHintChange={setShowHint}
           />
         </EditorSectionCard>
@@ -184,9 +158,9 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
 
         <div ref={actionSectionRef} className="scroll-mt-28">
           <QuizQuestionSettingsCard
-            ref={questionRef}
+            ref={refs.questionRef}
             missionId={missionId}
-            onSaveStateChange={setQuestionState}
+            onSaveStateChange={sectionBindings.onQuestionStateChange}
             showHint={showHint}
           />
         </div>
@@ -194,10 +168,10 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         <Separator className="h-2" />
 
         <CompletionSettingsCard
-          ref={completionRef}
+          ref={refs.completionRef}
           missionId={missionId}
           isQuizMode
-          onSaveStateChange={setCompletionState}
+          onSaveStateChange={sectionBindings.onCompletionStateChange}
         />
       </EditorMissionDraftProvider>
     </>

@@ -15,6 +15,7 @@ describe("normalizeEditorMissionDraftPayload", () => {
       reward: null,
       action: null,
       completion: null,
+      quizConfig: null,
       meta: {
         updatedAtMs: 1_700_000_000_000,
       },
@@ -31,6 +32,7 @@ describe("normalizeEditorMissionDraftPayload", () => {
       reward: null,
       action: null,
       completion: null,
+      quizConfig: null,
       meta: { updatedAtMs: null },
     });
 
@@ -43,6 +45,7 @@ describe("normalizeEditorMissionDraftPayload", () => {
       reward: null,
       action: null,
       completion: null,
+      quizConfig: null,
       meta: { updatedAtMs: null },
     });
   });
@@ -55,6 +58,7 @@ describe("toServerEditorDraftPayload", () => {
       reward: null,
       action: null,
       completion: null,
+      quizConfig: null,
       meta: {
         updatedAtMs: null,
       },
@@ -65,6 +69,7 @@ describe("toServerEditorDraftPayload", () => {
       reward: null,
       action: null,
       completion: null,
+      quizConfig: null,
       meta: {
         updatedAtMs: null,
       },

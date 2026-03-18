@@ -22,11 +22,13 @@ import {
 } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import { AlertCircle, ChevronDown, ChevronLeft, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDeleteMission } from "../../../../me/hooks/useDeleteMission";
+import { editorPublishGuardAtom } from "../../atoms/editorPublishGuardAtom";
 
 function resolveVisibility(isActive: boolean, type: MissionType): MissionVisibility {
   if (!isActive) return "private";
@@ -36,6 +38,7 @@ function resolveVisibility(isActive: boolean, type: MissionType): MissionVisibil
 function VisibilityDropdown({ missionId }: { missionId: string }) {
   const { data, isLoading } = useReadMission(missionId);
   const queryClient = useQueryClient();
+  const publishGuard = useAtomValue(editorPublishGuardAtom);
   const [open, setOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -62,6 +65,21 @@ function VisibilityDropdown({ missionId }: { missionId: string }) {
 
   const handleSelect = async (next: MissionVisibility) => {
     if (next === current || isUpdating) return;
+
+    if (next !== "private" && publishGuard) {
+      const guardResult = publishGuard();
+      if (!guardResult.allowed) {
+        toast({
+          message: guardResult.message ?? "발행 조건을 확인해주세요.",
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+          id: "publish-guard-error",
+        });
+        setOpen(false);
+        return;
+      }
+    }
+
     setIsUpdating(true);
     setOpen(false);
 
