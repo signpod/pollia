@@ -18,7 +18,7 @@ import { MePageContent } from "./MePageContent";
 export default async function MePage() {
   const queryClient = getQueryClient();
 
-  const [, userData] = await Promise.all([
+  await Promise.all([
     queryClient.prefetchQuery({
       queryKey: missionQueryKeys.myResponses(),
       queryFn: () => getMyResponses(),
@@ -46,7 +46,7 @@ export default async function MePage() {
   return (
     <HydrationBoundary state={dehydratedState}>
       <Suspense>
-        <MePageContent user={{ name: userData.data.name, email: userData.data.email }} />
+        <MePageContent />
       </Suspense>
     </HydrationBoundary>
   );

@@ -35,6 +35,8 @@ export interface MissionCompletionPageProps {
   onShare?: () => void;
   isSaving?: boolean;
   canSave?: boolean;
+  showBottomButton?: boolean;
+  showHeader?: boolean;
 }
 
 function RewardDrawerContent({ onClose }: { onClose: () => void }) {
@@ -203,8 +205,12 @@ export function MissionCompletionPage({
   onShare,
   isSaving,
   canSave,
+  showBottomButton = true,
+  showHeader = true,
 }: MissionCompletionPageProps) {
-  const header = <ProfileHeader showHomeIcon fallbackRight={<CompletionLoginDrawer />} />;
+  const header = showHeader ? (
+    <ProfileHeader showHomeIcon fallbackRight={<CompletionLoginDrawer />} />
+  ) : undefined;
 
   return (
     <div className="relative flex w-full flex-col items-center">
@@ -223,7 +229,7 @@ export function MissionCompletionPage({
         isSaving={isSaving}
         canSave={canSave}
       />
-      <CompletionBottomButton hasReward={!!hasReward} onShare={onShare} />
+      {showBottomButton && <CompletionBottomButton hasReward={!!hasReward} onShare={onShare} />}
     </div>
   );
 }
