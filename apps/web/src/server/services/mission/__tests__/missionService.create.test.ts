@@ -135,6 +135,7 @@ describe("MissionService - Create", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
+        quizConfig: null,
       };
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
       // When
@@ -588,6 +589,7 @@ describe("MissionService - Create", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
+        quizConfig: null,
       };
 
       const mockDuplicatedMission = {
@@ -622,6 +624,7 @@ describe("MissionService - Create", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
+        quizConfig: null,
       };
 
       mockRepository.findById.mockResolvedValue(mockMission);

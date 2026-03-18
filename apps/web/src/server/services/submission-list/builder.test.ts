@@ -18,6 +18,10 @@ const createMockAction = (overrides: Partial<Action> = {}): Action => ({
   imageFileUploadId: null,
   nextActionId: null,
   nextCompletionId: null,
+  correctOptionId: null,
+  score: null,
+  matchMode: null,
+  hint: null,
   ...overrides,
 });
 

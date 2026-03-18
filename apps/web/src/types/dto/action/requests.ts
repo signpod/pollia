@@ -3,6 +3,7 @@ import type {
   DateInput,
   ImageInput,
   MultipleChoiceInput,
+  OXInput,
   PdfInput,
   RatingInput,
   ScaleInput,
@@ -27,6 +28,7 @@ export type CreateVideoActionRequest = VideoInput;
 export type CreateDateActionRequest = DateInput;
 export type CreateTimeActionRequest = TimeInput;
 export type CreateBranchActionRequest = BranchInput;
+export type CreateOXActionRequest = OXInput;
 
 export type UpdateActionRequest = ActionUpdate;
 export type UpdateActionOptionRequest = OptionItem;

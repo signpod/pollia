@@ -94,6 +94,7 @@ describe("EventService", () => {
             aiStatisticsReport: null,
             viewCount: 0,
             shareCount: 0,
+            quizConfig: null,
           },
         ],
       };

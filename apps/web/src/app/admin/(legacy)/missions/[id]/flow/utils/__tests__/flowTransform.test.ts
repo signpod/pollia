@@ -36,6 +36,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     shareCount: 0,
     ...overrides,
     editorDraft: overrides?.editorDraft ?? null,
+    quizConfig: overrides?.quizConfig ?? null,
   });
 
   const createAction = (overrides?: Partial<Action>): Action => ({
@@ -54,6 +55,10 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     nextActionId: null,
     nextCompletionId: null,
     imageFileUploadId: null,
+    correctOptionId: null,
+    score: null,
+    matchMode: null,
+    hint: null,
     ...overrides,
   });
 
@@ -64,6 +69,8 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     imageUrl: null,
     missionId: "mission-1",
     imageFileUploadId: null,
+    minScoreRatio: null,
+    maxScoreRatio: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

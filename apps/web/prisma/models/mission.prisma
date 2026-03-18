@@ -28,6 +28,7 @@ model Mission {
   shareCount             Int             @default(0) @map("share_count")
   entryActionId          String?         @map("entry_action_id")
   editorDraft            Json?           @map("editor_draft")
+  quizConfig             Json?           @map("quiz_config")
 
   questions   Action[]
   responses   MissionResponse[]

@@ -1,4 +1,4 @@
-import type { Action, ActionType, Prisma } from "@prisma/client";
+import type { Action, ActionType, MatchMode, Prisma } from "@prisma/client";
 
 export type BaseActionInput = Omit<
   Prisma.ActionUncheckedCreateInput,
@@ -56,6 +56,15 @@ export type CreateTimeInput = BaseActionInput & {
 export type CreateBranchInput = BaseActionInputWithOptions & {
   maxSelections: 1;
   hasOther: false;
+};
+
+export type CreateOXInput = BaseActionInputWithOptions & {
+  maxSelections: 1;
+  hasOther: false;
+  score?: number;
+  correctOptionId?: string | null;
+  matchMode?: MatchMode | null;
+  hint?: string | null;
 };
 
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {

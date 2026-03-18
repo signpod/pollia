@@ -6,11 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { MeFooter, MyContentTabs, ProfileSection } from "./components";
 
-interface MePageContentProps {
-  user: { name: string; email: string };
-}
-
-export function MePageContent({ user }: MePageContentProps) {
+export function MePageContent() {
   const queryClient = useQueryClient();
 
   useEffect(() => {

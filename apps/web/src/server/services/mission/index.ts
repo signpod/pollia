@@ -153,7 +153,7 @@ export class MissionService {
       throw error;
     }
 
-    const { actionIds, ...validatedMissionData } = result.data;
+    const { actionIds, quizConfig, ...validatedMissionData } = result.data;
     const mission = await prisma.$transaction(async tx => {
       const createdMission = await this.repo.createWithActions(
         {
@@ -161,6 +161,9 @@ export class MissionService {
           isActive: validatedMissionData.isActive ?? false,
           choseong: toChoseong(validatedMissionData.title),
           creatorId: userId,
+          ...(quizConfig !== undefined && {
+            quizConfig: quizConfig === null ? Prisma.DbNull : (quizConfig as Prisma.InputJsonValue),
+          }),
         },
         actionIds,
         tx,
@@ -201,12 +204,26 @@ export class MissionService {
       throw error;
     }
 
-    const updateData = result.data.title
-      ? { ...result.data, choseong: toChoseong(result.data.title) }
-      : result.data;
+    const { quizConfig: updateQuizConfig, ...restUpdateData } = result.data;
+    const updateData = restUpdateData.title
+      ? { ...restUpdateData, choseong: toChoseong(restUpdateData.title) }
+      : restUpdateData;
 
     const updatedMission = await prisma.$transaction(async tx => {
-      const missionForUpdate = await this.repo.update(missionId, updateData, userId, tx);
+      const missionForUpdate = await this.repo.update(
+        missionId,
+        {
+          ...updateData,
+          ...(updateQuizConfig !== undefined && {
+            quizConfig:
+              updateQuizConfig === null
+                ? Prisma.DbNull
+                : (updateQuizConfig as Prisma.InputJsonValue),
+          }),
+        },
+        userId,
+        tx,
+      );
       await this.outboxRepo.create(
         {
           entityType: SearchSyncEntityType.MISSION,

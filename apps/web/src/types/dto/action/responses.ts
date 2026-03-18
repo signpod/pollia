@@ -49,3 +49,4 @@ export type CreateVideoActionResponse = BaseActionResponse;
 export type CreateDateActionResponse = BaseActionResponse;
 export type CreateTimeActionResponse = BaseActionResponse;
 export type CreateBranchActionResponse = BaseActionResponse;
+export type CreateOXActionResponse = BaseActionResponse;

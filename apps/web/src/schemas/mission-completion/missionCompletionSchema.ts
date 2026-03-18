@@ -67,6 +67,14 @@ const linksSchema = z
   )
   .optional();
 
+const scoreRatioSchema = z
+  .number()
+  .int("정수여야 합니다.")
+  .min(0, "0 이상이어야 합니다.")
+  .max(100, "100 이하여야 합니다.")
+  .nullable()
+  .optional();
+
 export const missionCompletionInputSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
@@ -74,6 +82,8 @@ export const missionCompletionInputSchema = z.object({
   imageFileUploadId: imageFileUploadIdSchema,
   links: linksSchema,
   missionId: z.string().min(1, "미션 ID는 필수입니다."),
+  minScoreRatio: scoreRatioSchema,
+  maxScoreRatio: scoreRatioSchema,
 });
 
 export const missionCompletionFormSchema = missionCompletionInputSchema.omit({
@@ -87,6 +97,8 @@ export const missionCompletionUpdateSchema = z
     imageUrl: updateImageUrlSchema,
     imageFileUploadId: updateImageFileUploadIdSchema,
     links: linksSchema,
+    minScoreRatio: scoreRatioSchema,
+    maxScoreRatio: scoreRatioSchema,
   })
   .refine(
     data =>
@@ -94,7 +106,9 @@ export const missionCompletionUpdateSchema = z
       data.description !== undefined ||
       data.imageUrl !== undefined ||
       data.imageFileUploadId !== undefined ||
-      data.links !== undefined,
+      data.links !== undefined ||
+      data.minScoreRatio !== undefined ||
+      data.maxScoreRatio !== undefined,
     {
       message: "최소 하나의 필드를 수정해야 합니다.",
     },

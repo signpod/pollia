@@ -2,9 +2,8 @@
 
 import { getMissionResponse } from "@/actions/mission-response";
 import { ACTION_TYPE_CONFIG, AnswerContent } from "@/app/(site)/me/components/AnswerContent";
-import { MissionCompletionTemplate } from "@/components/common/templates/MissionCompletionTemplate";
+import { MissionCompletionContent } from "@/components/common/MissionCompletionContent";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import type { MyMissionResponseAnswer } from "@/types/dto/mission-response";
 import { ActionType } from "@prisma/client";
@@ -25,10 +24,6 @@ export function MeResultContent({ missionId, completionId, responseId }: MeResul
   const initialTab = searchParams.get("tab") ?? "result";
   const [currentTab, setCurrentTab] = useState(initialTab);
 
-  const byIdQuery = useReadMissionCompletionById(missionId, completionId);
-  const defaultQuery = useReadMissionCompletion(missionId);
-  const completion = (completionId ? byIdQuery : defaultQuery).data?.data;
-
   const handleTabChange = useCallback((value: string) => {
     setCurrentTab(value);
     window.history.replaceState(null, "", `?tab=${value}`);
@@ -45,14 +40,12 @@ export function MeResultContent({ missionId, completionId, responseId }: MeResul
         </Tab.Item>
       </Tab.List>
 
-      <Tab.Content
-        value="result"
-        className="m-0 h-full min-h-[calc(100vh-96px-60px)] pt-5 bg-white"
-      >
-        <MissionCompletionTemplate
-          imageUrl={completion?.imageUrl}
-          title={completion?.title}
-          description={completion?.description ?? undefined}
+      <Tab.Content value="result" className="m-0 pt-5 bg-white">
+        <MissionCompletionContent
+          missionId={missionId}
+          completionId={completionId}
+          showBottomButton={false}
+          showHeader={false}
         />
       </Tab.Content>
 

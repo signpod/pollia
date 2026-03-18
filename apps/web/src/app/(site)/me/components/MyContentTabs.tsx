@@ -32,7 +32,6 @@ import { useGroupedRewards } from "../hooks/useGroupedRewards";
 import { useLikedMissions } from "../hooks/useLikedMissions";
 import { useMyContentTabs } from "../hooks/useMyContentTabs";
 
-const MAX_REWARDS_PREVIEW = 3;
 const PARTICIPATION_PAGE_SIZE = 5;
 const LIKED_PAGE_SIZE = 5;
 const REWARD_PAGE_SIZE = 5;
@@ -85,7 +84,7 @@ export function MyContentTabs() {
         </Tab.List>
 
         {tabs.map(tab => (
-          <Tab.Content key={tab.value} value={tab.value} className="px-5 m-0 pt-8">
+          <Tab.Content key={tab.value} value={tab.value} className="px-5 m-0 pt-6">
             {tabContent[tab.value]}
           </Tab.Content>
         ))}
@@ -723,9 +722,14 @@ const MyContentTab = memo(function MyContentTab() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center">
             <Typo.SubTitle size="large">총 {filtered.length}개</Typo.SubTitle>
-            <ButtonV2 variant="secondary" size="medium" onClick={() => setIsCreateOpen(true)}>
+            <ButtonV2
+              variant="secondary"
+              size="medium"
+              className="absolute right-0 top-1/2 -translate-y-1/2"
+              onClick={() => setIsCreateOpen(true)}
+            >
               <PlusIcon className="size-4" />
               <Typo.ButtonText size="medium">새 콘텐츠</Typo.ButtonText>
             </ButtonV2>

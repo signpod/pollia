@@ -1,5 +1,5 @@
 import { actionOptionSchema } from "@/schemas/action-option";
-import { ActionType } from "@prisma/client";
+import { ActionType, MatchMode } from "@prisma/client";
 import { z } from "zod";
 
 export const ACTION_TITLE_MAX_LENGTH = 100;
@@ -146,6 +146,10 @@ export const timeInputSchema = baseActionSchema.extend({
   maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
 });
 
+export const OX_OPTIONS_COUNT = 2;
+export const OX_MAX_SELECTIONS = 1;
+export const OX_HAS_OTHER = false;
+
 export const BRANCH_MAX_SELECTIONS = 1;
 export const BRANCH_HAS_OTHER = false;
 
@@ -166,6 +170,23 @@ export const branchInputSchema = baseActionSchema
   })
   .omit({ nextActionId: true, nextCompletionId: true });
 
+export const oxInputSchema = baseActionSchema
+  .extend({
+    maxSelections: z.literal(OX_MAX_SELECTIONS),
+    hasOther: z.literal(OX_HAS_OTHER),
+    options: z
+      .array(actionOptionSchema)
+      .length(OX_OPTIONS_COUNT, `OX 액션은 정확히 ${OX_OPTIONS_COUNT}개의 선택지가 필요합니다.`),
+    score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").optional(),
+    correctOptionId: z.string().nullable().optional(),
+    matchMode: z.nativeEnum(MatchMode).nullable().optional(),
+    hint: z.string().nullable().optional(),
+  })
+  .refine(data => !(data.score != null && !data.correctOptionId), {
+    message: "배점이 있으면 정답을 설정해야 합니다.",
+    path: ["correctOptionId"],
+  });
+
 export const actionUpdateSchema = z
   .object({
     type: z.nativeEnum(ActionType).optional(),
@@ -184,6 +205,10 @@ export const actionUpdateSchema = z
     options: z.array(actionOptionSchema).optional(),
     nextActionId: z.string().nullable().optional(),
     nextCompletionId: z.string().nullable().optional(),
+    correctOptionId: z.string().nullable().optional(),
+    score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
+    matchMode: z.nativeEnum(MatchMode).nullable().optional(),
+    hint: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
@@ -203,5 +228,6 @@ export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
 export type DateInput = z.infer<typeof dateInputSchema>;
 export type TimeInput = z.infer<typeof timeInputSchema>;
 export type BranchInput = z.infer<typeof branchInputSchema>;
+export type OXInput = z.infer<typeof oxInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type ActionUpdate = z.infer<typeof actionUpdateSchema>;
