@@ -12,7 +12,7 @@ import { toast } from "@repo/ui/components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cleanupDeletedCompletionRefsAtom } from "../atoms/editorActionAtoms";
 import {
   addCompletionDraftAtom,
@@ -52,7 +52,9 @@ import type {
 import {
   areCompletionSnapshotsEqual,
   buildPatchedCompletionForCache,
+  computeScoreRatiosFromThresholds,
   createDraftKey,
+  deriveThresholdsFromCompletions,
   getExistingItemKey,
   isCompletionChanged,
   isMissingCompletionError,
@@ -79,6 +81,13 @@ export interface UseCompletionSettingsCardReturn {
     existingFormVersionById: Record<string, number>;
     draftHydrationVersion: number;
   };
+  quizState: {
+    isQuizMode: boolean;
+    thresholds: number[];
+    scoreRatios: Array<{ minScoreRatio: number; maxScoreRatio: number }>;
+    setThresholds: (thresholds: number[]) => void;
+    updateThreshold: (index: number, value: number) => void;
+  };
   formRefs: React.MutableRefObject<Record<string, CompletionFormHandle | null>>;
   handlers: {
     handleAddDraft: () => void;
@@ -96,6 +105,7 @@ export interface UseCompletionSettingsCardReturn {
 
 export function useCompletionSettingsCard({
   missionId,
+  isQuizMode = false,
   onSaveStateChange,
 }: Omit<CompletionSettingsCardProps, "onWorkingSetChange">): UseCompletionSettingsCardReturn {
   const queryClient = useQueryClient();
@@ -161,6 +171,67 @@ export function useCompletionSettingsCard({
     ],
     [visibleExistingCompletions, completionDrafts],
   );
+
+  const [thresholds, setThresholds] = useState<number[]>([]);
+  const thresholdsInitializedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isQuizMode || thresholdsInitializedRef.current) return;
+    if (isLoading) return;
+
+    const completionCount = completionItems.length;
+    if (completionCount <= 1) {
+      thresholdsInitializedRef.current = true;
+      return;
+    }
+
+    const existingRatios = completionItems.map(item =>
+      item.kind === "existing"
+        ? {
+            minScoreRatio: item.completion.minScoreRatio,
+            maxScoreRatio: item.completion.maxScoreRatio,
+          }
+        : { minScoreRatio: null, maxScoreRatio: null },
+    );
+    setThresholds(deriveThresholdsFromCompletions(existingRatios));
+    thresholdsInitializedRef.current = true;
+  }, [isQuizMode, isLoading, completionItems]);
+
+  useEffect(() => {
+    if (!isQuizMode) return;
+    const expectedCount = Math.max(0, completionItems.length - 1);
+    setThresholds(prev => {
+      if (prev.length === expectedCount) return prev;
+      if (expectedCount === 0) return [];
+
+      if (prev.length < expectedCount) {
+        const lastThreshold = prev.length > 0 ? (prev[prev.length - 1] ?? 0) : 0;
+        const remaining = 100 - lastThreshold;
+        const gaps = expectedCount - prev.length + 1;
+        const step = Math.max(1, Math.floor(remaining / gaps));
+        const next = [...prev];
+        for (let i = prev.length; i < expectedCount; i++) {
+          next.push(Math.min(99, (next[i - 1] ?? 0) + step));
+        }
+        return next;
+      }
+
+      return prev.slice(0, expectedCount);
+    });
+  }, [isQuizMode, completionItems.length]);
+
+  const scoreRatios = useMemo(
+    () => (isQuizMode ? computeScoreRatiosFromThresholds(thresholds, completionItems.length) : []),
+    [isQuizMode, thresholds, completionItems.length],
+  );
+
+  const updateThreshold = useCallback((index: number, value: number) => {
+    setThresholds(prev => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  }, []);
 
   const getCompletionDraftSnapshot = useCallback((): CompletionSectionDraftSnapshot => {
     const snapshotByKey: Record<string, CompletionFormRawSnapshot> = {};
@@ -526,6 +597,25 @@ export function useCompletionSettingsCard({
       }
 
       valuesByItemKey.set(item.key, values);
+    }
+
+    if (isQuizMode) {
+      const currentScoreRatios = computeScoreRatiosFromThresholds(thresholds, listSnapshot.length);
+      for (let i = 0; i < listSnapshot.length; i++) {
+        const item = listSnapshot[i];
+        if (!item) continue;
+        const values = valuesByItemKey.get(item.key);
+        const ratio = currentScoreRatios[i];
+        if (values && ratio) {
+          values.minScoreRatio = ratio.minScoreRatio;
+          values.maxScoreRatio = ratio.maxScoreRatio;
+        }
+      }
+    }
+
+    for (const item of listSnapshot) {
+      const values = valuesByItemKey.get(item.key);
+      if (!values) continue;
       if (item.kind === "existing") {
         if (isCompletionChanged(item.completion, values)) {
           changedExisting.push(item.completion);
@@ -839,6 +929,13 @@ export function useCompletionSettingsCard({
       openItemKey,
       existingFormVersionById,
       draftHydrationVersion,
+    },
+    quizState: {
+      isQuizMode,
+      thresholds,
+      scoreRatios,
+      setThresholds,
+      updateThreshold,
     },
     formRefs,
     handlers: {

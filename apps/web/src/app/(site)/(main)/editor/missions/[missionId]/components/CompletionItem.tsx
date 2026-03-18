@@ -25,6 +25,7 @@ interface CompletionItemProps {
   isSaving: boolean;
   missionId: string;
   formKey: string;
+  scoreRangeLabel?: string;
   onFormRef: (itemKey: string, instance: CompletionFormHandle | null) => void;
   onRegisterDraftForm: (draftKey: string, instance: CompletionFormHandle | null) => void;
   onToggle: (itemKey: string) => void;
@@ -44,6 +45,7 @@ export const CompletionItem = memo(function CompletionItem({
   isSaving,
   missionId,
   formKey,
+  scoreRangeLabel,
   onFormRef,
   onRegisterDraftForm,
   onToggle,
@@ -121,6 +123,7 @@ export const CompletionItem = memo(function CompletionItem({
         isOpen={isOpen}
         onToggle={handleToggle}
         title={`${index + 1}. ${title}`}
+        subtitle={scoreRangeLabel}
         previewImage={
           previewImageUrl ? { src: previewImageUrl, alt: `${title} 미리보기 이미지` } : null
         }

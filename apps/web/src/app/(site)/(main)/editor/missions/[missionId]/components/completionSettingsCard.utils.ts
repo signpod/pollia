@@ -145,6 +145,56 @@ export function patchCompletionsQueryData(
   return { ...previous, data: nextData };
 }
 
+export function computeScoreRatiosFromThresholds(
+  thresholds: number[],
+  count: number,
+): Array<{ minScoreRatio: number; maxScoreRatio: number }> {
+  if (count === 0) return [];
+  if (count === 1) return [{ minScoreRatio: 0, maxScoreRatio: 100 }];
+
+  const result: Array<{ minScoreRatio: number; maxScoreRatio: number }> = [];
+  for (let i = 0; i < count; i++) {
+    const min = i === 0 ? 0 : (thresholds[i - 1] ?? 0);
+    const max = i === count - 1 ? 100 : (thresholds[i] ?? 100) - 1;
+    result.push({ minScoreRatio: min, maxScoreRatio: max });
+  }
+  return result;
+}
+
+export function distributeThresholdsEvenly(count: number): number[] {
+  if (count <= 1) return [];
+  const thresholds: number[] = [];
+  const step = Math.floor(100 / count);
+  for (let i = 1; i < count; i++) {
+    thresholds.push(step * i);
+  }
+  return thresholds;
+}
+
+export function deriveThresholdsFromCompletions(
+  completions: Array<{ minScoreRatio?: number | null; maxScoreRatio?: number | null }>,
+): number[] {
+  if (completions.length <= 1) return [];
+
+  const thresholds: number[] = [];
+  for (let i = 0; i < completions.length - 1; i++) {
+    const maxRatio = completions[i]?.maxScoreRatio;
+    if (maxRatio != null && maxRatio >= 0 && maxRatio < 100) {
+      thresholds.push(maxRatio + 1);
+    }
+  }
+
+  if (thresholds.length === completions.length - 1) {
+    return thresholds;
+  }
+
+  return distributeThresholdsEvenly(completions.length);
+}
+
+export function formatScoreRange(min: number, max: number): string {
+  return `${min}% ~ ${max}%`;
+}
+
 export function isMissingCompletionError(error: unknown): boolean {
   if (!(error instanceof Error)) {
     return false;

@@ -1,7 +1,7 @@
 "use client";
 
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { Typo } from "@repo/ui/components";
+import { Input, LabelText, Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { AlertCircle, Plus } from "lucide-react";
 import {
@@ -16,16 +16,77 @@ import { completionScrollTargetItemKeyAtom } from "../atoms/editorCompletionAtom
 import type { CompletionFormHandle } from "./CompletionForm";
 import { CompletionItem } from "./CompletionItem";
 import type { CompletionSettingsCardProps } from "./completionSettingsCard.types";
+import { formatScoreRange } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle } from "./editor-save.types";
 import { useCompletionSettingsCard } from "./useCompletionSettingsCard";
 
 export type { CompletionSectionDraftSnapshot } from "./completionSettingsCard.types";
 
+function ThresholdEditor({
+  thresholds,
+  scoreRatios,
+  onUpdateThreshold,
+}: {
+  thresholds: number[];
+  scoreRatios: Array<{ minScoreRatio: number; maxScoreRatio: number }>;
+  onUpdateThreshold: (index: number, value: number) => void;
+}) {
+  if (thresholds.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+      <LabelText required={false}>점수 범위 설정</LabelText>
+      <Typo.Body size="medium" className="mb-3 mt-1 text-zinc-400">
+        각 결과 화면이 표시될 점수 범위의 경계값을 설정합니다.
+      </Typo.Body>
+      <div className="flex flex-col gap-2">
+        {thresholds.map((threshold, idx) => {
+          const prevMin = scoreRatios[idx]?.minScoreRatio ?? 0;
+          const prevMax = scoreRatios[idx]?.maxScoreRatio ?? 0;
+          const nextMin = scoreRatios[idx + 1]?.minScoreRatio ?? threshold;
+          const nextMax = scoreRatios[idx + 1]?.maxScoreRatio ?? 100;
+
+          return (
+            <div key={idx} className="flex items-center gap-3">
+              <Typo.Body size="small" className="w-28 shrink-0 text-zinc-500">
+                결과 {idx + 1}: {prevMin}~{prevMax}%
+              </Typo.Body>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={threshold}
+                  onChange={e => {
+                    const val = Number.parseInt(e.target.value, 10);
+                    if (!Number.isNaN(val) && val >= 1 && val <= 99) {
+                      onUpdateThreshold(idx, val);
+                    }
+                  }}
+                  containerClassName="w-20"
+                  className="text-center text-sm"
+                />
+                <Typo.Body size="small" className="text-zinc-400">
+                  %
+                </Typo.Body>
+              </div>
+              <Typo.Body size="small" className="text-zinc-500">
+                결과 {idx + 2}: {nextMin}~{nextMax}%
+              </Typo.Body>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function CompletionSettingsCardComponent(
   props: CompletionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
-  const { viewState, listState, formRefs, handlers, saveHandle } = useCompletionSettingsCard(props);
+  const { viewState, listState, quizState, formRefs, handlers, saveHandle } =
+    useCompletionSettingsCard(props);
 
   useImperativeHandle(ref, () => saveHandle, [saveHandle]);
 
@@ -129,6 +190,14 @@ function CompletionSettingsCardComponent(
       </div>
 
       <div ref={listContainerRef} className="flex flex-col gap-4 px-5 py-5">
+        {quizState.isQuizMode && completionItems.length >= 2 && (
+          <ThresholdEditor
+            thresholds={quizState.thresholds}
+            scoreRatios={quizState.scoreRatios}
+            onUpdateThreshold={quizState.updateThreshold}
+          />
+        )}
+
         {isLoading ? (
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-10 text-center">
             <Typo.Body size="medium" className="text-zinc-500">
@@ -150,6 +219,14 @@ function CompletionSettingsCardComponent(
                   ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}:${draftHydrationVersion}`
                   : `${item.key}:${draftHydrationVersion}`;
 
+              const scoreRange =
+                quizState.isQuizMode && quizState.scoreRatios[index]
+                  ? formatScoreRange(
+                      quizState.scoreRatios[index].minScoreRatio,
+                      quizState.scoreRatios[index].maxScoreRatio,
+                    )
+                  : undefined;
+
               return (
                 <CompletionItem
                   key={item.key}
@@ -160,6 +237,7 @@ function CompletionSettingsCardComponent(
                   isSaving={isSaving}
                   missionId={props.missionId}
                   formKey={formKey}
+                  scoreRangeLabel={scoreRange}
                   onFormRef={handleFormRef}
                   onRegisterDraftForm={registerCompletionDraftForm}
                   onToggle={handleToggleItem}
