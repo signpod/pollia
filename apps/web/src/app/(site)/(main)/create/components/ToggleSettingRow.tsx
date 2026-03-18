@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Toggle, Typo } from "@repo/ui/components";
+import { LabelText, Toggle, Typo } from "@repo/ui/components";
 import type { ReactNode } from "react";
 
 interface ToggleSettingRowProps {
@@ -28,7 +28,7 @@ export function ToggleSettingRow({
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 flex-1 flex flex-col gap-1 overflow-hidden">
           <div className="flex items-center gap-2">
-            <Typo.SubTitle>{label}</Typo.SubTitle>
+            <LabelText required={false}>{label}</LabelText>
             {badgeLabel ? (
               <Badge
                 variant="outline"
@@ -39,7 +39,7 @@ export function ToggleSettingRow({
               </Badge>
             ) : null}
           </div>
-          <Typo.Body size="medium" className="text-zinc-500">
+          <Typo.Body size="medium" className="text-left text-zinc-400">
             {description}
           </Typo.Body>
           {warning ? (

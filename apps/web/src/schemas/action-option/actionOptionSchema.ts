@@ -29,6 +29,7 @@ export const optionInputSchema = z.object({
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
+  isCorrect: z.boolean().optional(),
   fileUploadId: fileUploadIdSchema,
 });
 
@@ -38,6 +39,7 @@ export const actionOptionSchema = z.object({
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
+  isCorrect: z.boolean().optional(),
   fileUploadId: fileUploadIdSchema,
   nextActionId: z.string().nullable().optional(),
   nextCompletionId: z.string().nullable().optional(),
@@ -56,6 +58,7 @@ export const optionUpdateSchema = z
     description: descriptionSchema,
     imageUrl: imageUrlSchema,
     order: orderSchema.optional(),
+    isCorrect: z.boolean().optional(),
     fileUploadId: fileUploadIdSchema,
     nextActionId: z.string().nullable().optional(),
     nextCompletionId: z.string().nullable().optional(),

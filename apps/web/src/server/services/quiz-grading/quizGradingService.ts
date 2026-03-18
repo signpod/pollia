@@ -6,6 +6,7 @@ import {
   type ActionRepository,
   actionRepository,
 } from "@/server/repositories/action/actionRepository";
+import { ActionType, MatchMode } from "@prisma/client";
 import type { GradeResult, GradedItem } from "./types";
 
 export class QuizGradingService {
@@ -20,21 +21,32 @@ export class QuizGradingService {
   }
 
   async gradeResponse(responseId: string, missionId: string): Promise<GradeResult> {
-    const [answers, perfectScore] = await Promise.all([
+    const [answers, actionsWithOptions, perfectScore] = await Promise.all([
       this.answerRepo.findByResponseId(responseId),
+      this.actionRepo.findDetailsByMissionId(missionId),
       this.calculatePerfectScore(missionId),
     ]);
 
+    const actionMap = new Map(actionsWithOptions.map(a => [a.id, a]));
     const gradedItems: GradedItem[] = [];
 
     for (const answer of answers) {
       const { action } = answer;
-      if (action.score == null || action.correctOptionId == null) {
-        continue;
-      }
+      if (action.score == null) continue;
 
-      const selectedOptionIds = new Set(answer.options.map(opt => opt.id));
-      const isCorrect = selectedOptionIds.has(action.correctOptionId);
+      const fullAction = actionMap.get(action.id);
+      if (!fullAction) continue;
+
+      const correctOptions = fullAction.options.filter(opt => opt.isCorrect);
+      if (correctOptions.length === 0) continue;
+
+      const isCorrect =
+        action.type === ActionType.SHORT_TEXT
+          ? this.gradeShortText(answer.textAnswer, correctOptions, fullAction.matchMode)
+          : this.gradeOptionBased(
+              answer.options.map(opt => opt.id),
+              correctOptions.map(opt => opt.id),
+            );
 
       gradedItems.push({
         actionId: action.id,
@@ -48,6 +60,30 @@ export class QuizGradingService {
     const scoreRatio = perfectScore > 0 ? Math.round((totalScore / perfectScore) * 100) : 0;
 
     return { totalScore, perfectScore, scoreRatio, gradedItems };
+  }
+
+  private gradeOptionBased(selectedIds: string[], correctIds: string[]): boolean {
+    if (selectedIds.length !== correctIds.length) return false;
+    const selectedSet = new Set(selectedIds);
+    return correctIds.every(id => selectedSet.has(id));
+  }
+
+  private gradeShortText(
+    textAnswer: string | null,
+    correctOptions: Array<{ title: string }>,
+    matchMode: MatchMode | null,
+  ): boolean {
+    if (!textAnswer) return false;
+    const normalizedAnswer = textAnswer.trim().toLowerCase();
+    if (normalizedAnswer.length === 0) return false;
+
+    return correctOptions.some(opt => {
+      const normalizedCorrect = opt.title.trim().toLowerCase();
+      if (matchMode === MatchMode.CONTAINS) {
+        return normalizedAnswer.includes(normalizedCorrect);
+      }
+      return normalizedAnswer === normalizedCorrect;
+    });
   }
 
   resolveQuizCompletionId(
