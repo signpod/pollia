@@ -174,6 +174,7 @@ export function useCompletionSettingsCard({
 
   const [thresholds, setThresholds] = useState<number[]>([]);
   const thresholdsInitializedRef = useRef(false);
+  const initialThresholdsRef = useRef<number[] | null>(null);
   const autoCreatedRef = useRef(false);
 
   useEffect(() => {
@@ -191,7 +192,9 @@ export function useCompletionSettingsCard({
       dispatchAddDraft({ draftKey, title: `결과 ${i}` });
     }
 
-    setThresholds([25, 50, 75]);
+    const defaultThresholds = [25, 50, 75];
+    setThresholds(defaultThresholds);
+    initialThresholdsRef.current = defaultThresholds;
     thresholdsInitializedRef.current = true;
   }, [
     isQuizMode,
@@ -219,7 +222,9 @@ export function useCompletionSettingsCard({
           }
         : { minScoreRatio: null, maxScoreRatio: null },
     );
-    setThresholds(deriveThresholdsFromCompletions(existingRatios));
+    const derived = deriveThresholdsFromCompletions(existingRatios);
+    setThresholds(derived);
+    initialThresholdsRef.current = derived;
     thresholdsInitializedRef.current = true;
   }, [isQuizMode, isLoading, completionItems]);
 
@@ -327,15 +332,31 @@ export function useCompletionSettingsCard({
     setValidationIssueCountByItemKey,
   ]);
 
+  const hasThresholdChanges = useMemo(() => {
+    if (!isQuizMode || !initialThresholdsRef.current) return false;
+    const initial = initialThresholdsRef.current;
+    if (thresholds.length !== initial.length) return true;
+    return thresholds.some((v, i) => v !== initial[i]);
+  }, [isQuizMode, thresholds]);
+
   const hasPendingChanges = useMemo(() => {
     if (completionDrafts.length > 0 || removedExistingIds.size > 0) {
+      return true;
+    }
+    if (hasThresholdChanges) {
       return true;
     }
 
     return visibleExistingCompletions.some(
       completion => dirtyByItemKey[getExistingItemKey(completion.id)],
     );
-  }, [completionDrafts.length, removedExistingIds, visibleExistingCompletions, dirtyByItemKey]);
+  }, [
+    completionDrafts.length,
+    removedExistingIds,
+    hasThresholdChanges,
+    visibleExistingCompletions,
+    dirtyByItemKey,
+  ]);
 
   const validationIssueCount = useMemo(
     () =>
@@ -814,6 +835,10 @@ export function useCompletionSettingsCard({
         successfulRemovedIds,
         successfulExistingIds,
       });
+
+      if (isQuizMode) {
+        initialThresholdsRef.current = [...thresholds];
+      }
 
       for (const draftKey of successfulDraftKeys) {
         registerCompletionDraftForm(draftKey, null);

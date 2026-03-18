@@ -6,6 +6,7 @@ import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionComplet
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
+import { parseQuizConfig } from "@/schemas/mission/quizConfigSchema";
 import type { GetMissionResponse } from "@/types/dto";
 import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
@@ -44,13 +45,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const [basicValidationCount, setBasicValidationCount] = useState(0);
   const [rewardValidationCount, setRewardValidationCount] = useState(0);
 
-  const initialShowHint =
-    mission.quizConfig &&
-    typeof mission.quizConfig === "object" &&
-    "showExplanation" in mission.quizConfig
-      ? (mission.quizConfig as { showExplanation?: boolean }).showExplanation !== false
-      : true;
-  const [showHint, setShowHint] = useState(initialShowHint);
+  const [showHint, setShowHint] = useState(parseQuizConfig(mission.quizConfig).showExplanation);
 
   const missionQuery = useReadMission(missionId);
   const actionsQuery = useReadActionsDetail(missionId);

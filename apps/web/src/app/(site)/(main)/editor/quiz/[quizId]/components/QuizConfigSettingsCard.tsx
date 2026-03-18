@@ -2,7 +2,7 @@
 
 import { updateMission } from "@/actions/mission/update";
 import { ToggleSettingRow } from "@/app/(site)/(main)/create/components/ToggleSettingRow";
-import type { QuizConfig } from "@/schemas/mission/quizConfigSchema";
+import { type QuizConfig, parseQuizConfig } from "@/schemas/mission/quizConfigSchema";
 import type { GetMissionResponse } from "@/types/dto";
 import {
   LabelText,
@@ -39,26 +39,6 @@ const GRADING_MODE_OPTIONS = [
     description: "모든 문제를 풀고 나서 한 번에 채점합니다.",
   },
 ] as const;
-
-const DEFAULT_QUIZ_CONFIG: QuizConfig = {
-  gradingMode: "instant",
-  showExplanation: true,
-  showCorrectOnWrong: true,
-  shuffleQuestions: false,
-  shuffleChoices: false,
-};
-
-function parseQuizConfig(raw: unknown): QuizConfig {
-  if (!raw || typeof raw !== "object") return DEFAULT_QUIZ_CONFIG;
-  const obj = raw as Record<string, unknown>;
-  return {
-    gradingMode: obj.gradingMode === "final" ? "final" : "instant",
-    showExplanation: typeof obj.showExplanation === "boolean" ? obj.showExplanation : true,
-    showCorrectOnWrong: typeof obj.showCorrectOnWrong === "boolean" ? obj.showCorrectOnWrong : true,
-    shuffleQuestions: typeof obj.shuffleQuestions === "boolean" ? obj.shuffleQuestions : false,
-    shuffleChoices: typeof obj.shuffleChoices === "boolean" ? obj.shuffleChoices : false,
-  };
-}
 
 interface QuizConfigSettingsCardProps {
   mission: GetMissionResponse["data"];
