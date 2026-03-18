@@ -114,10 +114,10 @@ export const SortableActionItem = memo(function SortableActionItem({
   const handleDelete = useCallback(() => {
     if (existingAction) {
       onDeleteExisting?.(existingAction);
-    } else {
-      onRemoveDraft(itemKey);
+    } else if (item.kind === "draft") {
+      onRemoveDraft(item.draft.key);
     }
-  }, [existingAction, itemKey, onRemoveDraft, onDeleteExisting]);
+  }, [existingAction, item, onRemoveDraft, onDeleteExisting]);
 
   const handleFormRefCb = useCallback(
     (instance: ActionFormHandle | null) => onFormRef(itemKey, instance),
