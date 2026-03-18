@@ -8,8 +8,10 @@ import { Save } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
 import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
+import { CompletionSettingsCard } from "../../../missions/[missionId]/components/CompletionSettingsCard";
 import { ContentBasicInfoCard } from "../../../missions/[missionId]/components/ContentBasicInfoCard";
 import { EditorBottomSaveSlot } from "../../../missions/[missionId]/components/EditorBottomSaveSlot";
+import { EditorMissionDraftProvider } from "../../../missions/[missionId]/components/EditorMissionDraftContext";
 import { useEditorMissionTab } from "../../../missions/[missionId]/components/EditorMissionTabContext";
 import {
   RewardSettingsCard,
@@ -21,7 +23,6 @@ import type {
 } from "../../../missions/[missionId]/components/editor-save.types";
 import { QuizConfigSettingsCard } from "./QuizConfigSettingsCard";
 import { QuizQuestionSettingsCard } from "./QuizQuestionSettingsCard";
-import { QuizSkeletonSection } from "./QuizSkeletonSection";
 
 interface QuizEditorContentProps {
   missionId: string;
@@ -38,6 +39,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const rewardRef = useRef<SectionSaveHandle>(null);
   const quizConfigRef = useRef<SectionSaveHandle>(null);
   const questionRef = useRef<SectionSaveHandle>(null);
+  const completionRef = useRef<SectionSaveHandle>(null);
 
   const [basicState, setBasicState] = useState<SectionSaveState>({
     hasPendingChanges: false,
@@ -63,6 +65,12 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
     hasValidationIssues: false,
     validationIssueCount: 0,
   });
+  const [completionState, setCompletionState] = useState<SectionSaveState>({
+    hasPendingChanges: false,
+    isBusy: false,
+    hasValidationIssues: false,
+    validationIssueCount: 0,
+  });
 
   const [editorHasReward, setEditorHasReward] = useState(!!reward);
   const [isSavingAll, setIsSavingAll] = useState(false);
@@ -79,21 +87,27 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
     basicState.hasPendingChanges ||
     rewardState.hasPendingChanges ||
     quizConfigState.hasPendingChanges ||
-    questionState.hasPendingChanges;
+    questionState.hasPendingChanges ||
+    completionState.hasPendingChanges;
 
   const hasAnyBusySection =
-    basicState.isBusy || rewardState.isBusy || quizConfigState.isBusy || questionState.isBusy;
+    basicState.isBusy ||
+    rewardState.isBusy ||
+    quizConfigState.isBusy ||
+    questionState.isBusy ||
+    completionState.isBusy;
 
   const hasAnyValidationIssues =
     basicState.hasValidationIssues ||
     rewardState.hasValidationIssues ||
     quizConfigState.hasValidationIssues ||
-    questionState.hasValidationIssues;
+    questionState.hasValidationIssues ||
+    completionState.hasValidationIssues;
 
   const handleSaveAll = useCallback(async () => {
     setIsSavingAll(true);
     try {
-      const refs = [basicInfoRef, rewardRef, quizConfigRef, questionRef];
+      const refs = [basicInfoRef, rewardRef, quizConfigRef, questionRef, completionRef];
       await Promise.all(refs.map(r => r.current?.save({ silent: true })));
     } finally {
       setIsSavingAll(false);
@@ -129,61 +143,63 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         node={saveButtonNode}
       />
 
-      <EditorSectionCard
-        title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
-        description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
-        validationIssueCount={basicState.validationIssueCount + rewardState.validationIssueCount}
-      >
-        <ContentBasicInfoCard
-          ref={basicInfoRef}
-          mission={mission}
-          onSaveStateChange={setBasicState}
-          hasReward={editorHasReward}
-          showAiCompletionToggle={false}
-        />
-        <RewardSettingsCard
-          ref={rewardRef}
-          mission={mission}
-          initialReward={reward}
-          onSaveStateChange={setRewardState}
-          onHasRewardChange={setEditorHasReward}
-        />
-      </EditorSectionCard>
+      <EditorMissionDraftProvider>
+        <EditorSectionCard
+          title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
+          validationIssueCount={basicState.validationIssueCount + rewardState.validationIssueCount}
+        >
+          <ContentBasicInfoCard
+            ref={basicInfoRef}
+            mission={mission}
+            onSaveStateChange={setBasicState}
+            hasReward={editorHasReward}
+            showAiCompletionToggle={false}
+          />
+          <RewardSettingsCard
+            ref={rewardRef}
+            mission={mission}
+            initialReward={reward}
+            onSaveStateChange={setRewardState}
+            onHasRewardChange={setEditorHasReward}
+          />
+        </EditorSectionCard>
 
-      <Separator className="h-2" />
+        <Separator className="h-2" />
 
-      <EditorSectionCard
-        title="퀴즈 설정"
-        description="퀴즈 진행 방식을 설정합니다."
-        validationIssueCount={quizConfigState.validationIssueCount}
-      >
-        <QuizConfigSettingsCard
-          ref={quizConfigRef}
-          mission={mission}
-          onSaveStateChange={setQuizConfigState}
-          onShowHintChange={setShowHint}
-        />
-      </EditorSectionCard>
+        <EditorSectionCard
+          title="퀴즈 설정"
+          description="퀴즈 진행 방식을 설정합니다."
+          validationIssueCount={quizConfigState.validationIssueCount}
+        >
+          <QuizConfigSettingsCard
+            ref={quizConfigRef}
+            mission={mission}
+            onSaveStateChange={setQuizConfigState}
+            onShowHintChange={setShowHint}
+          />
+        </EditorSectionCard>
 
-      <Separator className="h-2" />
+        <Separator className="h-2" />
 
-      <div ref={actionSectionRef} className="scroll-mt-28">
-        <QuizQuestionSettingsCard
-          ref={questionRef}
+        <div ref={actionSectionRef} className="scroll-mt-28">
+          <QuizQuestionSettingsCard
+            ref={questionRef}
+            missionId={missionId}
+            onSaveStateChange={setQuestionState}
+            showHint={showHint}
+          />
+        </div>
+
+        <Separator className="h-2" />
+
+        <CompletionSettingsCard
+          ref={completionRef}
           missionId={missionId}
-          onSaveStateChange={setQuestionState}
-          showHint={showHint}
+          isQuizMode
+          onSaveStateChange={setCompletionState}
         />
-      </div>
-
-      <Separator className="h-2" />
-
-      <EditorSectionCard
-        title="결과 화면 수정"
-        description="퀴즈 완료 후 노출될 결과 화면을 설정합니다."
-      >
-        <QuizSkeletonSection message="결과 화면 편집 기능은 준비 중입니다." />
-      </EditorSectionCard>
+      </EditorMissionDraftProvider>
     </>
   );
 }
