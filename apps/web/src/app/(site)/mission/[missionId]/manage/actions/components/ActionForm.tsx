@@ -34,7 +34,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { ActionType } from "@prisma/client";
+import { ActionType, MatchMode } from "@prisma/client";
 import {
   Button,
   CounterInput,
@@ -104,6 +104,7 @@ interface OptionFormItem {
   description?: string | null;
   imageUrl?: string | null;
   fileUploadId?: string | null;
+  isCorrect?: boolean;
   nextActionId?: string | null;
   nextCompletionId?: string | null;
   order: number;
@@ -120,6 +121,9 @@ export interface ActionFormValues {
   options?: Omit<OptionFormItem, "_key">[];
   nextActionId?: string | null;
   nextCompletionId?: string | null;
+  score?: number | null;
+  matchMode?: MatchMode | null;
+  hint?: string | null;
 }
 
 export interface ActionFormRawSnapshot {
@@ -157,6 +161,7 @@ interface ActionFormProps {
   enableTypeSelect?: boolean;
   enforceExclusiveNextLink?: boolean;
   wordingMode?: "action" | "question";
+  isQuizMode?: boolean;
   onActionTypeChange?: (type: ActionType) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   onValidationStateChange?: (issueCount: number) => void;
@@ -182,7 +187,16 @@ const NEEDS_MAX_SELECTIONS: ActionType[] = [
 
 const ACTION_TYPE_VALUES = Object.values(ActionType);
 
-function getDefaultOptions(type: ActionType): OptionFormItem[] {
+const QUIZ_ACTION_TYPES: ActionType[] = [
+  ActionType.MULTIPLE_CHOICE,
+  ActionType.OX,
+  ActionType.SHORT_TEXT,
+];
+
+const QUIZ_SHORT_TEXT_MIN_OPTIONS = 1;
+const QUIZ_SHORT_TEXT_MAX_OPTIONS = 10;
+
+function getDefaultOptions(type: ActionType, isQuizMode = false): OptionFormItem[] {
   if (type === ActionType.BRANCH) {
     return Array.from({ length: BRANCH_OPTIONS_COUNT }, (_, i) => ({
       _key: generateOptionKey(),
@@ -190,13 +204,22 @@ function getDefaultOptions(type: ActionType): OptionFormItem[] {
       order: i,
     }));
   }
+  if (isQuizMode && type === ActionType.OX) {
+    return [
+      { _key: generateOptionKey(), title: "O", order: 0 },
+      { _key: generateOptionKey(), title: "X", order: 1 },
+    ];
+  }
+  if (isQuizMode && type === ActionType.SHORT_TEXT) {
+    return [{ _key: generateOptionKey(), title: "", order: 0 }];
+  }
   return [
     { _key: generateOptionKey(), title: "", order: 0 },
     { _key: generateOptionKey(), title: "", order: 1 },
   ];
 }
 
-function getOptionLimits(type: ActionType): { min: number; max: number } {
+function getOptionLimits(type: ActionType, isQuizMode = false): { min: number; max: number } {
   switch (type) {
     case ActionType.MULTIPLE_CHOICE:
       return { min: MULTIPLE_CHOICE_MIN_OPTIONS, max: MULTIPLE_CHOICE_MAX_OPTIONS };
@@ -206,6 +229,12 @@ function getOptionLimits(type: ActionType): { min: number; max: number } {
       return { min: TAG_MIN_OPTIONS, max: TAG_MAX_OPTIONS };
     case ActionType.BRANCH:
       return { min: BRANCH_OPTIONS_COUNT, max: BRANCH_OPTIONS_COUNT };
+    case ActionType.OX:
+      return isQuizMode ? { min: 2, max: 2 } : { min: 0, max: 0 };
+    case ActionType.SHORT_TEXT:
+      return isQuizMode
+        ? { min: QUIZ_SHORT_TEXT_MIN_OPTIONS, max: QUIZ_SHORT_TEXT_MAX_OPTIONS }
+        : { min: 0, max: 0 };
     default:
       return { min: 0, max: 0 };
   }
@@ -227,9 +256,11 @@ function buildActionDirtyComparable(params: {
   values: ActionFormValues;
   allowCompletionLink: boolean;
   enableEditorActionMedia: boolean;
+  isQuizMode?: boolean;
 }) {
-  const { actionType, values, allowCompletionLink, enableEditorActionMedia } = params;
-  const needsOptions = NEEDS_OPTIONS.includes(actionType);
+  const { actionType, values, allowCompletionLink, enableEditorActionMedia, isQuizMode } = params;
+  const quizNeedsOpts = isQuizMode && QUIZ_ACTION_TYPES.includes(actionType);
+  const needsOptions = quizNeedsOpts || NEEDS_OPTIONS.includes(actionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
   const isBranch = actionType === ActionType.BRANCH;
   const showOptionDescription =
@@ -259,6 +290,7 @@ function buildActionDirtyComparable(params: {
           description: showOptionDescription ? option.description?.trim() || null : null,
           imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
           fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
+          ...(isQuizMode && { isCorrect: option.isCorrect ?? false }),
           nextCompletionId: allowCompletionLink ? (option.nextCompletionId ?? null) : null,
           order: index,
         })),
@@ -266,6 +298,11 @@ function buildActionDirtyComparable(params: {
       ...(!isBranch && {
         nextActionId: values.nextActionId ?? null,
         nextCompletionId: allowCompletionLink ? (values.nextCompletionId ?? null) : null,
+      }),
+      ...(isQuizMode && {
+        score: values.score ?? null,
+        matchMode: values.matchMode ?? null,
+        hint: values.hint?.trim() ?? null,
       }),
     },
   };
@@ -289,6 +326,7 @@ function ActionFormComponent(
     enforceExclusiveNextLink = false,
     allowCompletionLink = true,
     wordingMode = "action",
+    isQuizMode = false,
     onActionTypeChange,
     onDirtyChange,
     onValidationStateChange,
@@ -333,12 +371,18 @@ function ActionFormComponent(
         nextCompletionId: allowCompletionLink ? (o.nextCompletionId ?? null) : null,
       }));
     }
-    return NEEDS_OPTIONS.includes(actionType) ? getDefaultOptions(actionType) : [];
+    const quizNeedsOpts = isQuizMode && QUIZ_ACTION_TYPES.includes(actionType);
+    return quizNeedsOpts || NEEDS_OPTIONS.includes(actionType)
+      ? getDefaultOptions(actionType, isQuizMode)
+      : [];
   });
   const [nextActionId, setNextActionId] = useState<string | null>(normalizedInitialNextActionId);
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
     normalizedInitialNextCompletionId,
   );
+  const [score, setScore] = useState<number | null>(initialValues?.score ?? null);
+  const [matchMode, setMatchMode] = useState<MatchMode | null>(initialValues?.matchMode ?? null);
+  const [hint, setHint] = useState(initialValues?.hint ?? "");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
@@ -348,10 +392,11 @@ function ActionFormComponent(
   const enableEditorActionMedia = enforceExclusiveNextLink;
   const descriptionTextLength = useMemo(() => getTextLengthFromHtml(description), [description]);
   const itemLabel = wordingMode === "question" ? "질문" : "액션";
-  const needsOptions = NEEDS_OPTIONS.includes(selectedActionType);
+  const quizNeedsOptions = isQuizMode && QUIZ_ACTION_TYPES.includes(selectedActionType);
+  const needsOptions = quizNeedsOptions || NEEDS_OPTIONS.includes(selectedActionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(selectedActionType);
   const isBranch = selectedActionType === ActionType.BRANCH;
-  const optionLimits = getOptionLimits(selectedActionType);
+  const optionLimits = getOptionLimits(selectedActionType, isQuizMode);
   const showOptionDescription =
     enableEditorActionMedia &&
     (selectedActionType === ActionType.MULTIPLE_CHOICE ||
@@ -432,9 +477,15 @@ function ActionFormComponent(
     setSelectedActionType(nextType);
     setHasOther(false);
     setMaxSelections(1);
-    setOptions(NEEDS_OPTIONS.includes(nextType) ? getDefaultOptions(nextType) : []);
+    const quizNeedsOpts = isQuizMode && QUIZ_ACTION_TYPES.includes(nextType);
+    setOptions(
+      quizNeedsOpts || NEEDS_OPTIONS.includes(nextType)
+        ? getDefaultOptions(nextType, isQuizMode)
+        : [],
+    );
     setNextActionId(null);
     setNextCompletionId(null);
+    if (isQuizMode) setMatchMode(null);
     setErrors({});
     onActionTypeChange?.(nextType);
   };
@@ -560,7 +611,7 @@ function ActionFormComponent(
       }
     }
 
-    if (hasLinkTargets) {
+    if (!isQuizMode && hasLinkTargets) {
       if (isBranch) {
         const missingBranchNext =
           allowCompletionLink && options.some(o => !o.nextActionId && !o.nextCompletionId);
@@ -622,8 +673,8 @@ function ActionFormComponent(
         imageFileUploadId,
         isRequired,
         ...(needsMaxSelections && { maxSelections }),
-        ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
-        ...(selectedActionType === ActionType.TAG && { hasOther }),
+        ...(!isQuizMode && selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+        ...(!isQuizMode && selectedActionType === ActionType.TAG && { hasOther }),
         ...(needsOptions && {
           options: options.map((o, i) => {
             const { _key, ...rest } = o;
@@ -645,6 +696,7 @@ function ActionFormComponent(
                   ? (o.fileUploadId ?? null)
                   : null
                 : (o.fileUploadId ?? null),
+              ...(isQuizMode && { isCorrect: o.isCorrect ?? false }),
               order: i,
             };
           }),
@@ -652,6 +704,12 @@ function ActionFormComponent(
         ...(!isBranch && {
           nextActionId: nextActionId ?? null,
           nextCompletionId: allowCompletionLink ? (nextCompletionId ?? null) : null,
+        }),
+        ...(isQuizMode && {
+          score,
+          matchMode:
+            selectedActionType === ActionType.SHORT_TEXT ? (matchMode ?? MatchMode.EXACT) : null,
+          hint: hint.trim() || null,
         }),
       };
     },
@@ -675,6 +733,10 @@ function ActionFormComponent(
       allowCompletionLink,
       nextActionId,
       nextCompletionId,
+      isQuizMode,
+      score,
+      matchMode,
+      hint,
     ],
   );
 
@@ -696,6 +758,7 @@ function ActionFormComponent(
             description: rest.description ?? null,
             imageUrl: rest.imageUrl ?? null,
             fileUploadId: rest.fileUploadId ?? null,
+            ...(isQuizMode && { isCorrect: rest.isCorrect ?? false }),
             nextActionId: rest.nextActionId ?? null,
             nextCompletionId: allowCompletionLink ? (rest.nextCompletionId ?? null) : null,
           };
@@ -706,6 +769,11 @@ function ActionFormComponent(
         nextCompletionId: allowCompletionLink ? (nextCompletionId ?? null) : null,
       }),
       ...(isBranch && { nextActionId: null, nextCompletionId: null }),
+      ...(isQuizMode && {
+        score,
+        matchMode,
+        hint: hint || null,
+      }),
     };
 
     return {
@@ -728,6 +796,10 @@ function ActionFormComponent(
     selectedActionType,
     title,
     maxSelections,
+    isQuizMode,
+    score,
+    matchMode,
+    hint,
   ]);
 
   const applyRawSnapshot = useCallback(
@@ -751,6 +823,7 @@ function ActionFormComponent(
         description: option.description ?? null,
         imageUrl: option.imageUrl ?? null,
         fileUploadId: option.fileUploadId ?? null,
+        isCorrect: option.isCorrect ?? false,
         nextActionId: option.nextActionId ?? null,
         nextCompletionId: allowCompletionLink ? (option.nextCompletionId ?? null) : null,
         order: option.order ?? index,
@@ -758,6 +831,9 @@ function ActionFormComponent(
       setOptions(nextOptions);
       setNextActionId(nextValues.nextActionId ?? null);
       setNextCompletionId(allowCompletionLink ? (nextValues.nextCompletionId ?? null) : null);
+      setScore(nextValues.score ?? null);
+      setMatchMode(nextValues.matchMode ?? null);
+      setHint(nextValues.hint ?? "");
       setErrors({});
     },
     [allowCompletionLink, onActionTypeChange],
@@ -768,6 +844,7 @@ function ActionFormComponent(
       JSON.stringify(
         buildActionDirtyComparable({
           actionType: selectedActionType,
+          isQuizMode,
           values: {
             title,
             description,
@@ -782,6 +859,7 @@ function ActionFormComponent(
             }),
             nextActionId,
             nextCompletionId,
+            ...(isQuizMode && { score, matchMode, hint }),
           },
           allowCompletionLink,
           enableEditorActionMedia,
@@ -806,6 +884,10 @@ function ActionFormComponent(
       allowCompletionLink,
       nextActionId,
       nextCompletionId,
+      isQuizMode,
+      score,
+      matchMode,
+      hint,
     ],
   );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
@@ -820,9 +902,10 @@ function ActionFormComponent(
         values: dirtyBaselineValues,
         allowCompletionLink,
         enableEditorActionMedia,
+        isQuizMode,
       }),
     );
-  }, [allowCompletionLink, dirtyBaselineValues, enableEditorActionMedia]);
+  }, [allowCompletionLink, dirtyBaselineValues, enableEditorActionMedia, isQuizMode]);
   const isDirty = dirtyComparableString !== dirtyBaselineComparableString;
 
   useEffect(() => {
@@ -957,6 +1040,10 @@ function ActionFormComponent(
     setImageFileUploadId(null);
   };
 
+  const handleOptionIsCorrectChange = (optionKey: string, checked: boolean) => {
+    setOptions(prev => patchOptionByKey(prev, optionKey, { isCorrect: checked }));
+  };
+
   const [openOptionKey, setOpenOptionKey] = useState<string | null>(null);
 
   const handleMoveOption = useCallback((optionKey: string, direction: "up" | "down") => {
@@ -1002,7 +1089,7 @@ function ActionFormComponent(
               <SelectValue placeholder={`${itemLabel} 유형을 선택하세요`} />
             </SelectTrigger>
             <SelectContent>
-              {ACTION_TYPE_VALUES.map(type => (
+              {(isQuizMode ? QUIZ_ACTION_TYPES : ACTION_TYPE_VALUES).map(type => (
                 <SelectItem key={type} value={type}>
                   {ACTION_TYPE_LABELS[type]}
                 </SelectItem>
@@ -1091,18 +1178,21 @@ function ActionFormComponent(
         </div>
       )}
 
-      {(selectedActionType === ActionType.MULTIPLE_CHOICE ||
-        selectedActionType === ActionType.TAG) && (
-        <div className="flex items-center justify-between">
-          <LabelText required={false}>기타 옵션 허용</LabelText>
-          <Toggle checked={hasOther} onCheckedChange={setHasOther} />
-        </div>
-      )}
+      {!isQuizMode &&
+        (selectedActionType === ActionType.MULTIPLE_CHOICE ||
+          selectedActionType === ActionType.TAG) && (
+          <div className="flex items-center justify-between">
+            <LabelText required={false}>기타 옵션 허용</LabelText>
+            <Toggle checked={hasOther} onCheckedChange={setHasOther} />
+          </div>
+        )}
 
       {needsOptions && (
         <div className="flex flex-col gap-3">
           <LabelText required>
-            항목 ({options.length}/{optionLimits.max})
+            {isQuizMode && selectedActionType === ActionType.SHORT_TEXT
+              ? `정답 목록 (${options.length}/${optionLimits.max})`
+              : `항목 (${options.length}/${optionLimits.max})`}
           </LabelText>
           <DndContext
             sensors={optionSensors}
@@ -1132,6 +1222,8 @@ function ActionFormComponent(
                     showDescription={showOptionDescription}
                     showImage={showOptionImage}
                     showDelete={!isBranch && options.length > optionLimits.min}
+                    showIsCorrect={isQuizMode && selectedActionType !== ActionType.SHORT_TEXT}
+                    isCorrect={option.isCorrect ?? false}
                     disabled={isLoading}
                     isImageUploading={optionImages.isUploading(option._key)}
                     titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
@@ -1143,6 +1235,7 @@ function ActionFormComponent(
                     onDescriptionChange={value =>
                       updateOptionByKey(option._key, "description", value)
                     }
+                    onIsCorrectChange={checked => handleOptionIsCorrectChange(option._key, checked)}
                     onImageSelect={file => {
                       if (option.fileUploadId) {
                         optionImages.markInitialForDeletion(option.fileUploadId);
@@ -1158,7 +1251,7 @@ function ActionFormComponent(
                     onMoveUp={() => handleMoveOption(option._key, "up")}
                     onMoveDown={() => handleMoveOption(option._key, "down")}
                     branchSlot={
-                      isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
+                      !isQuizMode && isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
                         <div className="flex flex-col gap-2">
                           <LabelText required={allowCompletionLink}>다음 이동</LabelText>
                           <NextLinkDisplay
@@ -1204,7 +1297,52 @@ function ActionFormComponent(
         </div>
       )}
 
-      {!isBranch && (hasLinkTargets || hasCreateCallbacks) && (
+      {isQuizMode && (
+        <>
+          <div className="flex flex-col gap-2">
+            <LabelText required={false}>배점</LabelText>
+            <Input
+              type="number"
+              placeholder="배점을 입력하세요 (선택)"
+              value={score ?? ""}
+              onChange={e => {
+                const val = e.target.value;
+                setScore(val === "" ? null : Number(val));
+              }}
+              min={0}
+            />
+          </div>
+
+          {selectedActionType === ActionType.SHORT_TEXT && (
+            <div className="flex flex-col gap-2">
+              <LabelText required={false}>매칭 모드</LabelText>
+              <Select
+                value={matchMode ?? MatchMode.EXACT}
+                onValueChange={value => setMatchMode(value as MatchMode)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="매칭 모드를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={MatchMode.EXACT}>완전 일치</SelectItem>
+                  <SelectItem value={MatchMode.CONTAINS}>포함</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <LabelText required={false}>힌트</LabelText>
+            <Input
+              placeholder="힌트를 입력하세요 (선택)"
+              value={hint}
+              onChange={e => setHint(e.target.value)}
+            />
+          </div>
+        </>
+      )}
+
+      {!isQuizMode && !isBranch && (hasLinkTargets || hasCreateCallbacks) && (
         <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4">
           <LabelText required={allowCompletionLink && hasLinkTargets}>다음 이동 설정</LabelText>
 
