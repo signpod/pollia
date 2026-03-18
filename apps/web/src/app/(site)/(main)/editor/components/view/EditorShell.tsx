@@ -6,7 +6,7 @@ import { EditorContentHeader } from "./EditorContentHeader";
 
 export function EditorShell({ children }: { children: React.ReactNode }) {
   const params = useParams();
-  const missionId = params?.missionId as string | undefined;
+  const missionId = (params?.missionId ?? params?.quizId) as string | undefined;
 
   return (
     <div className="flex flex-1 flex-col bg-zinc-50">

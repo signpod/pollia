@@ -1,6 +1,6 @@
 import { getMission } from "@/actions/mission";
 import { getReward } from "@/actions/reward/read";
-import { EditorMissionTabContent } from "../../missions/[missionId]/components/EditorMissionTabContent";
+import { QuizEditorContent } from "./components/QuizEditorContent";
 
 interface QuizEditorPageProps {
   params: Promise<{ quizId: string }>;
@@ -16,5 +16,5 @@ export default async function QuizEditorPage({ params }: QuizEditorPageProps) {
         .catch(() => null)
     : null;
 
-  return <EditorMissionTabContent missionId={quizId} mission={mission} reward={reward} />;
+  return <QuizEditorContent missionId={quizId} mission={mission} reward={reward} />;
 }
