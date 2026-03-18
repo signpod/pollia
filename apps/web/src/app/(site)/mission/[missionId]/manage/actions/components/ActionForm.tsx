@@ -52,7 +52,7 @@ import {
   Typo,
   toast,
 } from "@repo/ui/components";
-import { AlertCircle, Plus } from "lucide-react";
+import { AlertCircle, Plus, X } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -1237,115 +1237,163 @@ function ActionFormComponent(
         </div>
       )}
 
-      {needsOptions && !(isQuizMode && selectedActionType === ActionType.OX) && (
+      {needsOptions && isQuizMode && selectedActionType === ActionType.SHORT_TEXT && (
         <div className="flex flex-col gap-3">
-          <LabelText required>
-            {isQuizMode && selectedActionType === ActionType.SHORT_TEXT
-              ? `정답 목록 (${options.length}/${optionLimits.max})`
-              : `항목 (${options.length}/${optionLimits.max})`}
-          </LabelText>
-          <DndContext
-            sensors={optionSensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleOptionDragEnd}
-          >
-            <SortableContext
-              items={options.map(o => o._key)}
-              strategy={verticalListSortingStrategy}
-            >
-              {options.map((option, index) => {
-                const optionPreviewUrl = showOptionImage
-                  ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
-                  : undefined;
-
-                return (
-                  <SortableOptionItem
-                    key={option._key}
-                    optionKey={option._key}
-                    index={index}
-                    title={option.title}
-                    description={option.description ?? null}
-                    previewImageUrl={optionPreviewUrl}
-                    isOpen={openOptionKey === option._key}
-                    isFirst={index === 0}
-                    isLast={index === options.length - 1}
-                    showDescription={showOptionDescription}
-                    showImage={showOptionImage}
-                    showDelete={!isBranch && options.length > optionLimits.min}
-                    showIsCorrect={isQuizMode && selectedActionType !== ActionType.SHORT_TEXT}
-                    isCorrect={option.isCorrect ?? false}
-                    disabled={isLoading}
-                    isImageUploading={optionImages.isUploading(option._key)}
-                    titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
-                    descriptionMaxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
-                    onToggle={() =>
-                      setOpenOptionKey(prev => (prev === option._key ? null : option._key))
-                    }
-                    onTitleChange={value => updateOptionByKey(option._key, "title", value)}
-                    onDescriptionChange={value =>
-                      updateOptionByKey(option._key, "description", value)
-                    }
-                    onIsCorrectChange={checked => handleOptionIsCorrectChange(option._key, checked)}
-                    onImageSelect={file => {
-                      if (option.fileUploadId) {
-                        optionImages.markInitialForDeletion(option.fileUploadId);
-                      }
-                      optionImages.upload(option._key, file);
-                    }}
-                    onImageDelete={() => {
-                      optionImages.discard(option._key);
-                      updateOptionByKey(option._key, "imageUrl", null);
-                      updateOptionByKey(option._key, "fileUploadId", null);
-                    }}
-                    onDelete={() => removeOptionByOptionKey(option._key)}
-                    onMoveUp={() => handleMoveOption(option._key, "up")}
-                    onMoveDown={() => handleMoveOption(option._key, "down")}
-                    branchSlot={
-                      !isQuizMode && isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
-                        <div className="flex flex-col gap-2">
-                          <LabelText required={allowCompletionLink}>다음 이동</LabelText>
-                          <NextLinkDisplay
-                            itemLabel={itemLabel}
-                            nextActionId={option.nextActionId ?? null}
-                            nextCompletionId={option.nextCompletionId ?? null}
-                            selectableActions={selectableActions}
-                            completionOptions={completionOptions}
-                            onAdd={() => setDrawerOpenKey(option._key)}
-                            onEdit={() => setDrawerOpenKey(option._key)}
-                            onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
-                          />
-                        </div>
-                      ) : undefined
-                    }
-                  />
-                );
-              })}
-            </SortableContext>
-          </DndContext>
-
-          {errors.options && (
-            <Typo.Body size="small" className="text-red-500">
-              {errors.options}
-            </Typo.Body>
-          )}
-          {errors.branchNextAction && (
-            <Typo.Body size="small" className="text-red-500">
-              {errors.branchNextAction}
-            </Typo.Body>
-          )}
-
-          {!isBranch && options.length < optionLimits.max && (
+          <LabelText required>{`정답 목록 (${options.length}/${optionLimits.max})`}</LabelText>
+          <Typo.Body size="medium" className="text-zinc-400">
+            허용할 정답 텍스트를 입력합니다. 참여자의 답변이 이 중 하나와 일치하면 정답으로
+            처리됩니다.
+          </Typo.Body>
+          {options.map((option, index) => (
+            <div key={option._key} className="flex items-center gap-2">
+              <Input
+                containerClassName="flex-1"
+                placeholder={`정답 ${index + 1}`}
+                value={option.title}
+                onChange={e => updateOptionByKey(option._key, "title", e.target.value)}
+                maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+              />
+              {options.length > optionLimits.min && (
+                <button
+                  type="button"
+                  onClick={() => removeOptionByOptionKey(option._key)}
+                  className="shrink-0 rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+                  aria-label="정답 삭제"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </div>
+          ))}
+          {options.length < optionLimits.max && (
             <button
               type="button"
               onClick={addOption}
               className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 py-2.5 text-sm text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
             >
               <Plus className="size-4" />
-              항목 추가
+              정답 추가
             </button>
+          )}
+          {errors.options && (
+            <Typo.Body size="small" className="text-red-500">
+              {errors.options}
+            </Typo.Body>
           )}
         </div>
       )}
+
+      {needsOptions &&
+        !(
+          isQuizMode &&
+          (selectedActionType === ActionType.OX || selectedActionType === ActionType.SHORT_TEXT)
+        ) && (
+          <div className="flex flex-col gap-3">
+            <LabelText required>{`항목 (${options.length}/${optionLimits.max})`}</LabelText>
+            <DndContext
+              sensors={optionSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleOptionDragEnd}
+            >
+              <SortableContext
+                items={options.map(o => o._key)}
+                strategy={verticalListSortingStrategy}
+              >
+                {options.map((option, index) => {
+                  const optionPreviewUrl = showOptionImage
+                    ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
+                    : undefined;
+
+                  return (
+                    <SortableOptionItem
+                      key={option._key}
+                      optionKey={option._key}
+                      index={index}
+                      title={option.title}
+                      description={option.description ?? null}
+                      previewImageUrl={optionPreviewUrl}
+                      isOpen={openOptionKey === option._key}
+                      isFirst={index === 0}
+                      isLast={index === options.length - 1}
+                      showDescription={showOptionDescription}
+                      showImage={showOptionImage}
+                      showDelete={!isBranch && options.length > optionLimits.min}
+                      showIsCorrect={isQuizMode && selectedActionType !== ActionType.SHORT_TEXT}
+                      isCorrect={option.isCorrect ?? false}
+                      disabled={isLoading}
+                      isImageUploading={optionImages.isUploading(option._key)}
+                      titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+                      descriptionMaxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                      onToggle={() =>
+                        setOpenOptionKey(prev => (prev === option._key ? null : option._key))
+                      }
+                      onTitleChange={value => updateOptionByKey(option._key, "title", value)}
+                      onDescriptionChange={value =>
+                        updateOptionByKey(option._key, "description", value)
+                      }
+                      onIsCorrectChange={checked =>
+                        handleOptionIsCorrectChange(option._key, checked)
+                      }
+                      onImageSelect={file => {
+                        if (option.fileUploadId) {
+                          optionImages.markInitialForDeletion(option.fileUploadId);
+                        }
+                        optionImages.upload(option._key, file);
+                      }}
+                      onImageDelete={() => {
+                        optionImages.discard(option._key);
+                        updateOptionByKey(option._key, "imageUrl", null);
+                        updateOptionByKey(option._key, "fileUploadId", null);
+                      }}
+                      onDelete={() => removeOptionByOptionKey(option._key)}
+                      onMoveUp={() => handleMoveOption(option._key, "up")}
+                      onMoveDown={() => handleMoveOption(option._key, "down")}
+                      branchSlot={
+                        !isQuizMode && isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
+                          <div className="flex flex-col gap-2">
+                            <LabelText required={allowCompletionLink}>다음 이동</LabelText>
+                            <NextLinkDisplay
+                              itemLabel={itemLabel}
+                              nextActionId={option.nextActionId ?? null}
+                              nextCompletionId={option.nextCompletionId ?? null}
+                              selectableActions={selectableActions}
+                              completionOptions={completionOptions}
+                              onAdd={() => setDrawerOpenKey(option._key)}
+                              onEdit={() => setDrawerOpenKey(option._key)}
+                              onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
+                            />
+                          </div>
+                        ) : undefined
+                      }
+                    />
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
+
+            {errors.options && (
+              <Typo.Body size="small" className="text-red-500">
+                {errors.options}
+              </Typo.Body>
+            )}
+            {errors.branchNextAction && (
+              <Typo.Body size="small" className="text-red-500">
+                {errors.branchNextAction}
+              </Typo.Body>
+            )}
+
+            {!isBranch && options.length < optionLimits.max && (
+              <button
+                type="button"
+                onClick={addOption}
+                className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 py-2.5 text-sm text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
+              >
+                <Plus className="size-4" />
+                항목 추가
+              </button>
+            )}
+          </div>
+        )}
 
       {isQuizMode && (
         <>
