@@ -79,6 +79,8 @@ export interface CompletionFormValues {
   imageUrl?: string | null;
   imageFileUploadId?: string | null;
   links?: CompletionLinkInput[];
+  minScoreRatio?: number | null;
+  maxScoreRatio?: number | null;
 }
 
 export interface CompletionFormRawSnapshot {
@@ -87,6 +89,8 @@ export interface CompletionFormRawSnapshot {
   imageUrl: string | null;
   imageFileUploadId: string | null;
   links: CompletionLinkInput[];
+  minScoreRatio: number | null;
+  maxScoreRatio: number | null;
 }
 
 export interface CompletionFormHandle {
@@ -132,6 +136,8 @@ function buildCompletionDirtyComparable(values: CompletionFormValues) {
     imageUrl: values.imageUrl ?? null,
     imageFileUploadId: values.imageFileUploadId ?? null,
     links: values.links ?? [],
+    minScoreRatio: values.minScoreRatio ?? null,
+    maxScoreRatio: values.maxScoreRatio ?? null,
   };
 }
 
@@ -158,6 +164,12 @@ function CompletionFormComponent(
     initialValues?.imageFileUploadId ?? null,
   );
   const [links, setLinks] = useState<CompletionLinkInput[]>(initialValues?.links ?? []);
+  const [minScoreRatio, setMinScoreRatio] = useState<number | null>(
+    initialValues?.minScoreRatio ?? null,
+  );
+  const [maxScoreRatio, setMaxScoreRatio] = useState<number | null>(
+    initialValues?.maxScoreRatio ?? null,
+  );
   const [linkKeys, setLinkKeys] = useState<string[]>(() =>
     (initialValues?.links ?? []).map((_, i) => `lk-${Date.now()}-${i}`),
   );
@@ -198,9 +210,11 @@ function CompletionFormComponent(
           imageUrl: imageUrl ?? null,
           imageFileUploadId: imageFileUploadId ?? null,
           links,
+          minScoreRatio,
+          maxScoreRatio,
         }),
       ),
-    [title, description, imageUrl, imageFileUploadId, links],
+    [title, description, imageUrl, imageFileUploadId, links, minScoreRatio, maxScoreRatio],
   );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
   const dirtyBaselineComparableString = useMemo(() => {
@@ -304,9 +318,20 @@ function CompletionFormComponent(
         imageUrl,
         imageFileUploadId,
         links: links.length > 0 ? links.map((link, i) => ({ ...link, order: i })) : undefined,
+        minScoreRatio,
+        maxScoreRatio,
       };
     },
-    [runValidation, title, description, imageUrl, imageFileUploadId, links],
+    [
+      runValidation,
+      title,
+      description,
+      imageUrl,
+      imageFileUploadId,
+      links,
+      minScoreRatio,
+      maxScoreRatio,
+    ],
   );
 
   const getRawSnapshot = useCallback(
@@ -316,8 +341,10 @@ function CompletionFormComponent(
       imageUrl: imageUrl ?? null,
       imageFileUploadId: imageFileUploadId ?? null,
       links,
+      minScoreRatio,
+      maxScoreRatio,
     }),
-    [description, imageFileUploadId, imageUrl, links, title],
+    [description, imageFileUploadId, imageUrl, links, title, minScoreRatio, maxScoreRatio],
   );
 
   useEffect(() => {
@@ -337,6 +364,8 @@ function CompletionFormComponent(
     setLinks(nextLinks);
     linkKeyCounterRef.current += nextLinks.length;
     setLinkKeys(nextLinks.map((_, i) => `lk-${Date.now()}-${linkKeyCounterRef.current + i}`));
+    setMinScoreRatio(snapshot.minScoreRatio ?? null);
+    setMaxScoreRatio(snapshot.maxScoreRatio ?? null);
     setOpenLinkIndex(null);
     setErrors({});
   }, []);

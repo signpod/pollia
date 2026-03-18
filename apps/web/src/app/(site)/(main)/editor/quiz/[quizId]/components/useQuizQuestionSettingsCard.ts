@@ -3,12 +3,7 @@ import type {
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
-import {
-  makeDraftActionId,
-  mapEditInitialValues,
-} from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { useReadActionsDetail } from "@/hooks/action";
-import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -17,28 +12,10 @@ import { toast } from "@repo/ui/components";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  actionDirtyByItemKeyAtom,
-  actionDraftHydrationVersionAtom,
-  actionDraftItemsAtom,
-  actionFormSnapshotByItemKeyAtom,
-  actionFormVersionByIdAtom,
-  actionIsFlowDialogOpenAtom,
-  actionItemOrderKeysAtom,
-  actionOpenItemKeyAtom,
-  actionScrollTargetItemKeyAtom,
-  actionTypeByItemKeyAtom,
-  actionValidationIssueCountByItemKeyAtom,
-  cleanupDeletedActionRefsAtom,
-} from "../atoms/editorActionAtoms";
-import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
-import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
-import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
   ActionSectionDraftSnapshot,
-  ActionSettingsCardProps,
-} from "./actionSettingsCard.types";
+} from "../../../missions/[missionId]/components/actionSettingsCard.types";
 import {
   areActionSnapshotsEqual,
   areStringArraysEqual,
@@ -49,25 +26,39 @@ import {
   getDraftItemKey,
   getExistingItemKey,
   syncOrderKeys,
-} from "./actionSettingsCard.utils";
-import { analyzeEditorFlow } from "./editor-publish-flow-validation";
-import type { SectionSaveHandle } from "./editor-save.types";
-import { toggleItemWithPreview } from "./editorMobilePreview.utils";
-import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
-import { useActionLinkDerived } from "./useActionLinkDerived";
-import { useActionSaveFlow } from "./useActionSaveFlow";
+} from "../../../missions/[missionId]/components/actionSettingsCard.utils";
+import type {
+  SectionSaveHandle,
+  SectionSaveStateChangeHandler,
+} from "../../../missions/[missionId]/components/editor-save.types";
+import {
+  quizActionDirtyByItemKeyAtom,
+  quizActionDraftHydrationVersionAtom,
+  quizActionDraftItemsAtom,
+  quizActionFormSnapshotByItemKeyAtom,
+  quizActionFormVersionByIdAtom,
+  quizActionItemOrderKeysAtom,
+  quizActionOpenItemKeyAtom,
+  quizActionScrollTargetItemKeyAtom,
+  quizActionTypeByItemKeyAtom,
+  quizActionValidationIssueCountByItemKeyAtom,
+  quizDraftVersionAtom,
+} from "../atoms/quizActionAtoms";
+import { useQuizActionSaveFlow } from "./useQuizActionSaveFlow";
 
-export interface UseActionSettingsCardReturn {
+export interface QuizQuestionSettingsCardProps {
+  missionId: string;
+  onSaveStateChange?: SectionSaveStateChangeHandler;
+  showHint?: boolean;
+}
+
+export interface UseQuizQuestionSettingsCardReturn {
   viewState: {
     isBusy: boolean;
     isActionsLoading: boolean;
-    isFlowLoading: boolean;
     hasPendingChanges: boolean;
     hasValidationIssues: boolean;
     validationIssueCount: number;
-    isAiCompletionEnabled: boolean;
-    isInactiveMission: boolean;
-    flowErrorMessage: string | null;
   };
   listState: {
     orderedActionItems: ActionListItem[];
@@ -76,13 +67,6 @@ export interface UseActionSettingsCardReturn {
     existingFormVersionById: Record<string, number>;
     draftHydrationVersion: number;
   };
-  derived: {
-    completionOptions: Array<{ id: string; title: string }>;
-    linkTargets: Array<{ id: string; title: string; order: number }>;
-    entryActionId: string | null;
-    referencedActionIdsBySource: Map<string, Set<string>>;
-    flowAnalysis: ReturnType<typeof analyzeEditorFlow> | null;
-  };
   formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
   deleteDialog: {
     target: ActionDetail | null;
@@ -90,10 +74,6 @@ export interface UseActionSettingsCardReturn {
     onOpen: (action: ActionDetail) => void;
     onClose: () => void;
     onConfirm: () => void;
-  };
-  flowDialog: {
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
   };
   handlers: {
     handleAddDraft: () => void;
@@ -109,44 +89,31 @@ export interface UseActionSettingsCardReturn {
   saveHandle: SectionSaveHandle;
 }
 
-export function useActionSettingsCard({
+export function useQuizQuestionSettingsCard({
   missionId,
-  useAiCompletion: useAiCompletionOverride,
   onSaveStateChange,
-}: ActionSettingsCardProps): UseActionSettingsCardReturn {
+}: QuizQuestionSettingsCardProps): UseQuizQuestionSettingsCardReturn {
   const formRefs = useRef<Record<string, ActionFormHandle | null>>({});
-  const [draftItems, setDraftItems] = useAtom(actionDraftItemsAtom);
-  const [itemOrderKeys, setItemOrderKeys] = useAtom(actionItemOrderKeysAtom);
-  const [openItemKey, setOpenItemKey] = useAtom(actionOpenItemKeyAtom);
+  const [draftItems, setDraftItems] = useAtom(quizActionDraftItemsAtom);
+  const [itemOrderKeys, setItemOrderKeys] = useAtom(quizActionItemOrderKeysAtom);
+  const [openItemKey, setOpenItemKey] = useAtom(quizActionOpenItemKeyAtom);
   const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
-  const [dirtyByItemKey, setDirtyByItemKey] = useAtom(actionDirtyByItemKeyAtom);
-  const [existingFormVersionById, setExistingFormVersionById] = useAtom(actionFormVersionByIdAtom);
-  const [actionTypeByItemKey, setActionTypeByItemKey] = useAtom(actionTypeByItemKeyAtom);
+  const [dirtyByItemKey, setDirtyByItemKey] = useAtom(quizActionDirtyByItemKeyAtom);
+  const [existingFormVersionById, setExistingFormVersionById] = useAtom(
+    quizActionFormVersionByIdAtom,
+  );
+  const [actionTypeByItemKey, setActionTypeByItemKey] = useAtom(quizActionTypeByItemKeyAtom);
   const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useAtom(
-    actionFormSnapshotByItemKeyAtom,
+    quizActionFormSnapshotByItemKeyAtom,
   );
   const [validationIssueCountByItemKey, setValidationIssueCountByItemKey] = useAtom(
-    actionValidationIssueCountByItemKeyAtom,
+    quizActionValidationIssueCountByItemKeyAtom,
   );
-  const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
-  const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
-  const dispatchCleanupDeletedActionRefs = useSetAtom(cleanupDeletedActionRefsAtom);
-  const incrementDraftVersion = useSetAtom(editorDraftVersionAtom);
-  const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
-  const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
-  const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
-  const setScrollTarget = useSetAtom(actionScrollTargetItemKeyAtom);
+  const draftHydrationVersion = useAtomValue(quizActionDraftHydrationVersionAtom);
+  const incrementDraftVersion = useSetAtom(quizDraftVersionAtom);
+  const setScrollTarget = useSetAtom(quizActionScrollTargetItemKeyAtom);
 
-  const {
-    data: missionData,
-    isLoading: isMissionLoading,
-    error: missionError,
-  } = useReadMission(missionId);
-  const {
-    data: actionsData,
-    isLoading: isActionsLoading,
-    error: actionsError,
-  } = useReadActionsDetail(missionId);
+  const { data: actionsData, isLoading: isActionsLoading } = useReadActionsDetail(missionId);
 
   const existingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
@@ -159,52 +126,18 @@ export function useActionSettingsCard({
 
       if (deletingActionId) {
         const deletingItemKey = getExistingItemKey(deletingActionId);
-        const affectedActionIds = existingActions
-          .filter(
-            action =>
-              action.id !== deletingActionId &&
-              (action.nextActionId === deletingActionId ||
-                action.options.some(option => option.nextActionId === deletingActionId)),
-          )
-          .map(action => action.id);
 
         setExistingFormVersionById(prev => {
           const next = { ...prev };
           delete next[deletingActionId];
-          for (const actionId of affectedActionIds) {
-            next[actionId] = (next[actionId] ?? 0) + 1;
-          }
           return next;
         });
 
         delete formRefs.current[deletingItemKey];
-        setActionTypeByItemKey(prev => {
-          const next = { ...prev };
-          delete next[deletingItemKey];
-          return next;
-        });
-        setDirtyByItemKey(prev => {
-          const next = { ...prev };
-          delete next[deletingItemKey];
-          for (const actionId of affectedActionIds) {
-            delete next[getExistingItemKey(actionId)];
-          }
-          return next;
-        });
-        setValidationIssueCountByItemKey(prev => {
-          const next = { ...prev };
-          delete next[deletingItemKey];
-          for (const actionId of affectedActionIds) {
-            delete next[getExistingItemKey(actionId)];
-          }
-          return next;
-        });
+        setActionTypeByItemKey(prev => deleteKeyFromRecord(prev, deletingItemKey));
+        setDirtyByItemKey(prev => deleteKeyFromRecord(prev, deletingItemKey));
+        setValidationIssueCountByItemKey(prev => deleteKeyFromRecord(prev, deletingItemKey));
         setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
-
-        dispatchCleanupDeletedActionRefs({
-          itemKey: deletingItemKey,
-          deletedActionId: deletingActionId,
-        });
       }
 
       toast({ message: "질문이 삭제되었습니다." });
@@ -220,15 +153,6 @@ export function useActionSettingsCard({
   });
 
   const isBusy = deleteAction.isPending;
-  const isInactiveMission = missionData?.data?.isActive === false;
-  const isAiCompletionEnabled =
-    useAiCompletionOverride ?? missionData?.data?.useAiCompletion === true;
-
-  useEffect(() => {
-    setIsAiCompletionEnabled(isAiCompletionEnabled);
-  }, [isAiCompletionEnabled, setIsAiCompletionEnabled]);
-
-  const completionOptions = useAtomValue(completionOptionsAtom);
 
   const actionItems = useMemo<ActionListItem[]>(
     () => [
@@ -252,31 +176,14 @@ export function useActionSettingsCard({
   );
 
   const defaultOrderKeys = useMemo(() => actionItems.map(item => item.key), [actionItems]);
-
   const orderedItemKeys = useMemo(
     () => orderedActionItems.map(item => item.key),
     [orderedActionItems],
   );
-
   const hasOrderChanges = useMemo(
     () => !areStringArraysEqual(orderedItemKeys, defaultOrderKeys),
     [defaultOrderKeys, orderedItemKeys],
   );
-
-  const firstItem = orderedActionItems[0];
-  const firstOrderedActionId = firstItem
-    ? firstItem.kind === "existing"
-      ? firstItem.action.id
-      : makeDraftActionId(firstItem.draft.key)
-    : null;
-  const entryActionId = missionData?.data?.entryActionId ?? firstOrderedActionId;
-
-  const { linkTargets, referencedActionIdsBySource } = useActionLinkDerived({
-    orderedActionItems,
-    draftFormSnapshotByItemKey,
-    actionTypeByItemKey,
-    entryActionId,
-  });
 
   const getActionDraftSnapshot = useCallback((): ActionSectionDraftSnapshot => {
     const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
@@ -306,24 +213,13 @@ export function useActionSettingsCard({
     orderedActionItems,
   ]);
 
-  const { flowAnalysis, flowErrorMessage, isFlowLoading } = useActionFlowAnalysis({
-    missionData,
-    actionsData,
-    missionError: missionError instanceof Error ? missionError : null,
-    actionsError: actionsError instanceof Error ? actionsError : null,
-    isMissionLoading,
-    isActionsLoading,
-    isAiCompletionEnabled,
-    getActionDraftSnapshot,
-  });
-
   const hasPendingChanges = useMemo(() => {
     if (draftItems.length > 0) return true;
     if (hasOrderChanges) return true;
     return existingActions.some(action => dirtyByItemKey[getExistingItemKey(action.id)]);
   }, [draftItems.length, existingActions, dirtyByItemKey, hasOrderChanges]);
 
-  const { isApplying, saveHandle } = useActionSaveFlow({
+  const { isApplying, saveHandle } = useQuizActionSaveFlow({
     missionId,
     formRefs,
     orderedActionItems,
@@ -335,7 +231,7 @@ export function useActionSettingsCard({
 
   const isBusyTotal = isApplying || isBusy;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   useEffect(() => {
     const validKeys = new Set(orderedActionItems.map(item => item.key));
     setDirtyByItemKey(prev => filterByValidKeys(prev, validKeys));
@@ -343,7 +239,7 @@ export function useActionSettingsCard({
     setValidationIssueCountByItemKey(prev => filterByValidKeys(prev, validKeys));
   }, [orderedActionItems]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setItemOrderKeys
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   useEffect(() => {
     const validKeys = actionItems.map(item => item.key);
     setItemOrderKeys(prev => syncOrderKeys(prev, validKeys));
@@ -375,114 +271,47 @@ export function useActionSettingsCard({
     validationIssueCount,
   ]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDirtyByItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {
-    setDirtyByItemKey(prev => {
-      if (prev[itemKey] === isDirty) {
-        return prev;
-      }
-
-      return { ...prev, [itemKey]: isDirty };
-    });
+    setDirtyByItemKey(prev => (prev[itemKey] === isDirty ? prev : { ...prev, [itemKey]: isDirty }));
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setValidationIssueCountByItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   const handleItemValidationChange = useCallback((itemKey: string, issueCount: number) => {
-    setValidationIssueCountByItemKey(prev => {
-      if ((prev[itemKey] ?? 0) === issueCount) {
-        return prev;
-      }
-
-      return { ...prev, [itemKey]: issueCount };
-    });
+    setValidationIssueCountByItemKey(prev =>
+      (prev[itemKey] ?? 0) === issueCount ? prev : { ...prev, [itemKey]: issueCount },
+    );
   }, []);
 
   const handleItemRawSnapshotChange = useCallback(
     (itemKey: string, snapshot: ActionFormRawSnapshot) => {
       setDraftFormSnapshotByItemKey(prev => {
-        if (areActionSnapshotsEqual(prev[itemKey], snapshot)) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          [itemKey]: snapshot,
-        };
+        if (areActionSnapshotsEqual(prev[itemKey], snapshot)) return prev;
+        return { ...prev, [itemKey]: snapshot };
       });
       incrementDraftVersion(v => v + 1);
     },
     [setDraftFormSnapshotByItemKey, incrementDraftVersion],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget, setDraftFormSnapshotByItemKey, setDraftHydrationVersion
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   const handleAddDraft = useCallback(() => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
-    const newDraftActionId = makeDraftActionId(draftKey);
 
     setDraftItems(prev => [...prev, { key: draftKey }]);
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.MULTIPLE_CHOICE }));
     setOpenItemKey(itemKey);
     setScrollTarget(itemKey);
+  }, []);
 
-    const prevItem = orderedActionItems[orderedActionItems.length - 1];
-    if (!prevItem) return;
-
-    const prevItemKey = prevItem.key;
-    const prevActionType =
-      actionTypeByItemKey[prevItemKey] ??
-      (prevItem.kind === "existing" ? prevItem.action.type : undefined);
-    if (!prevActionType) return;
-
-    const prevSnapshot = draftFormSnapshotByItemKey[prevItemKey];
-    const prevValues =
-      prevSnapshot?.values ??
-      (prevItem.kind === "existing" ? mapEditInitialValues(prevItem.action) : undefined);
-    if (!prevValues) return;
-
-    if (prevActionType === ActionType.BRANCH) {
-      const hasUnlinkedOption = prevValues.options?.some(o => !o.nextActionId);
-      if (!hasUnlinkedOption) return;
-
-      const updatedValues = {
-        ...prevValues,
-        options: prevValues.options?.map(o =>
-          o.nextActionId ? o : { ...o, nextActionId: newDraftActionId },
-        ),
-      };
-      setDraftFormSnapshotByItemKey(prev => ({
-        ...prev,
-        [prevItemKey]: {
-          actionType: prevSnapshot?.actionType ?? prevActionType,
-          values: updatedValues,
-        },
-      }));
-    } else {
-      if (prevValues.nextActionId) return;
-
-      setDraftFormSnapshotByItemKey(prev => ({
-        ...prev,
-        [prevItemKey]: {
-          actionType: prevSnapshot?.actionType ?? prevActionType,
-          values: { ...prevValues, nextActionId: newDraftActionId },
-        },
-      }));
-    }
-
-    setDraftHydrationVersion(v => v + 1);
-  }, [orderedActionItems, actionTypeByItemKey, draftFormSnapshotByItemKey]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
-    const deletedActionId = makeDraftActionId(draftKey);
 
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
     setActionTypeByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
     setDirtyByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
-
-    dispatchCleanupDeletedActionRefs({ itemKey, deletedActionId });
-
     setValidationIssueCountByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
     delete formRefs.current[itemKey];
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
@@ -490,19 +319,12 @@ export function useActionSettingsCard({
 
   const handleToggleItem = useCallback(
     (itemKey: string) => {
-      toggleItemWithPreview(
-        itemKey,
-        orderedActionItems,
-        setOpenItemKey,
-        setMobilePreviewMode,
-        item => ({ type: "action", actionId: item.action.id }),
-        openItemKey,
-      );
+      setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
     },
-    [orderedActionItems, setMobilePreviewMode, setOpenItemKey, openItemKey],
+    [setOpenItemKey],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setActionTypeByItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   const handleActionTypeChange = useCallback((itemKey: string, actionType: ActionType) => {
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: actionType }));
   }, []);
@@ -544,13 +366,9 @@ export function useActionSettingsCard({
     viewState: {
       isBusy: isBusyTotal,
       isActionsLoading,
-      isFlowLoading,
       hasPendingChanges,
       hasValidationIssues,
       validationIssueCount,
-      isAiCompletionEnabled,
-      isInactiveMission,
-      flowErrorMessage,
     },
     listState: {
       orderedActionItems,
@@ -559,13 +377,6 @@ export function useActionSettingsCard({
       existingFormVersionById,
       draftHydrationVersion,
     },
-    derived: {
-      completionOptions,
-      linkTargets,
-      entryActionId,
-      referencedActionIdsBySource,
-      flowAnalysis,
-    },
     formRefs,
     deleteDialog: {
       target: deleteTarget,
@@ -573,10 +384,6 @@ export function useActionSettingsCard({
       onOpen: setDeleteTarget,
       onClose: () => setDeleteTarget(null),
       onConfirm: handleDeleteConfirm,
-    },
-    flowDialog: {
-      isOpen: isFlowDialogOpen,
-      onOpenChange: setIsFlowDialogOpen,
     },
     handlers: {
       handleAddDraft,

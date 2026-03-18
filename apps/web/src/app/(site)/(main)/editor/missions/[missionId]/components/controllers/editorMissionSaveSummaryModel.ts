@@ -1,12 +1,20 @@
 import type { SectionSaveResult } from "../editor-save.types";
 
-export type EditorSectionKey = "basic" | "reward" | "action" | "completion";
+export type EditorSectionKey =
+  | "basic"
+  | "reward"
+  | "action"
+  | "completion"
+  | "quizConfig"
+  | "question";
 
 export const SECTION_LABELS: Record<EditorSectionKey, string> = {
   basic: "기본 정보",
   reward: "리워드",
   action: "액션",
   completion: "결과 화면",
+  quizConfig: "퀴즈 설정",
+  question: "질문",
 };
 
 export interface SectionSaveSummary {

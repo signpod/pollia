@@ -9,65 +9,72 @@ import {
   toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
 import { toast } from "@repo/ui/components";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { editorDraftVersionAtom } from "../../atoms/editorDraftVersionAtom";
-import type { ServerActionLike, ServerCompletionLike } from "../editor-publish-flow-validation";
-import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "../editor-save.types";
 import {
-  type PublishAvailability,
-  computePublishAvailability,
-} from "../models/editorMissionPublishModel";
+  type PublishGuardResult,
+  editorPublishGuardAtom,
+} from "../../../../atoms/editorPublishGuardAtom";
 import {
   type PostSectionSaveOutcome,
   checkUnifiedSaveGuard,
   resolvePostSectionSaveOutcome,
-} from "./editorMissionSaveFlowModel";
+} from "../../../../missions/[missionId]/components/controllers/editorMissionSaveFlowModel";
 import {
   type EditorSectionKey,
   SECTION_LABELS,
   type SectionSaveSummary,
   accumulateSectionSaveResult,
   createEmptySectionSaveSummary,
-} from "./editorMissionSaveSummaryModel";
+} from "../../../../missions/[missionId]/components/controllers/editorMissionSaveSummaryModel";
+import type {
+  SectionSaveHandle,
+  SectionSaveOptions,
+  SectionSaveState,
+} from "../../../../missions/[missionId]/components/editor-save.types";
+import { quizDraftVersionAtom } from "../../atoms/quizActionAtoms";
+import { checkQuizPublishGuard } from "./quizPublishGuardModel";
 
-type MissionSectionKey = Extract<EditorSectionKey, "basic" | "reward" | "action" | "completion">;
-
-const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
-const SECTION_REFS_POLL_INTERVAL_MS = 250;
-const LOCAL_DRAFT_STORAGE_KEY_PREFIX = "pollia:mission-editor-local-draft:";
+const UNIFIED_SAVE_TOAST_ID = "editor-quiz-save-result";
+const LOCAL_DRAFT_STORAGE_KEY_PREFIX = "pollia:quiz-editor-local-draft:";
 const LOCAL_DRAFT_AUTOSAVE_DELAY_MS = 800;
 
-function getLocalDraftStorageKey(missionId: string): string {
-  return `${LOCAL_DRAFT_STORAGE_KEY_PREFIX}${missionId}`;
+type QuizSectionKey = Extract<
+  EditorSectionKey,
+  "basic" | "reward" | "quizConfig" | "question" | "completion"
+>;
+
+const DEFAULT_SECTION_STATE: SectionSaveState = {
+  hasPendingChanges: false,
+  isBusy: false,
+  hasValidationIssues: false,
+  validationIssueCount: 0,
+};
+
+function getLocalDraftStorageKey(quizId: string): string {
+  return `${LOCAL_DRAFT_STORAGE_KEY_PREFIX}${quizId}`;
 }
 
-function readLocalDraftPayload(missionId: string): EditorMissionDraftPayload | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
+function readLocalDraftPayload(quizId: string): EditorMissionDraftPayload | null {
+  if (typeof window === "undefined") return null;
 
   try {
-    const raw = window.localStorage.getItem(getLocalDraftStorageKey(missionId));
-    if (!raw) {
-      return null;
-    }
+    const raw = window.localStorage.getItem(getLocalDraftStorageKey(quizId));
+    if (!raw) return null;
     return normalizeEditorMissionDraftPayload(JSON.parse(raw));
   } catch (error) {
-    console.error("Failed to read local mission editor draft:", error);
+    console.error("Failed to read local quiz editor draft:", error);
     return null;
   }
 }
 
-function writeLocalDraftPayload(missionId: string, payload: LocalEditorDraftPayload): void {
-  if (typeof window === "undefined") {
-    return;
-  }
+function writeLocalDraftPayload(quizId: string, payload: LocalEditorDraftPayload): void {
+  if (typeof window === "undefined") return;
 
   try {
     window.localStorage.setItem(
-      getLocalDraftStorageKey(missionId),
+      getLocalDraftStorageKey(quizId),
       JSON.stringify(
         toServerEditorDraftPayload({
           ...payload,
@@ -76,30 +83,28 @@ function writeLocalDraftPayload(missionId: string, payload: LocalEditorDraftPayl
       ),
     );
   } catch (error) {
-    console.error("Failed to persist local mission editor draft:", error);
+    console.error("Failed to persist local quiz editor draft:", error);
   }
 }
 
-function clearLocalDraftPayload(missionId: string): void {
-  if (typeof window === "undefined") {
-    return;
-  }
+function clearLocalDraftPayload(quizId: string): void {
+  if (typeof window === "undefined") return;
 
   try {
-    window.localStorage.removeItem(getLocalDraftStorageKey(missionId));
+    window.localStorage.removeItem(getLocalDraftStorageKey(quizId));
   } catch (error) {
-    console.error("Failed to clear local mission editor draft:", error);
+    console.error("Failed to clear local quiz editor draft:", error);
   }
 }
 
 interface ResolveDraftToRestoreInput {
-  missionId: string;
+  quizId: string;
   mission: GetMissionResponse["data"];
   missionQueryData?: GetMissionResponse["data"] | null;
 }
 
 function resolveDraftToRestore({
-  missionId,
+  quizId,
   mission,
   missionQueryData,
 }: ResolveDraftToRestoreInput): EditorMissionDraftPayload | null {
@@ -107,19 +112,13 @@ function resolveDraftToRestore({
   const serverDraftRaw = normalizeEditorMissionDraftPayload(
     (latestMission as { editorDraft?: unknown }).editorDraft,
   );
-  const localDraftRaw = readLocalDraftPayload(missionId);
+  const localDraftRaw = readLocalDraftPayload(quizId);
   const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
   const localDraft = localDraftRaw ? toServerEditorDraftPayload(localDraftRaw) : null;
 
-  if (!serverDraft && !localDraft) {
-    return null;
-  }
-  if (!serverDraft) {
-    return localDraft;
-  }
-  if (!localDraft) {
-    return serverDraft;
-  }
+  if (!serverDraft && !localDraft) return null;
+  if (!serverDraft) return localDraft;
+  if (!localDraft) return serverDraft;
 
   const serverUpdatedAt = serverDraft.meta?.updatedAtMs ?? 0;
   const localUpdatedAt = localDraft.meta?.updatedAtMs ?? 0;
@@ -131,31 +130,33 @@ interface DraftClearResult {
   serverDraftErrorMessage: string | null;
 }
 
-export interface UseEditorMissionControllerParams {
-  missionId: string;
+export interface UseEditorQuizControllerParams {
+  quizId: string;
   mission: GetMissionResponse["data"];
   currentTab: string;
   missionQueryData?: GetMissionResponse["data"] | null;
-  actionsQueryData?: ServerActionLike[] | null;
-  completionsQueryData?: ServerCompletionLike[] | null;
+  serverActionsCount: number;
+  serverCompletionsCount: number;
+  questionDraftCount: number;
+  completionDraftCount: number;
   isActionsLoading: boolean;
   isCompletionsLoading: boolean;
 }
 
-export interface UseEditorMissionControllerResult {
+export interface UseEditorQuizControllerResult {
   refs: {
     basicInfoRef: RefObject<SectionSaveHandle | null>;
     rewardRef: RefObject<SectionSaveHandle | null>;
-    actionRef: RefObject<SectionSaveHandle | null>;
+    quizConfigRef: RefObject<SectionSaveHandle | null>;
+    questionRef: RefObject<SectionSaveHandle | null>;
     completionRef: RefObject<SectionSaveHandle | null>;
   };
   sectionBindings: {
     onBasicStateChange: (state: SectionSaveState) => void;
     onRewardStateChange: (state: SectionSaveState) => void;
-    onActionStateChange: (state: SectionSaveState) => void;
+    onQuizConfigStateChange: (state: SectionSaveState) => void;
+    onQuestionStateChange: (state: SectionSaveState) => void;
     onCompletionStateChange: (state: SectionSaveState) => void;
-    onActionWorkingSetChange: () => void;
-    onCompletionWorkingSetChange: () => void;
   };
   viewState: {
     isSavingAll: boolean;
@@ -163,209 +164,114 @@ export interface UseEditorMissionControllerResult {
     hasAnyPendingChanges: boolean;
     hasAnyValidationIssues: boolean;
   };
-  publishState: PublishAvailability;
   actions: {
     onSave: () => Promise<void>;
   };
 }
 
-function readUseAiCompletionFromBasicDraft(snapshot: unknown): boolean | null {
-  if (!snapshot || typeof snapshot !== "object") {
-    return null;
-  }
-
-  if (!("useAiCompletion" in snapshot)) {
-    return null;
-  }
-
-  const value = (snapshot as { useAiCompletion?: unknown }).useAiCompletion;
-  return typeof value === "boolean" ? value : null;
-}
-
-export function useEditorMissionController({
-  missionId,
+export function useEditorQuizController({
+  quizId,
   mission,
   currentTab,
   missionQueryData,
-  actionsQueryData,
-  completionsQueryData,
+  serverActionsCount,
+  serverCompletionsCount,
+  questionDraftCount,
+  completionDraftCount,
   isActionsLoading,
   isCompletionsLoading,
-}: UseEditorMissionControllerParams): UseEditorMissionControllerResult {
+}: UseEditorQuizControllerParams): UseEditorQuizControllerResult {
   const basicInfoRef = useRef<SectionSaveHandle | null>(null);
   const rewardRef = useRef<SectionSaveHandle | null>(null);
-  const actionRef = useRef<SectionSaveHandle | null>(null);
+  const quizConfigRef = useRef<SectionSaveHandle | null>(null);
+  const questionRef = useRef<SectionSaveHandle | null>(null);
   const completionRef = useRef<SectionSaveHandle | null>(null);
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
 
   const [isSavingAll, setIsSavingAll] = useState(false);
-  const [publishSnapshotVersion, setPublishSnapshotVersion] = useState(0);
-  const [sectionStates, setSectionStates] = useState<Record<MissionSectionKey, SectionSaveState>>({
-    basic: {
-      hasPendingChanges: false,
-      isBusy: false,
-      hasValidationIssues: false,
-      validationIssueCount: 0,
-    },
-    reward: {
-      hasPendingChanges: false,
-      isBusy: false,
-      hasValidationIssues: false,
-      validationIssueCount: 0,
-    },
-    action: {
-      hasPendingChanges: false,
-      isBusy: false,
-      hasValidationIssues: false,
-      validationIssueCount: 0,
-    },
-    completion: {
-      hasPendingChanges: false,
-      isBusy: false,
-      hasValidationIssues: false,
-      validationIssueCount: 0,
-    },
+  const [sectionStates, setSectionStates] = useState<Record<QuizSectionKey, SectionSaveState>>({
+    basic: { ...DEFAULT_SECTION_STATE },
+    reward: { ...DEFAULT_SECTION_STATE },
+    quizConfig: { ...DEFAULT_SECTION_STATE },
+    question: { ...DEFAULT_SECTION_STATE },
+    completion: { ...DEFAULT_SECTION_STATE },
   });
 
   const isEditorTab = currentTab === "editor";
-  const draftVersion = useAtomValue(editorDraftVersionAtom);
+  const draftVersion = useAtomValue(quizDraftVersionAtom);
+  const setPublishGuard = useSetAtom(editorPublishGuardAtom);
 
-  const updateSectionState = useCallback(
-    (section: MissionSectionKey, nextState: SectionSaveState) => {
-      setSectionStates(prev => {
-        const currentState = prev[section];
-        if (
-          currentState.hasPendingChanges === nextState.hasPendingChanges &&
-          currentState.isBusy === nextState.isBusy &&
-          currentState.hasValidationIssues === nextState.hasValidationIssues &&
-          currentState.validationIssueCount === nextState.validationIssueCount
-        ) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          [section]: nextState,
-        };
-      });
-    },
-    [],
-  );
+  const updateSectionState = useCallback((section: QuizSectionKey, nextState: SectionSaveState) => {
+    setSectionStates(prev => {
+      const currentState = prev[section];
+      if (
+        currentState.hasPendingChanges === nextState.hasPendingChanges &&
+        currentState.isBusy === nextState.isBusy &&
+        currentState.hasValidationIssues === nextState.hasValidationIssues &&
+        currentState.validationIssueCount === nextState.validationIssueCount
+      ) {
+        return prev;
+      }
+      return { ...prev, [section]: nextState };
+    });
+  }, []);
 
   const hasAnyPendingChanges = useMemo(
-    () => Object.values(sectionStates).some(state => state.hasPendingChanges),
+    () => Object.values(sectionStates).some(s => s.hasPendingChanges),
     [sectionStates],
   );
   const hasAnyBusySection = useMemo(
-    () => Object.values(sectionStates).some(state => state.isBusy),
+    () => Object.values(sectionStates).some(s => s.isBusy),
     [sectionStates],
   );
   const hasAnyValidationIssues = useMemo(
-    () => Object.values(sectionStates).some(state => state.hasValidationIssues),
+    () => Object.values(sectionStates).some(s => s.hasValidationIssues),
     [sectionStates],
   );
 
   const hasPendingChangesFromRefs = useCallback(
     () =>
-      [basicInfoRef.current, rewardRef.current, actionRef.current, completionRef.current].some(
-        handle => handle?.hasPendingChanges() ?? false,
-      ),
+      [
+        basicInfoRef.current,
+        rewardRef.current,
+        quizConfigRef.current,
+        questionRef.current,
+        completionRef.current,
+      ].some(handle => handle?.hasPendingChanges() ?? false),
     [],
   );
 
+  // --- Publish guard ---
   useEffect(() => {
-    if (!isEditorTab || typeof window === "undefined") {
-      return;
-    }
+    const guard = (): PublishGuardResult =>
+      checkQuizPublishGuard({
+        serverActionsCount,
+        serverCompletionsCount,
+        questionDraftCount,
+        completionDraftCount,
+      });
 
-    const checkSectionRefsReady = () => {
-      const refsReady =
-        Boolean(basicInfoRef.current) &&
-        Boolean(rewardRef.current) &&
-        Boolean(actionRef.current) &&
-        Boolean(completionRef.current);
-
-      if (refsReady) {
-        setPublishSnapshotVersion(prev => prev + 1);
-        return true;
-      }
-      return false;
-    };
-
-    if (checkSectionRefsReady()) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      if (checkSectionRefsReady()) {
-        window.clearInterval(intervalId);
-      }
-    }, SECTION_REFS_POLL_INTERVAL_MS);
+    setPublishGuard(() => guard);
 
     return () => {
-      window.clearInterval(intervalId);
+      setPublishGuard(null);
     };
-  }, [isEditorTab, missionId]);
+  }, [
+    setPublishGuard,
+    serverActionsCount,
+    serverCompletionsCount,
+    questionDraftCount,
+    completionDraftCount,
+  ]);
 
-  const missionEntryActionId = missionQueryData?.entryActionId ?? mission.entryActionId;
-  const basicInfoDraftSnapshotForPublish = useMemo(() => {
-    if (!basicInfoRef.current) {
-      return undefined;
-    }
-
-    return basicInfoRef.current.exportDraftSnapshot();
-  }, [publishSnapshotVersion]);
-
-  const missionUseAiCompletionForPublish = useMemo(() => {
-    const valueFromDraft = readUseAiCompletionFromBasicDraft(basicInfoDraftSnapshotForPublish);
-    if (valueFromDraft !== null) {
-      return valueFromDraft;
-    }
-
-    return (missionQueryData ?? mission).useAiCompletion;
-  }, [basicInfoDraftSnapshotForPublish, mission, missionQueryData]);
-
-  const actionDraftSnapshotForPublish = useMemo(() => {
-    if (!actionRef.current) {
-      return undefined;
-    }
-
-    return actionRef.current.exportDraftSnapshot();
-  }, [publishSnapshotVersion]);
-
-  const completionDraftSnapshotForPublish = useMemo(() => {
-    if (!completionRef.current) {
-      return undefined;
-    }
-
-    return completionRef.current.exportDraftSnapshot();
-  }, [publishSnapshotVersion]);
-
-  const publishState = useMemo(
-    () =>
-      computePublishAvailability({
-        entryActionId: missionEntryActionId,
-        useAiCompletion: missionUseAiCompletionForPublish,
-        serverActions: actionsQueryData,
-        serverCompletions: completionsQueryData,
-        actionDraftSnapshot: actionDraftSnapshotForPublish,
-        completionDraftSnapshot: completionDraftSnapshotForPublish,
-      }),
-    [
-      actionDraftSnapshotForPublish,
-      actionsQueryData,
-      completionDraftSnapshotForPublish,
-      completionsQueryData,
-      missionEntryActionId,
-      missionUseAiCompletionForPublish,
-    ],
-  );
+  // --- Draft collect / apply / clear ---
   const collectLocalDraftPayload = useCallback((): LocalEditorDraftPayload => {
     return {
       basic: basicInfoRef.current?.exportDraftSnapshot() ?? null,
       reward: rewardRef.current?.exportDraftSnapshot() ?? null,
-      action: actionRef.current?.exportDraftSnapshot() ?? null,
+      quizConfig: quizConfigRef.current?.exportDraftSnapshot() ?? null,
+      action: questionRef.current?.exportDraftSnapshot() ?? null,
       completion: completionRef.current?.exportDraftSnapshot() ?? null,
     };
   }, []);
@@ -374,73 +280,57 @@ export function useEditorMissionController({
     await Promise.all([
       Promise.resolve(basicInfoRef.current?.importDraftSnapshot(payload.basic ?? null)),
       Promise.resolve(rewardRef.current?.importDraftSnapshot(payload.reward ?? null)),
-      Promise.resolve(actionRef.current?.importDraftSnapshot(payload.action ?? null)),
+      Promise.resolve(quizConfigRef.current?.importDraftSnapshot(payload.quizConfig ?? null)),
+      Promise.resolve(questionRef.current?.importDraftSnapshot(payload.action ?? null)),
       Promise.resolve(completionRef.current?.importDraftSnapshot(payload.completion ?? null)),
     ]);
   }, []);
 
   const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
-    clearLocalDraftPayload(missionId);
+    clearLocalDraftPayload(quizId);
 
     let serverDraftCleared = false;
     let serverDraftErrorMessage: string | null = null;
     try {
-      await saveMissionEditorDraft(missionId, null);
+      await saveMissionEditorDraft(quizId, null);
       serverDraftCleared = true;
     } catch (error) {
       serverDraftErrorMessage =
         error instanceof Error ? error.message : "서버 임시저장 정리에 실패했습니다.";
     }
 
-    return {
-      serverDraftCleared,
-      serverDraftErrorMessage,
-    };
-  }, [missionId]);
+    return { serverDraftCleared, serverDraftErrorMessage };
+  }, [quizId]);
 
-  const handleActionWorkingSetChange = useCallback(() => {
-    setPublishSnapshotVersion(prev => prev + 1);
-  }, []);
-
-  const handleCompletionWorkingSetChange = useCallback(() => {
-    setPublishSnapshotVersion(prev => prev + 1);
-  }, []);
-
+  // --- Draft restore ---
   useEffect(() => {
-    if (!isEditorTab || draftRestoreAppliedRef.current) {
-      return;
-    }
-
+    if (!isEditorTab || draftRestoreAppliedRef.current) return;
     if (
       !basicInfoRef.current ||
       !rewardRef.current ||
-      !actionRef.current ||
+      !quizConfigRef.current ||
+      !questionRef.current ||
       !completionRef.current
     ) {
       return;
     }
+    if (isActionsLoading || isCompletionsLoading) return;
 
-    if (isActionsLoading || isCompletionsLoading) {
-      return;
-    }
-
-    const selectedDraft = resolveDraftToRestore({ missionId, mission, missionQueryData });
-
+    const selectedDraft = resolveDraftToRestore({
+      quizId,
+      mission,
+      missionQueryData,
+    });
     draftRestoreAppliedRef.current = true;
 
-    if (!selectedDraft) {
-      return;
-    }
+    if (!selectedDraft) return;
 
     void applyDraftPayload(selectedDraft)
       .then(() => {
-        setPublishSnapshotVersion(prev => prev + 1);
-        toast({
-          message: "임시 저장된 편집 내용이 복원되었습니다.",
-        });
+        toast({ message: "임시 저장된 편집 내용이 복원되었습니다." });
       })
       .catch(error => {
-        console.error("Failed to restore mission editor draft:", error);
+        console.error("Failed to restore quiz editor draft:", error);
       });
   }, [
     applyDraftPayload,
@@ -448,34 +338,30 @@ export function useEditorMissionController({
     isCompletionsLoading,
     isEditorTab,
     mission,
-    missionId,
+    quizId,
     missionQueryData,
   ]);
 
+  // --- Auto-save to localStorage ---
   // biome-ignore lint/correctness/useExhaustiveDependencies: draftVersion and sectionStates are intentional triggers
   useEffect(() => {
-    if (!isEditorTab || typeof window === "undefined") {
-      return;
-    }
-    if (!draftRestoreAppliedRef.current) {
-      return;
-    }
+    if (!isEditorTab || typeof window === "undefined") return;
+    if (!draftRestoreAppliedRef.current) return;
     if (
       !basicInfoRef.current ||
       !rewardRef.current ||
-      !actionRef.current ||
+      !quizConfigRef.current ||
+      !questionRef.current ||
       !completionRef.current
     ) {
       return;
     }
 
     const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
-    if (!hasPendingChangesNow) {
-      return;
-    }
+    if (!hasPendingChangesNow) return;
 
     const timeoutId = window.setTimeout(() => {
-      writeLocalDraftPayload(missionId, collectLocalDraftPayload());
+      writeLocalDraftPayload(quizId, collectLocalDraftPayload());
     }, LOCAL_DRAFT_AUTOSAVE_DELAY_MS);
 
     return () => {
@@ -487,10 +373,11 @@ export function useEditorMissionController({
     hasAnyPendingChanges,
     hasPendingChangesFromRefs,
     isEditorTab,
-    missionId,
+    quizId,
     sectionStates,
   ]);
 
+  // --- Unified save flow ---
   const runSectionSaves = useCallback(
     async ({
       stopOnError,
@@ -508,7 +395,8 @@ export function useEditorMissionController({
       }> = [
         { key: "basic", label: SECTION_LABELS.basic, ref: basicInfoRef },
         { key: "reward", label: SECTION_LABELS.reward, ref: rewardRef },
-        { key: "action", label: SECTION_LABELS.action, ref: actionRef },
+        { key: "quizConfig", label: SECTION_LABELS.quizConfig, ref: quizConfigRef },
+        { key: "question", label: SECTION_LABELS.question, ref: questionRef },
         { key: "completion", label: SECTION_LABELS.completion, ref: completionRef },
       ];
 
@@ -516,16 +404,9 @@ export function useEditorMissionController({
 
       for (const section of sections) {
         const handle = section.ref.current;
-        if (!handle || !handle.hasPendingChanges()) {
-          continue;
-        }
+        if (!handle || !handle.hasPendingChanges()) continue;
 
-        const result = await handle.save({
-          silent: true,
-          trigger,
-          showValidationUi,
-        });
-
+        const result = await handle.save({ silent: true, trigger, showValidationUi });
         summary = accumulateSectionSaveResult(summary, section, result);
 
         if (
@@ -548,14 +429,6 @@ export function useEditorMissionController({
     async (outcome: PostSectionSaveOutcome) => {
       switch (outcome.type) {
         case "publish_error":
-          toast({
-            message: outcome.message,
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-          break;
-
         case "manual_with_failures":
           toast({
             message: outcome.message,
@@ -569,8 +442,8 @@ export function useEditorMissionController({
           if (outcome.shouldClearDraft) {
             const clearResult = await clearPersistedDraft();
             if (!clearResult.serverDraftCleared) {
-              console.error("Failed to clear mission editor draft:", {
-                missionId,
+              console.error("Failed to clear quiz editor draft:", {
+                quizId,
                 serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
               });
               toast({
@@ -590,8 +463,8 @@ export function useEditorMissionController({
           if (outcome.shouldClearDraft) {
             const clearResult = await clearPersistedDraft();
             if (!clearResult.serverDraftCleared) {
-              console.error("Failed to clear mission editor draft:", {
-                missionId,
+              console.error("Failed to clear quiz editor draft:", {
+                quizId,
                 serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
               });
               toast({
@@ -614,7 +487,7 @@ export function useEditorMissionController({
           break;
       }
     },
-    [clearPersistedDraft, missionId],
+    [clearPersistedDraft, quizId],
   );
 
   const runUnifiedSave = useCallback(
@@ -633,9 +506,7 @@ export function useEditorMissionController({
         isSavingAll,
         hasAnyBusySection,
       });
-      if (!guard.allowed) {
-        return "failed" as const;
-      }
+      if (!guard.allowed) return "failed" as const;
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
@@ -675,16 +546,14 @@ export function useEditorMissionController({
       hasPendingChangesFromRefs,
       isEditorTab,
       isSavingAll,
-      missionId,
       runSectionSaves,
     ],
   );
 
   const saveDraft = useCallback(async () => {
     const draftPayload = collectLocalDraftPayload();
-
     try {
-      await saveMissionEditorDraft(missionId, toServerEditorDraftPayload(draftPayload));
+      await saveMissionEditorDraft(quizId, toServerEditorDraftPayload(draftPayload));
     } catch (error) {
       console.error("Failed to save server draft:", error);
       toast({
@@ -693,41 +562,34 @@ export function useEditorMissionController({
         iconClassName: "text-red-500",
       });
     }
-  }, [collectLocalDraftPayload, missionId]);
+  }, [collectLocalDraftPayload, quizId]);
 
   const handleSave = useCallback(async () => {
-    await saveDraft();
-    await runUnifiedSave({ mode: "manual" });
+    const result = await runUnifiedSave({ mode: "manual" });
+    if (result === "failed") {
+      await saveDraft();
+    }
   }, [runUnifiedSave, saveDraft]);
 
+  // --- Section state change callbacks ---
   const onBasicStateChange = useCallback(
-    (state: SectionSaveState) => {
-      updateSectionState("basic", state);
-      setPublishSnapshotVersion(prev => prev + 1);
-    },
+    (state: SectionSaveState) => updateSectionState("basic", state),
     [updateSectionState],
   );
-
   const onRewardStateChange = useCallback(
-    (state: SectionSaveState) => {
-      updateSectionState("reward", state);
-    },
+    (state: SectionSaveState) => updateSectionState("reward", state),
     [updateSectionState],
   );
-
-  const onActionStateChange = useCallback(
-    (state: SectionSaveState) => {
-      updateSectionState("action", state);
-      setPublishSnapshotVersion(prev => prev + 1);
-    },
+  const onQuizConfigStateChange = useCallback(
+    (state: SectionSaveState) => updateSectionState("quizConfig", state),
     [updateSectionState],
   );
-
+  const onQuestionStateChange = useCallback(
+    (state: SectionSaveState) => updateSectionState("question", state),
+    [updateSectionState],
+  );
   const onCompletionStateChange = useCallback(
-    (state: SectionSaveState) => {
-      updateSectionState("completion", state);
-      setPublishSnapshotVersion(prev => prev + 1);
-    },
+    (state: SectionSaveState) => updateSectionState("completion", state),
     [updateSectionState],
   );
 
@@ -735,16 +597,16 @@ export function useEditorMissionController({
     refs: {
       basicInfoRef,
       rewardRef,
-      actionRef,
+      quizConfigRef,
+      questionRef,
       completionRef,
     },
     sectionBindings: {
       onBasicStateChange,
       onRewardStateChange,
-      onActionStateChange,
+      onQuizConfigStateChange,
+      onQuestionStateChange,
       onCompletionStateChange,
-      onActionWorkingSetChange: handleActionWorkingSetChange,
-      onCompletionWorkingSetChange: handleCompletionWorkingSetChange,
     },
     viewState: {
       isSavingAll,
@@ -752,7 +614,6 @@ export function useEditorMissionController({
       hasAnyPendingChanges,
       hasAnyValidationIssues,
     },
-    publishState,
     actions: {
       onSave: handleSave,
     },

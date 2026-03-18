@@ -12,8 +12,6 @@ const quizConfigFormSchema = z.object({
   showCorrectOnWrong: z.boolean(),
   shuffleQuestions: z.boolean(),
   shuffleChoices: z.boolean(),
-  timeLimitPerQuestion: z.number().int().positive().nullable(),
-  timeLimitTotal: z.number().int().positive().nullable(),
 });
 
 const quizMissionFormRewardSchema = z

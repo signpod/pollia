@@ -5,7 +5,7 @@ import { EditorDeleteSlot } from "@/app/(site)/(main)/editor/components/view/Edi
 import { EditorSortControls } from "@/app/(site)/(main)/editor/components/view/EditorSortControls";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ImageSelector, Input, Textarea, Typo } from "@repo/ui/components";
+import { ImageSelector, Input, LabelText, Textarea, Toggle, Typo } from "@repo/ui/components";
 import type { ReactNode } from "react";
 
 interface SortableOptionItemProps {
@@ -20,6 +20,8 @@ interface SortableOptionItemProps {
   showDescription: boolean;
   showImage: boolean;
   showDelete: boolean;
+  showIsCorrect?: boolean;
+  isCorrect?: boolean;
   disabled: boolean;
   isImageUploading: boolean;
   titleMaxLength: number;
@@ -27,6 +29,7 @@ interface SortableOptionItemProps {
   onToggle: () => void;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
+  onIsCorrectChange?: (checked: boolean) => void;
   onImageSelect: (file: File) => void;
   onImageDelete: () => void;
   onDelete: () => void;
@@ -47,6 +50,8 @@ export function SortableOptionItem({
   showDescription,
   showImage,
   showDelete,
+  showIsCorrect,
+  isCorrect,
   disabled,
   isImageUploading,
   titleMaxLength,
@@ -54,6 +59,7 @@ export function SortableOptionItem({
   onToggle,
   onTitleChange,
   onDescriptionChange,
+  onIsCorrectChange,
   onImageSelect,
   onImageDelete,
   onDelete,
@@ -115,6 +121,16 @@ export function SortableOptionItem({
               value={description ?? ""}
               onChange={e => onDescriptionChange(e.target.value)}
             />
+          )}
+
+          {showIsCorrect && (
+            <div className="flex items-center justify-between">
+              <LabelText required={false}>정답</LabelText>
+              <Toggle
+                checked={isCorrect ?? false}
+                onCheckedChange={val => onIsCorrectChange?.(val)}
+              />
+            </div>
           )}
 
           {showImage && (

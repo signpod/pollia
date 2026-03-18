@@ -1,6 +1,6 @@
 "use client";
 
-import { ACTION_TYPE_LABELS } from "@/constants/action";
+import { getActionTypeLabel } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useMultipleImages, useSingleImage } from "@/hooks/image";
 import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
@@ -34,7 +34,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { ActionType } from "@prisma/client";
+import { ActionType, MatchMode } from "@prisma/client";
 import {
   Button,
   CounterInput,
@@ -46,12 +46,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Textarea,
   TiptapEditor,
   Toggle,
   Typo,
   toast,
 } from "@repo/ui/components";
-import { AlertCircle, Plus } from "lucide-react";
+import { AlertCircle, Plus, X } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -104,6 +105,7 @@ interface OptionFormItem {
   description?: string | null;
   imageUrl?: string | null;
   fileUploadId?: string | null;
+  isCorrect?: boolean;
   nextActionId?: string | null;
   nextCompletionId?: string | null;
   order: number;
@@ -120,6 +122,9 @@ export interface ActionFormValues {
   options?: Omit<OptionFormItem, "_key">[];
   nextActionId?: string | null;
   nextCompletionId?: string | null;
+  score?: number | null;
+  matchMode?: MatchMode | null;
+  hint?: string | null;
 }
 
 export interface ActionFormRawSnapshot {
@@ -157,6 +162,8 @@ interface ActionFormProps {
   enableTypeSelect?: boolean;
   enforceExclusiveNextLink?: boolean;
   wordingMode?: "action" | "question";
+  isQuizMode?: boolean;
+  showHintField?: boolean;
   onActionTypeChange?: (type: ActionType) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   onValidationStateChange?: (issueCount: number) => void;
@@ -182,7 +189,16 @@ const NEEDS_MAX_SELECTIONS: ActionType[] = [
 
 const ACTION_TYPE_VALUES = Object.values(ActionType);
 
-function getDefaultOptions(type: ActionType): OptionFormItem[] {
+const QUIZ_ACTION_TYPES: ActionType[] = [
+  ActionType.MULTIPLE_CHOICE,
+  ActionType.OX,
+  ActionType.SHORT_TEXT,
+];
+
+const QUIZ_SHORT_TEXT_MIN_OPTIONS = 1;
+const QUIZ_SHORT_TEXT_MAX_OPTIONS = 10;
+
+function getDefaultOptions(type: ActionType, isQuizMode = false): OptionFormItem[] {
   if (type === ActionType.BRANCH) {
     return Array.from({ length: BRANCH_OPTIONS_COUNT }, (_, i) => ({
       _key: generateOptionKey(),
@@ -190,13 +206,22 @@ function getDefaultOptions(type: ActionType): OptionFormItem[] {
       order: i,
     }));
   }
+  if (isQuizMode && type === ActionType.OX) {
+    return [
+      { _key: generateOptionKey(), title: "O", order: 0 },
+      { _key: generateOptionKey(), title: "X", order: 1 },
+    ];
+  }
+  if (isQuizMode && type === ActionType.SHORT_TEXT) {
+    return [{ _key: generateOptionKey(), title: "", order: 0 }];
+  }
   return [
     { _key: generateOptionKey(), title: "", order: 0 },
     { _key: generateOptionKey(), title: "", order: 1 },
   ];
 }
 
-function getOptionLimits(type: ActionType): { min: number; max: number } {
+function getOptionLimits(type: ActionType, isQuizMode = false): { min: number; max: number } {
   switch (type) {
     case ActionType.MULTIPLE_CHOICE:
       return { min: MULTIPLE_CHOICE_MIN_OPTIONS, max: MULTIPLE_CHOICE_MAX_OPTIONS };
@@ -206,6 +231,12 @@ function getOptionLimits(type: ActionType): { min: number; max: number } {
       return { min: TAG_MIN_OPTIONS, max: TAG_MAX_OPTIONS };
     case ActionType.BRANCH:
       return { min: BRANCH_OPTIONS_COUNT, max: BRANCH_OPTIONS_COUNT };
+    case ActionType.OX:
+      return isQuizMode ? { min: 2, max: 2 } : { min: 0, max: 0 };
+    case ActionType.SHORT_TEXT:
+      return isQuizMode
+        ? { min: QUIZ_SHORT_TEXT_MIN_OPTIONS, max: QUIZ_SHORT_TEXT_MAX_OPTIONS }
+        : { min: 0, max: 0 };
     default:
       return { min: 0, max: 0 };
   }
@@ -227,9 +258,11 @@ function buildActionDirtyComparable(params: {
   values: ActionFormValues;
   allowCompletionLink: boolean;
   enableEditorActionMedia: boolean;
+  isQuizMode?: boolean;
 }) {
-  const { actionType, values, allowCompletionLink, enableEditorActionMedia } = params;
-  const needsOptions = NEEDS_OPTIONS.includes(actionType);
+  const { actionType, values, allowCompletionLink, enableEditorActionMedia, isQuizMode } = params;
+  const quizNeedsOpts = isQuizMode && QUIZ_ACTION_TYPES.includes(actionType);
+  const needsOptions = quizNeedsOpts || NEEDS_OPTIONS.includes(actionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
   const isBranch = actionType === ActionType.BRANCH;
   const showOptionDescription =
@@ -259,6 +292,7 @@ function buildActionDirtyComparable(params: {
           description: showOptionDescription ? option.description?.trim() || null : null,
           imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
           fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
+          ...(isQuizMode && { isCorrect: option.isCorrect ?? false }),
           nextCompletionId: allowCompletionLink ? (option.nextCompletionId ?? null) : null,
           order: index,
         })),
@@ -266,6 +300,11 @@ function buildActionDirtyComparable(params: {
       ...(!isBranch && {
         nextActionId: values.nextActionId ?? null,
         nextCompletionId: allowCompletionLink ? (values.nextCompletionId ?? null) : null,
+      }),
+      ...(isQuizMode && {
+        score: values.score ?? null,
+        matchMode: values.matchMode ?? null,
+        hint: values.hint?.trim() ?? null,
       }),
     },
   };
@@ -289,6 +328,8 @@ function ActionFormComponent(
     enforceExclusiveNextLink = false,
     allowCompletionLink = true,
     wordingMode = "action",
+    isQuizMode = false,
+    showHintField = true,
     onActionTypeChange,
     onDirtyChange,
     onValidationStateChange,
@@ -322,7 +363,9 @@ function ActionFormComponent(
   const [imageFileUploadId, setImageFileUploadId] = useState<string | null>(
     initialValues?.imageFileUploadId ?? null,
   );
-  const [isRequired, setIsRequired] = useState(initialValues?.isRequired ?? true);
+  const [isRequired, setIsRequired] = useState(
+    isQuizMode ? true : (initialValues?.isRequired ?? true),
+  );
   const [hasOther, setHasOther] = useState(initialValues?.hasOther ?? false);
   const [maxSelections, setMaxSelections] = useState(initialValues?.maxSelections ?? 1);
   const [options, setOptions] = useState<OptionFormItem[]>(() => {
@@ -333,12 +376,20 @@ function ActionFormComponent(
         nextCompletionId: allowCompletionLink ? (o.nextCompletionId ?? null) : null,
       }));
     }
-    return NEEDS_OPTIONS.includes(actionType) ? getDefaultOptions(actionType) : [];
+    const quizNeedsOpts = isQuizMode && QUIZ_ACTION_TYPES.includes(actionType);
+    return quizNeedsOpts || NEEDS_OPTIONS.includes(actionType)
+      ? getDefaultOptions(actionType, isQuizMode)
+      : [];
   });
   const [nextActionId, setNextActionId] = useState<string | null>(normalizedInitialNextActionId);
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
     normalizedInitialNextCompletionId,
   );
+  const [score, setScore] = useState<number | null>(
+    initialValues?.score ?? (isQuizMode ? 10 : null),
+  );
+  const [matchMode, setMatchMode] = useState<MatchMode | null>(initialValues?.matchMode ?? null);
+  const [hint, setHint] = useState(initialValues?.hint ?? "");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
@@ -348,10 +399,11 @@ function ActionFormComponent(
   const enableEditorActionMedia = enforceExclusiveNextLink;
   const descriptionTextLength = useMemo(() => getTextLengthFromHtml(description), [description]);
   const itemLabel = wordingMode === "question" ? "질문" : "액션";
-  const needsOptions = NEEDS_OPTIONS.includes(selectedActionType);
+  const quizNeedsOptions = isQuizMode && QUIZ_ACTION_TYPES.includes(selectedActionType);
+  const needsOptions = quizNeedsOptions || NEEDS_OPTIONS.includes(selectedActionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(selectedActionType);
   const isBranch = selectedActionType === ActionType.BRANCH;
-  const optionLimits = getOptionLimits(selectedActionType);
+  const optionLimits = getOptionLimits(selectedActionType, isQuizMode);
   const showOptionDescription =
     enableEditorActionMedia &&
     (selectedActionType === ActionType.MULTIPLE_CHOICE ||
@@ -432,9 +484,15 @@ function ActionFormComponent(
     setSelectedActionType(nextType);
     setHasOther(false);
     setMaxSelections(1);
-    setOptions(NEEDS_OPTIONS.includes(nextType) ? getDefaultOptions(nextType) : []);
+    const quizNeedsOpts = isQuizMode && QUIZ_ACTION_TYPES.includes(nextType);
+    setOptions(
+      quizNeedsOpts || NEEDS_OPTIONS.includes(nextType)
+        ? getDefaultOptions(nextType, isQuizMode)
+        : [],
+    );
     setNextActionId(null);
     setNextCompletionId(null);
+    if (isQuizMode) setMatchMode(null);
     setErrors({});
     onActionTypeChange?.(nextType);
   };
@@ -560,7 +618,7 @@ function ActionFormComponent(
       }
     }
 
-    if (hasLinkTargets) {
+    if (!isQuizMode && hasLinkTargets) {
       if (isBranch) {
         const missingBranchNext =
           allowCompletionLink && options.some(o => !o.nextActionId && !o.nextCompletionId);
@@ -622,8 +680,8 @@ function ActionFormComponent(
         imageFileUploadId,
         isRequired,
         ...(needsMaxSelections && { maxSelections }),
-        ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
-        ...(selectedActionType === ActionType.TAG && { hasOther }),
+        ...(!isQuizMode && selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+        ...(!isQuizMode && selectedActionType === ActionType.TAG && { hasOther }),
         ...(needsOptions && {
           options: options.map((o, i) => {
             const { _key, ...rest } = o;
@@ -645,6 +703,7 @@ function ActionFormComponent(
                   ? (o.fileUploadId ?? null)
                   : null
                 : (o.fileUploadId ?? null),
+              ...(isQuizMode && { isCorrect: o.isCorrect ?? false }),
               order: i,
             };
           }),
@@ -652,6 +711,12 @@ function ActionFormComponent(
         ...(!isBranch && {
           nextActionId: nextActionId ?? null,
           nextCompletionId: allowCompletionLink ? (nextCompletionId ?? null) : null,
+        }),
+        ...(isQuizMode && {
+          score,
+          matchMode:
+            selectedActionType === ActionType.SHORT_TEXT ? (matchMode ?? MatchMode.EXACT) : null,
+          hint: hint.trim() || null,
         }),
       };
     },
@@ -675,6 +740,10 @@ function ActionFormComponent(
       allowCompletionLink,
       nextActionId,
       nextCompletionId,
+      isQuizMode,
+      score,
+      matchMode,
+      hint,
     ],
   );
 
@@ -696,6 +765,7 @@ function ActionFormComponent(
             description: rest.description ?? null,
             imageUrl: rest.imageUrl ?? null,
             fileUploadId: rest.fileUploadId ?? null,
+            ...(isQuizMode && { isCorrect: rest.isCorrect ?? false }),
             nextActionId: rest.nextActionId ?? null,
             nextCompletionId: allowCompletionLink ? (rest.nextCompletionId ?? null) : null,
           };
@@ -706,6 +776,11 @@ function ActionFormComponent(
         nextCompletionId: allowCompletionLink ? (nextCompletionId ?? null) : null,
       }),
       ...(isBranch && { nextActionId: null, nextCompletionId: null }),
+      ...(isQuizMode && {
+        score,
+        matchMode,
+        hint: hint || null,
+      }),
     };
 
     return {
@@ -728,6 +803,10 @@ function ActionFormComponent(
     selectedActionType,
     title,
     maxSelections,
+    isQuizMode,
+    score,
+    matchMode,
+    hint,
   ]);
 
   const applyRawSnapshot = useCallback(
@@ -751,6 +830,7 @@ function ActionFormComponent(
         description: option.description ?? null,
         imageUrl: option.imageUrl ?? null,
         fileUploadId: option.fileUploadId ?? null,
+        isCorrect: option.isCorrect ?? false,
         nextActionId: option.nextActionId ?? null,
         nextCompletionId: allowCompletionLink ? (option.nextCompletionId ?? null) : null,
         order: option.order ?? index,
@@ -758,6 +838,9 @@ function ActionFormComponent(
       setOptions(nextOptions);
       setNextActionId(nextValues.nextActionId ?? null);
       setNextCompletionId(allowCompletionLink ? (nextValues.nextCompletionId ?? null) : null);
+      setScore(nextValues.score ?? null);
+      setMatchMode(nextValues.matchMode ?? null);
+      setHint(nextValues.hint ?? "");
       setErrors({});
     },
     [allowCompletionLink, onActionTypeChange],
@@ -768,6 +851,7 @@ function ActionFormComponent(
       JSON.stringify(
         buildActionDirtyComparable({
           actionType: selectedActionType,
+          isQuizMode,
           values: {
             title,
             description,
@@ -782,6 +866,7 @@ function ActionFormComponent(
             }),
             nextActionId,
             nextCompletionId,
+            ...(isQuizMode && { score, matchMode, hint }),
           },
           allowCompletionLink,
           enableEditorActionMedia,
@@ -806,6 +891,10 @@ function ActionFormComponent(
       allowCompletionLink,
       nextActionId,
       nextCompletionId,
+      isQuizMode,
+      score,
+      matchMode,
+      hint,
     ],
   );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
@@ -820,9 +909,10 @@ function ActionFormComponent(
         values: dirtyBaselineValues,
         allowCompletionLink,
         enableEditorActionMedia,
+        isQuizMode,
       }),
     );
-  }, [allowCompletionLink, dirtyBaselineValues, enableEditorActionMedia]);
+  }, [allowCompletionLink, dirtyBaselineValues, enableEditorActionMedia, isQuizMode]);
   const isDirty = dirtyComparableString !== dirtyBaselineComparableString;
 
   useEffect(() => {
@@ -957,6 +1047,19 @@ function ActionFormComponent(
     setImageFileUploadId(null);
   };
 
+  const handleOptionIsCorrectChange = (optionKey: string, checked: boolean) => {
+    if (isQuizMode && selectedActionType === ActionType.OX) {
+      setOptions(prev =>
+        prev.map(opt => ({
+          ...opt,
+          isCorrect: opt._key === optionKey ? checked : false,
+        })),
+      );
+    } else {
+      setOptions(prev => patchOptionByKey(prev, optionKey, { isCorrect: checked }));
+    }
+  };
+
   const [openOptionKey, setOpenOptionKey] = useState<string | null>(null);
 
   const handleMoveOption = useCallback((optionKey: string, direction: "up" | "down") => {
@@ -987,7 +1090,7 @@ function ActionFormComponent(
         <Typo.SubTitle>
           {editingAction
             ? `${itemLabel} 수정`
-            : `${ACTION_TYPE_LABELS[selectedActionType]} ${itemLabel} 추가`}
+            : `${getActionTypeLabel(selectedActionType, isQuizMode)} ${itemLabel} 추가`}
         </Typo.SubTitle>
       )}
 
@@ -1002,9 +1105,9 @@ function ActionFormComponent(
               <SelectValue placeholder={`${itemLabel} 유형을 선택하세요`} />
             </SelectTrigger>
             <SelectContent>
-              {ACTION_TYPE_VALUES.map(type => (
+              {(isQuizMode ? QUIZ_ACTION_TYPES : ACTION_TYPE_VALUES).map(type => (
                 <SelectItem key={type} value={type}>
-                  {ACTION_TYPE_LABELS[type]}
+                  {getActionTypeLabel(type, isQuizMode)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1074,10 +1177,12 @@ function ActionFormComponent(
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <LabelText required={false}>필수 응답</LabelText>
-        <Toggle checked={isRequired} onCheckedChange={setIsRequired} />
-      </div>
+      {!isQuizMode && (
+        <div className="flex items-center justify-between">
+          <LabelText required={false}>필수 응답</LabelText>
+          <Toggle checked={isRequired} onCheckedChange={setIsRequired} />
+        </div>
+      )}
 
       {needsMaxSelections && !isBranch && (
         <div className="flex items-center justify-between">
@@ -1091,120 +1196,262 @@ function ActionFormComponent(
         </div>
       )}
 
-      {(selectedActionType === ActionType.MULTIPLE_CHOICE ||
-        selectedActionType === ActionType.TAG) && (
-        <div className="flex items-center justify-between">
-          <LabelText required={false}>기타 옵션 허용</LabelText>
-          <Toggle checked={hasOther} onCheckedChange={setHasOther} />
+      {!isQuizMode &&
+        (selectedActionType === ActionType.MULTIPLE_CHOICE ||
+          selectedActionType === ActionType.TAG) && (
+          <div className="flex items-center justify-between">
+            <LabelText required={false}>기타 옵션 허용</LabelText>
+            <Toggle checked={hasOther} onCheckedChange={setHasOther} />
+          </div>
+        )}
+
+      {needsOptions && isQuizMode && selectedActionType === ActionType.OX && (
+        <div className="flex flex-col gap-3">
+          <LabelText required>항목</LabelText>
+          {options.map(option => (
+            <div
+              key={option._key}
+              className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-4"
+            >
+              <div className="flex items-center justify-between">
+                <Typo.Body size="medium" className="font-semibold text-zinc-800">
+                  {option.title}
+                </Typo.Body>
+                <div className="flex items-center gap-2">
+                  <LabelText required={false}>정답</LabelText>
+                  <Toggle
+                    checked={option.isCorrect ?? false}
+                    onCheckedChange={checked => handleOptionIsCorrectChange(option._key, checked)}
+                  />
+                </div>
+              </div>
+              <Textarea
+                placeholder="설명 (선택)"
+                maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                rows={2}
+                value={option.description ?? ""}
+                onChange={e => updateOptionByKey(option._key, "description", e.target.value)}
+              />
+            </div>
+          ))}
         </div>
       )}
 
-      {needsOptions && (
+      {needsOptions && isQuizMode && selectedActionType === ActionType.SHORT_TEXT && (
         <div className="flex flex-col gap-3">
-          <LabelText required>
-            항목 ({options.length}/{optionLimits.max})
-          </LabelText>
-          <DndContext
-            sensors={optionSensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleOptionDragEnd}
-          >
-            <SortableContext
-              items={options.map(o => o._key)}
-              strategy={verticalListSortingStrategy}
-            >
-              {options.map((option, index) => {
-                const optionPreviewUrl = showOptionImage
-                  ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
-                  : undefined;
-
-                return (
-                  <SortableOptionItem
-                    key={option._key}
-                    optionKey={option._key}
-                    index={index}
-                    title={option.title}
-                    description={option.description ?? null}
-                    previewImageUrl={optionPreviewUrl}
-                    isOpen={openOptionKey === option._key}
-                    isFirst={index === 0}
-                    isLast={index === options.length - 1}
-                    showDescription={showOptionDescription}
-                    showImage={showOptionImage}
-                    showDelete={!isBranch && options.length > optionLimits.min}
-                    disabled={isLoading}
-                    isImageUploading={optionImages.isUploading(option._key)}
-                    titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
-                    descriptionMaxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
-                    onToggle={() =>
-                      setOpenOptionKey(prev => (prev === option._key ? null : option._key))
-                    }
-                    onTitleChange={value => updateOptionByKey(option._key, "title", value)}
-                    onDescriptionChange={value =>
-                      updateOptionByKey(option._key, "description", value)
-                    }
-                    onImageSelect={file => {
-                      if (option.fileUploadId) {
-                        optionImages.markInitialForDeletion(option.fileUploadId);
-                      }
-                      optionImages.upload(option._key, file);
-                    }}
-                    onImageDelete={() => {
-                      optionImages.discard(option._key);
-                      updateOptionByKey(option._key, "imageUrl", null);
-                      updateOptionByKey(option._key, "fileUploadId", null);
-                    }}
-                    onDelete={() => removeOptionByOptionKey(option._key)}
-                    onMoveUp={() => handleMoveOption(option._key, "up")}
-                    onMoveDown={() => handleMoveOption(option._key, "down")}
-                    branchSlot={
-                      isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
-                        <div className="flex flex-col gap-2">
-                          <LabelText required={allowCompletionLink}>다음 이동</LabelText>
-                          <NextLinkDisplay
-                            itemLabel={itemLabel}
-                            nextActionId={option.nextActionId ?? null}
-                            nextCompletionId={option.nextCompletionId ?? null}
-                            selectableActions={selectableActions}
-                            completionOptions={completionOptions}
-                            onAdd={() => setDrawerOpenKey(option._key)}
-                            onEdit={() => setDrawerOpenKey(option._key)}
-                            onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
-                          />
-                        </div>
-                      ) : undefined
-                    }
-                  />
-                );
-              })}
-            </SortableContext>
-          </DndContext>
-
-          {errors.options && (
-            <Typo.Body size="small" className="text-red-500">
-              {errors.options}
-            </Typo.Body>
-          )}
-          {errors.branchNextAction && (
-            <Typo.Body size="small" className="text-red-500">
-              {errors.branchNextAction}
-            </Typo.Body>
-          )}
-
-          {!isBranch && options.length < optionLimits.max && (
+          <LabelText required>{`정답 목록 (${options.length}/${optionLimits.max})`}</LabelText>
+          <Typo.Body size="medium" className="text-zinc-400">
+            허용할 정답 텍스트를 입력합니다. 참여자의 답변이 이 중 하나와 일치하면 정답으로
+            처리됩니다.
+          </Typo.Body>
+          {options.map((option, index) => (
+            <div key={option._key} className="flex items-center gap-2">
+              <Input
+                containerClassName="flex-1"
+                placeholder={`정답 ${index + 1}`}
+                value={option.title}
+                onChange={e => updateOptionByKey(option._key, "title", e.target.value)}
+                maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+              />
+              {options.length > optionLimits.min && (
+                <button
+                  type="button"
+                  onClick={() => removeOptionByOptionKey(option._key)}
+                  className="shrink-0 rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+                  aria-label="정답 삭제"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </div>
+          ))}
+          {options.length < optionLimits.max && (
             <button
               type="button"
               onClick={addOption}
               className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 py-2.5 text-sm text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
             >
               <Plus className="size-4" />
-              항목 추가
+              정답 추가
             </button>
+          )}
+          {errors.options && (
+            <Typo.Body size="small" className="text-red-500">
+              {errors.options}
+            </Typo.Body>
           )}
         </div>
       )}
 
-      {!isBranch && (hasLinkTargets || hasCreateCallbacks) && (
+      {needsOptions &&
+        !(
+          isQuizMode &&
+          (selectedActionType === ActionType.OX || selectedActionType === ActionType.SHORT_TEXT)
+        ) && (
+          <div className="flex flex-col gap-3">
+            <LabelText required>{`항목 (${options.length}/${optionLimits.max})`}</LabelText>
+            <DndContext
+              sensors={optionSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleOptionDragEnd}
+            >
+              <SortableContext
+                items={options.map(o => o._key)}
+                strategy={verticalListSortingStrategy}
+              >
+                {options.map((option, index) => {
+                  const optionPreviewUrl = showOptionImage
+                    ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
+                    : undefined;
+
+                  return (
+                    <SortableOptionItem
+                      key={option._key}
+                      optionKey={option._key}
+                      index={index}
+                      title={option.title}
+                      description={option.description ?? null}
+                      previewImageUrl={optionPreviewUrl}
+                      isOpen={openOptionKey === option._key}
+                      isFirst={index === 0}
+                      isLast={index === options.length - 1}
+                      showDescription={showOptionDescription}
+                      showImage={showOptionImage}
+                      showDelete={!isBranch && options.length > optionLimits.min}
+                      showIsCorrect={isQuizMode && selectedActionType !== ActionType.SHORT_TEXT}
+                      isCorrect={option.isCorrect ?? false}
+                      disabled={isLoading}
+                      isImageUploading={optionImages.isUploading(option._key)}
+                      titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+                      descriptionMaxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                      onToggle={() =>
+                        setOpenOptionKey(prev => (prev === option._key ? null : option._key))
+                      }
+                      onTitleChange={value => updateOptionByKey(option._key, "title", value)}
+                      onDescriptionChange={value =>
+                        updateOptionByKey(option._key, "description", value)
+                      }
+                      onIsCorrectChange={checked =>
+                        handleOptionIsCorrectChange(option._key, checked)
+                      }
+                      onImageSelect={file => {
+                        if (option.fileUploadId) {
+                          optionImages.markInitialForDeletion(option.fileUploadId);
+                        }
+                        optionImages.upload(option._key, file);
+                      }}
+                      onImageDelete={() => {
+                        optionImages.discard(option._key);
+                        updateOptionByKey(option._key, "imageUrl", null);
+                        updateOptionByKey(option._key, "fileUploadId", null);
+                      }}
+                      onDelete={() => removeOptionByOptionKey(option._key)}
+                      onMoveUp={() => handleMoveOption(option._key, "up")}
+                      onMoveDown={() => handleMoveOption(option._key, "down")}
+                      branchSlot={
+                        !isQuizMode && isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
+                          <div className="flex flex-col gap-2">
+                            <LabelText required={allowCompletionLink}>다음 이동</LabelText>
+                            <NextLinkDisplay
+                              itemLabel={itemLabel}
+                              nextActionId={option.nextActionId ?? null}
+                              nextCompletionId={option.nextCompletionId ?? null}
+                              selectableActions={selectableActions}
+                              completionOptions={completionOptions}
+                              onAdd={() => setDrawerOpenKey(option._key)}
+                              onEdit={() => setDrawerOpenKey(option._key)}
+                              onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
+                            />
+                          </div>
+                        ) : undefined
+                      }
+                    />
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
+
+            {errors.options && (
+              <Typo.Body size="small" className="text-red-500">
+                {errors.options}
+              </Typo.Body>
+            )}
+            {errors.branchNextAction && (
+              <Typo.Body size="small" className="text-red-500">
+                {errors.branchNextAction}
+              </Typo.Body>
+            )}
+
+            {!isBranch && options.length < optionLimits.max && (
+              <button
+                type="button"
+                onClick={addOption}
+                className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 py-2.5 text-sm text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
+              >
+                <Plus className="size-4" />
+                항목 추가
+              </button>
+            )}
+          </div>
+        )}
+
+      {isQuizMode && (
+        <>
+          <div className="flex flex-col gap-2">
+            <LabelText required={false}>배점</LabelText>
+            <Typo.Body size="medium" className="text-zinc-400">
+              이 질문의 배점을 설정합니다.
+            </Typo.Body>
+            <Input
+              type="number"
+              placeholder="배점을 입력하세요 (선택)"
+              value={score ?? ""}
+              onChange={e => {
+                const val = e.target.value;
+                setScore(val === "" ? null : Number(val));
+              }}
+              min={0}
+            />
+          </div>
+
+          {selectedActionType === ActionType.SHORT_TEXT && (
+            <div className="flex flex-col gap-2">
+              <LabelText required={false}>매칭 모드</LabelText>
+              <Typo.Body size="medium" className="text-zinc-400">
+                정답 비교 방식을 선택합니다.
+              </Typo.Body>
+              <Select
+                value={matchMode ?? MatchMode.EXACT}
+                onValueChange={value => setMatchMode(value as MatchMode)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="매칭 모드를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={MatchMode.EXACT}>완전 일치</SelectItem>
+                  <SelectItem value={MatchMode.CONTAINS}>포함</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {showHintField && (
+            <div className="flex flex-col gap-2">
+              <LabelText required={false}>힌트</LabelText>
+              <Typo.Body size="medium" className="text-zinc-400">
+                참여자에게 표시할 힌트를 입력합니다.
+              </Typo.Body>
+              <Input
+                placeholder="힌트를 입력하세요 (선택)"
+                value={hint}
+                onChange={e => setHint(e.target.value)}
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {!isQuizMode && !isBranch && (hasLinkTargets || hasCreateCallbacks) && (
         <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4">
           <LabelText required={allowCompletionLink && hasLinkTargets}>다음 이동 설정</LabelText>
 

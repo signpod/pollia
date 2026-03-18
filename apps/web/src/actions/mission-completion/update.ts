@@ -17,6 +17,8 @@ function toUpdateMissionCompletionInput(
     imageUrl: dto.imageUrl,
     imageFileUploadId: dto.imageFileUploadId,
     links: dto.links,
+    minScoreRatio: dto.minScoreRatio,
+    maxScoreRatio: dto.maxScoreRatio,
   };
 }
 

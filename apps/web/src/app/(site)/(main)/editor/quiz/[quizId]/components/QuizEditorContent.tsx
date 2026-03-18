@@ -1,26 +1,34 @@
 "use client";
 
+import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { Separator } from "@/components/ui/separator";
+import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import { useReadActionsDetail } from "@/hooks/action";
+import { useReadMission } from "@/hooks/mission";
+import { parseQuizConfig } from "@/schemas/mission/quizConfigSchema";
 import type { GetMissionResponse } from "@/types/dto";
-import { Button } from "@repo/ui/components";
-import { Save } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
 import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
+import { completionDraftsAtom } from "../../../missions/[missionId]/atoms/editorCompletionAtoms";
+import { CompletionSettingsCard } from "../../../missions/[missionId]/components/CompletionSettingsCard";
 import { ContentBasicInfoCard } from "../../../missions/[missionId]/components/ContentBasicInfoCard";
 import { EditorBottomSaveSlot } from "../../../missions/[missionId]/components/EditorBottomSaveSlot";
+import { EditorMissionDraftProvider } from "../../../missions/[missionId]/components/EditorMissionDraftContext";
 import { useEditorMissionTab } from "../../../missions/[missionId]/components/EditorMissionTabContext";
 import {
   RewardSettingsCard,
   type RewardSnapshot,
 } from "../../../missions/[missionId]/components/RewardSettingsCard";
-import type {
-  SectionSaveHandle,
-  SectionSaveState,
-} from "../../../missions/[missionId]/components/editor-save.types";
+import type { SectionSaveState } from "../../../missions/[missionId]/components/editor-save.types";
+import { EditorMissionActionBar } from "../../../missions/[missionId]/components/views/EditorMissionActionBar";
+import { quizActionDraftItemsAtom } from "../atoms/quizActionAtoms";
 import { QuizConfigSettingsCard } from "./QuizConfigSettingsCard";
-import { QuizSkeletonSection } from "./QuizSkeletonSection";
+import { QuizQuestionSettingsCard } from "./QuizQuestionSettingsCard";
+import { useEditorQuizController } from "./controllers/useEditorQuizController";
 
 interface QuizEditorContentProps {
   missionId: string;
@@ -33,73 +41,71 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const actionSectionRef = useRef<HTMLDivElement>(null);
   useEditorBootstrapScrollController(missionId, actionSectionRef);
 
-  const basicInfoRef = useRef<SectionSaveHandle>(null);
-  const rewardRef = useRef<SectionSaveHandle>(null);
-  const quizConfigRef = useRef<SectionSaveHandle>(null);
-
-  const [basicState, setBasicState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-  const [rewardState, setRewardState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-  const [quizConfigState, setQuizConfigState] = useState<SectionSaveState>({
-    hasPendingChanges: false,
-    isBusy: false,
-    hasValidationIssues: false,
-    validationIssueCount: 0,
-  });
-
   const [editorHasReward, setEditorHasReward] = useState(!!reward);
-  const [isSavingAll, setIsSavingAll] = useState(false);
+  const [basicValidationCount, setBasicValidationCount] = useState(0);
+  const [rewardValidationCount, setRewardValidationCount] = useState(0);
 
-  const hasAnyPendingChanges =
-    basicState.hasPendingChanges ||
-    rewardState.hasPendingChanges ||
-    quizConfigState.hasPendingChanges;
+  const [showHint, setShowHint] = useState(parseQuizConfig(mission.quizConfig).showExplanation);
 
-  const hasAnyBusySection = basicState.isBusy || rewardState.isBusy || quizConfigState.isBusy;
+  const missionQuery = useReadMission(missionId);
+  const actionsQuery = useReadActionsDetail(missionId);
+  const completionsQuery = useQuery({
+    queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+    queryFn: () => getCompletionsByMissionId(missionId),
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const hasAnyValidationIssues =
-    basicState.hasValidationIssues ||
-    rewardState.hasValidationIssues ||
-    quizConfigState.hasValidationIssues;
+  const questionDraftItems = useAtomValue(quizActionDraftItemsAtom);
+  const completionDrafts = useAtomValue(completionDraftsAtom);
 
-  const handleSaveAll = useCallback(async () => {
-    setIsSavingAll(true);
-    try {
-      const refs = [basicInfoRef, rewardRef, quizConfigRef];
-      await Promise.all(refs.map(r => r.current?.save({ silent: true })));
-    } finally {
-      setIsSavingAll(false);
-    }
-  }, []);
+  const { refs, sectionBindings, viewState, actions } = useEditorQuizController({
+    quizId: missionId,
+    mission,
+    currentTab,
+    missionQueryData: missionQuery.data?.data,
+    serverActionsCount: actionsQuery.data?.data?.length ?? 0,
+    serverCompletionsCount: completionsQuery.data?.data?.length ?? 0,
+    questionDraftCount: questionDraftItems.length,
+    completionDraftCount: completionDrafts.length,
+    isActionsLoading: actionsQuery.isLoading,
+    isCompletionsLoading: completionsQuery.isLoading,
+  });
+
+  const handleBasicStateChange = useCallback(
+    (state: SectionSaveState) => {
+      setBasicValidationCount(state.validationIssueCount);
+      sectionBindings.onBasicStateChange(state);
+    },
+    [sectionBindings.onBasicStateChange],
+  );
+
+  const handleRewardStateChange = useCallback(
+    (state: SectionSaveState) => {
+      setRewardValidationCount(state.validationIssueCount);
+      sectionBindings.onRewardStateChange(state);
+    },
+    [sectionBindings.onRewardStateChange],
+  );
 
   const saveButtonNode = useMemo(
     () => (
-      <div className="flex gap-2 px-5 py-3">
-        <Button
-          variant="primary"
-          fullWidth
-          inlineIcon
-          leftIcon={<Save className="size-4" />}
-          onClick={() => void handleSaveAll()}
-          loading={isSavingAll}
-          disabled={
-            isSavingAll || hasAnyBusySection || !hasAnyPendingChanges || hasAnyValidationIssues
-          }
-        >
-          저장하기
-        </Button>
-      </div>
+      <EditorMissionActionBar
+        isSavingAll={viewState.isSavingAll}
+        hasAnyBusySection={viewState.hasAnyBusySection}
+        hasAnyPendingChanges={viewState.hasAnyPendingChanges}
+        hasAnyValidationIssues={viewState.hasAnyValidationIssues}
+        onSave={() => {
+          void actions.onSave();
+        }}
+      />
     ),
-    [handleSaveAll, hasAnyBusySection, hasAnyPendingChanges, hasAnyValidationIssues, isSavingAll],
+    [
+      actions,
+      viewState.hasAnyBusySection,
+      viewState.hasAnyPendingChanges,
+      viewState.hasAnyValidationIssues,
+      viewState.isSavingAll,
+    ],
   );
 
   return (
@@ -110,59 +116,59 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         node={saveButtonNode}
       />
 
-      <EditorSectionCard
-        title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
-        description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
-        validationIssueCount={basicState.validationIssueCount + rewardState.validationIssueCount}
-      >
-        <ContentBasicInfoCard
-          ref={basicInfoRef}
-          mission={mission}
-          onSaveStateChange={setBasicState}
-          hasReward={editorHasReward}
-        />
-        <RewardSettingsCard
-          ref={rewardRef}
-          mission={mission}
-          initialReward={reward}
-          onSaveStateChange={setRewardState}
-          onHasRewardChange={setEditorHasReward}
-        />
-      </EditorSectionCard>
-
-      <Separator className="h-2" />
-
-      <EditorSectionCard
-        title="퀴즈 설정"
-        description="퀴즈 진행 방식을 설정합니다."
-        validationIssueCount={quizConfigState.validationIssueCount}
-      >
-        <QuizConfigSettingsCard
-          ref={quizConfigRef}
-          mission={mission}
-          onSaveStateChange={setQuizConfigState}
-        />
-      </EditorSectionCard>
-
-      <Separator className="h-2" />
-
-      <div ref={actionSectionRef} className="scroll-mt-28">
+      <EditorMissionDraftProvider>
         <EditorSectionCard
-          title="진행 목록 수정"
-          description="참여자가 수행할 퀴즈 문항을 추가하고 수정합니다."
+          title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
+          validationIssueCount={basicValidationCount + rewardValidationCount}
         >
-          <QuizSkeletonSection message="퀴즈 문항 편집 기능은 준비 중입니다." />
+          <ContentBasicInfoCard
+            ref={refs.basicInfoRef}
+            mission={mission}
+            onSaveStateChange={handleBasicStateChange}
+            hasReward={editorHasReward}
+            showAiCompletionToggle={false}
+          />
+          <RewardSettingsCard
+            ref={refs.rewardRef}
+            mission={mission}
+            initialReward={reward}
+            onSaveStateChange={handleRewardStateChange}
+            onHasRewardChange={setEditorHasReward}
+          />
         </EditorSectionCard>
-      </div>
 
-      <Separator className="h-2" />
+        <Separator className="h-2" />
 
-      <EditorSectionCard
-        title="결과 화면 수정"
-        description="퀴즈 완료 후 노출될 결과 화면을 설정합니다."
-      >
-        <QuizSkeletonSection message="결과 화면 편집 기능은 준비 중입니다." />
-      </EditorSectionCard>
+        <EditorSectionCard title="퀴즈 설정" description="퀴즈 진행 방식을 설정합니다.">
+          <QuizConfigSettingsCard
+            ref={refs.quizConfigRef}
+            mission={mission}
+            onSaveStateChange={sectionBindings.onQuizConfigStateChange}
+            onShowHintChange={setShowHint}
+          />
+        </EditorSectionCard>
+
+        <Separator className="h-2" />
+
+        <div ref={actionSectionRef} className="scroll-mt-28">
+          <QuizQuestionSettingsCard
+            ref={refs.questionRef}
+            missionId={missionId}
+            onSaveStateChange={sectionBindings.onQuestionStateChange}
+            showHint={showHint}
+          />
+        </div>
+
+        <Separator className="h-2" />
+
+        <CompletionSettingsCard
+          ref={refs.completionRef}
+          missionId={missionId}
+          isQuizMode
+          onSaveStateChange={sectionBindings.onCompletionStateChange}
+        />
+      </EditorMissionDraftProvider>
     </>
   );
 }

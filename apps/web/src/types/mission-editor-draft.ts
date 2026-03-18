@@ -3,6 +3,7 @@ export interface EditorMissionDraftPayload {
   reward?: unknown | null;
   action?: unknown | null;
   completion?: unknown | null;
+  quizConfig?: unknown | null;
   meta?: {
     updatedAtMs?: number | null;
   } | null;
@@ -38,6 +39,7 @@ export function normalizeEditorMissionDraftPayload(
     reward: value.reward ?? null,
     action: value.action ?? null,
     completion: value.completion ?? null,
+    quizConfig: value.quizConfig ?? null,
     meta: {
       updatedAtMs: normalizeDraftUpdatedAtMs(rawMeta?.updatedAtMs),
     },
@@ -136,6 +138,7 @@ export function toServerEditorDraftPayload(
       reward: null,
       action: null,
       completion: null,
+      quizConfig: null,
       meta: {
         updatedAtMs: null,
       },
@@ -147,6 +150,7 @@ export function toServerEditorDraftPayload(
     reward: toJsonSafeValue(normalized.reward),
     action: toJsonSafeValue(sanitizeActionSnapshotForServer(normalized.action)),
     completion: toJsonSafeValue(sanitizeCompletionSnapshotForServer(normalized.completion)),
+    quizConfig: toJsonSafeValue(normalized.quizConfig),
     meta: {
       updatedAtMs: normalizeDraftUpdatedAtMs(normalized.meta?.updatedAtMs),
     },
