@@ -1,4 +1,5 @@
 import { GoogleAnalytics } from "@/components/common/GoogleAnalytics";
+import { MetaPixel } from "@/components/common/MetaPixel";
 import { clientConfig } from "@/rollbar";
 import { Provider as RollbarProvider } from "@rollbar/react";
 import type { Metadata, Viewport } from "next";
@@ -44,6 +45,7 @@ export default function RootLayout({
         </head>
         <body className="antialiased">
           <GoogleAnalytics />
+          <MetaPixel />
           {children}
         </body>
       </html>
