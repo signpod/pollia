@@ -20,6 +20,7 @@ import type {
   SectionSaveState,
 } from "../../../missions/[missionId]/components/editor-save.types";
 import { QuizConfigSettingsCard } from "./QuizConfigSettingsCard";
+import { QuizQuestionSettingsCard } from "./QuizQuestionSettingsCard";
 import { QuizSkeletonSection } from "./QuizSkeletonSection";
 
 interface QuizEditorContentProps {
@@ -36,6 +37,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const basicInfoRef = useRef<SectionSaveHandle>(null);
   const rewardRef = useRef<SectionSaveHandle>(null);
   const quizConfigRef = useRef<SectionSaveHandle>(null);
+  const questionRef = useRef<SectionSaveHandle>(null);
 
   const [basicState, setBasicState] = useState<SectionSaveState>({
     hasPendingChanges: false,
@@ -55,6 +57,12 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
     hasValidationIssues: false,
     validationIssueCount: 0,
   });
+  const [questionState, setQuestionState] = useState<SectionSaveState>({
+    hasPendingChanges: false,
+    isBusy: false,
+    hasValidationIssues: false,
+    validationIssueCount: 0,
+  });
 
   const [editorHasReward, setEditorHasReward] = useState(!!reward);
   const [isSavingAll, setIsSavingAll] = useState(false);
@@ -62,19 +70,22 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const hasAnyPendingChanges =
     basicState.hasPendingChanges ||
     rewardState.hasPendingChanges ||
-    quizConfigState.hasPendingChanges;
+    quizConfigState.hasPendingChanges ||
+    questionState.hasPendingChanges;
 
-  const hasAnyBusySection = basicState.isBusy || rewardState.isBusy || quizConfigState.isBusy;
+  const hasAnyBusySection =
+    basicState.isBusy || rewardState.isBusy || quizConfigState.isBusy || questionState.isBusy;
 
   const hasAnyValidationIssues =
     basicState.hasValidationIssues ||
     rewardState.hasValidationIssues ||
-    quizConfigState.hasValidationIssues;
+    quizConfigState.hasValidationIssues ||
+    questionState.hasValidationIssues;
 
   const handleSaveAll = useCallback(async () => {
     setIsSavingAll(true);
     try {
-      const refs = [basicInfoRef, rewardRef, quizConfigRef];
+      const refs = [basicInfoRef, rewardRef, quizConfigRef, questionRef];
       await Promise.all(refs.map(r => r.current?.save({ silent: true })));
     } finally {
       setIsSavingAll(false);
@@ -120,6 +131,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
           mission={mission}
           onSaveStateChange={setBasicState}
           hasReward={editorHasReward}
+          showAiCompletionToggle={false}
         />
         <RewardSettingsCard
           ref={rewardRef}
@@ -147,12 +159,11 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
       <Separator className="h-2" />
 
       <div ref={actionSectionRef} className="scroll-mt-28">
-        <EditorSectionCard
-          title="진행 목록 수정"
-          description="참여자가 수행할 퀴즈 문항을 추가하고 수정합니다."
-        >
-          <QuizSkeletonSection message="퀴즈 문항 편집 기능은 준비 중입니다." />
-        </EditorSectionCard>
+        <QuizQuestionSettingsCard
+          ref={questionRef}
+          missionId={missionId}
+          onSaveStateChange={setQuestionState}
+        />
       </div>
 
       <Separator className="h-2" />

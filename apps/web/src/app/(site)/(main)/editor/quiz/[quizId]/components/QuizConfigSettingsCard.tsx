@@ -1,7 +1,6 @@
 "use client";
 
 import { updateMission } from "@/actions/mission/update";
-import { TimeLimitSettingRow } from "@/app/(site)/(main)/create/components/TimeLimitSettingRow";
 import { ToggleSettingRow } from "@/app/(site)/(main)/create/components/ToggleSettingRow";
 import type { QuizConfig } from "@/schemas/mission/quizConfigSchema";
 import type { GetMissionResponse } from "@/types/dto";
@@ -47,8 +46,6 @@ const DEFAULT_QUIZ_CONFIG: QuizConfig = {
   showCorrectOnWrong: true,
   shuffleQuestions: false,
   shuffleChoices: false,
-  timeLimitPerQuestion: null,
-  timeLimitTotal: null,
 };
 
 function parseQuizConfig(raw: unknown): QuizConfig {
@@ -60,9 +57,6 @@ function parseQuizConfig(raw: unknown): QuizConfig {
     showCorrectOnWrong: typeof obj.showCorrectOnWrong === "boolean" ? obj.showCorrectOnWrong : true,
     shuffleQuestions: typeof obj.shuffleQuestions === "boolean" ? obj.shuffleQuestions : false,
     shuffleChoices: typeof obj.shuffleChoices === "boolean" ? obj.shuffleChoices : false,
-    timeLimitPerQuestion:
-      typeof obj.timeLimitPerQuestion === "number" ? obj.timeLimitPerQuestion : null,
-    timeLimitTotal: typeof obj.timeLimitTotal === "number" ? obj.timeLimitTotal : null,
   };
 }
 
@@ -179,8 +173,8 @@ function QuizConfigSettingsCardComponent(
             name="showExplanation"
             render={({ field }) => (
               <ToggleSettingRow
-                label="해설 표시"
-                description="채점 후 문제에 대한 해설을 표시합니다."
+                label="힌트 표시"
+                description="문제 풀이 시 힌트를 표시합니다."
                 checked={field.value}
                 onChange={field.onChange}
               />
@@ -221,32 +215,6 @@ function QuizConfigSettingsCardComponent(
                 label="선택지 순서 랜덤"
                 description="객관식 문제의 선택지 순서를 무작위로 섞습니다."
                 checked={field.value}
-                onChange={field.onChange}
-              />
-            )}
-          />
-
-          <Controller
-            control={form.control}
-            name="timeLimitPerQuestion"
-            render={({ field }) => (
-              <TimeLimitSettingRow
-                label="문항별 제한시간"
-                description="각 문항에 제한시간을 설정합니다. (초 단위)"
-                value={field.value}
-                onChange={field.onChange}
-              />
-            )}
-          />
-
-          <Controller
-            control={form.control}
-            name="timeLimitTotal"
-            render={({ field }) => (
-              <TimeLimitSettingRow
-                label="전체 제한시간"
-                description="퀴즈 전체에 제한시간을 설정합니다. (초 단위)"
-                value={field.value}
                 onChange={field.onChange}
               />
             )}

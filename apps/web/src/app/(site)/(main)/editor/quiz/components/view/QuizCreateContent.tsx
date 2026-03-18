@@ -42,8 +42,6 @@ const QUIZ_CREATE_FORM_DEFAULT_VALUES = {
     showCorrectOnWrong: true,
     shuffleQuestions: false,
     shuffleChoices: false,
-    timeLimitPerQuestion: null,
-    timeLimitTotal: null,
   },
 } satisfies CreateQuizMissionFormData;
 

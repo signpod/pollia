@@ -8,8 +8,6 @@ export const quizConfigSchema = z.object({
   showCorrectOnWrong: z.boolean().default(true),
   shuffleQuestions: z.boolean().default(false),
   shuffleChoices: z.boolean().default(false),
-  timeLimitPerQuestion: z.number().int().positive().nullable().default(null),
-  timeLimitTotal: z.number().int().positive().nullable().default(null),
 });
 
 export type QuizConfig = z.infer<typeof quizConfigSchema>;
