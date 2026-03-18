@@ -35,6 +35,20 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   [ActionType.OX]: "OX",
 };
 
+export const QUIZ_ACTION_TYPE_LABELS: Partial<Record<ActionType, string>> = {
+  [ActionType.MULTIPLE_CHOICE]: "객관식 퀴즈",
+  [ActionType.OX]: "OX 퀴즈",
+  [ActionType.SHORT_TEXT]: "단어 퀴즈",
+};
+
+export function getActionTypeLabel(type: ActionType, isQuizMode = false): string {
+  if (isQuizMode) {
+    const quizLabel = QUIZ_ACTION_TYPE_LABELS[type];
+    if (quizLabel) return quizLabel;
+  }
+  return ACTION_TYPE_LABELS[type];
+}
+
 export const ACTION_PLACEHOLDER = "답변을 입력해주세요";
 
 export const CLIENT_OTHER_OPTION_ID = "CLIENT_OTHER_OPTION";

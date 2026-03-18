@@ -7,7 +7,7 @@ import {
   type ActionFormValues,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { mapEditInitialValues } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
-import { ACTION_TYPE_LABELS } from "@/constants/action";
+import { getActionTypeLabel } from "@/constants/action";
 import type { ActionDetail } from "@/types/dto";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -81,7 +81,7 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
   const itemTitle =
     item.kind === "existing"
       ? snapshotTitle || item.action.title
-      : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
+      : snapshotTitle || `${getActionTypeLabel(itemType, true)} 질문`;
   const previewImageUrl =
     snapshot?.values?.imageUrl ?? (item.kind === "existing" ? item.action.imageUrl : null);
   const initialValues: ActionFormValues | undefined =
@@ -140,7 +140,7 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
         isOpen={isOpen}
         onToggle={handleToggle}
         title={`${index + 1}. ${itemTitle}`}
-        subtitle={ACTION_TYPE_LABELS[itemType]}
+        subtitle={getActionTypeLabel(itemType, true)}
         badge={null}
         previewImage={
           previewImageUrl ? { src: previewImageUrl, alt: `${itemTitle} 미리보기 이미지` } : null

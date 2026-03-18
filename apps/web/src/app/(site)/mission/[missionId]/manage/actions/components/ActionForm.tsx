@@ -1,6 +1,6 @@
 "use client";
 
-import { ACTION_TYPE_LABELS } from "@/constants/action";
+import { getActionTypeLabel } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useMultipleImages, useSingleImage } from "@/hooks/image";
 import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
@@ -1090,7 +1090,7 @@ function ActionFormComponent(
         <Typo.SubTitle>
           {editingAction
             ? `${itemLabel} 수정`
-            : `${ACTION_TYPE_LABELS[selectedActionType]} ${itemLabel} 추가`}
+            : `${getActionTypeLabel(selectedActionType, isQuizMode)} ${itemLabel} 추가`}
         </Typo.SubTitle>
       )}
 
@@ -1107,7 +1107,7 @@ function ActionFormComponent(
             <SelectContent>
               {(isQuizMode ? QUIZ_ACTION_TYPES : ACTION_TYPE_VALUES).map(type => (
                 <SelectItem key={type} value={type}>
-                  {ACTION_TYPE_LABELS[type]}
+                  {getActionTypeLabel(type, isQuizMode)}
                 </SelectItem>
               ))}
             </SelectContent>
