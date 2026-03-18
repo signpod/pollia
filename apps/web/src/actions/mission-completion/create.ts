@@ -18,6 +18,8 @@ function toCreateMissionCompletionInput(
     imageFileUploadId: dto.imageFileUploadId,
     links: dto.links,
     missionId: dto.missionId,
+    minScoreRatio: dto.minScoreRatio,
+    maxScoreRatio: dto.maxScoreRatio,
   };
 }
 

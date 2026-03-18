@@ -186,6 +186,114 @@ describe("MissionCompletionService", () => {
 
       expect(mockRepo.create).not.toHaveBeenCalled();
     });
+
+    it("minScoreRatio와 maxScoreRatio를 포함하여 성공적으로 생성한다", async () => {
+      // Given
+      const createData = {
+        title: "합격",
+        description: "축하합니다!",
+        missionId: TEST_MISSION_ID,
+        minScoreRatio: 0,
+        maxScoreRatio: 49,
+      };
+      const mockMission = createMockMission();
+      const mockCreatedCompletion = createMockMissionCompletion({
+        ...createData,
+      });
+
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.create.mockResolvedValue(mockCreatedCompletion);
+
+      // When
+      const result = await service.createMissionCompletion(createData, TEST_USER_ID);
+
+      // Then
+      expect(result).toEqual(mockCreatedCompletion);
+      expect(mockRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          minScoreRatio: 0,
+          maxScoreRatio: 49,
+        }),
+        TEST_USER_ID,
+      );
+    });
+
+    it("minScoreRatio가 0~100 범위 밖이면 400 에러를 던진다", async () => {
+      // Given
+      const invalidData = {
+        title: "합격",
+        description: "축하합니다!",
+        missionId: TEST_MISSION_ID,
+        minScoreRatio: -1,
+      };
+      const mockMission = createMockMission();
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(service.createMissionCompletion(invalidData, TEST_USER_ID)).rejects.toThrow();
+
+      try {
+        await service.createMissionCompletion(invalidData, TEST_USER_ID);
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(400);
+      }
+
+      expect(mockRepo.create).not.toHaveBeenCalled();
+    });
+
+    it("maxScoreRatio가 0~100 범위 밖이면 400 에러를 던진다", async () => {
+      // Given
+      const invalidData = {
+        title: "합격",
+        description: "축하합니다!",
+        missionId: TEST_MISSION_ID,
+        maxScoreRatio: 101,
+      };
+      const mockMission = createMockMission();
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(service.createMissionCompletion(invalidData, TEST_USER_ID)).rejects.toThrow();
+
+      try {
+        await service.createMissionCompletion(invalidData, TEST_USER_ID);
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(400);
+      }
+
+      expect(mockRepo.create).not.toHaveBeenCalled();
+    });
+
+    it("minScoreRatio/maxScoreRatio가 null이면 성공한다", async () => {
+      // Given
+      const createData = {
+        title: "기본 완료",
+        description: "미션을 완료했습니다.",
+        missionId: TEST_MISSION_ID,
+        minScoreRatio: null,
+        maxScoreRatio: null,
+      };
+      const mockMission = createMockMission();
+      const mockCreatedCompletion = createMockMissionCompletion({
+        ...createData,
+      });
+
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.create.mockResolvedValue(mockCreatedCompletion);
+
+      // When
+      const result = await service.createMissionCompletion(createData, TEST_USER_ID);
+
+      // Then
+      expect(result).toEqual(mockCreatedCompletion);
+      expect(mockRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          minScoreRatio: null,
+          maxScoreRatio: null,
+        }),
+        TEST_USER_ID,
+      );
+    });
   });
 
   describe("getCompletionsByMissionId", () => {
@@ -390,6 +498,40 @@ describe("MissionCompletionService", () => {
       ).rejects.toThrow("최소 하나의 필드를 수정해야 합니다.");
 
       expect(mockRepo.update).not.toHaveBeenCalled();
+    });
+
+    it("minScoreRatio와 maxScoreRatio만 수정한다", async () => {
+      // Given
+      const updateData = {
+        minScoreRatio: 50,
+        maxScoreRatio: 100,
+      };
+      const mockCompletion = createMockMissionCompletion();
+      const mockUpdatedCompletion = createMockMissionCompletion({
+        ...updateData,
+      });
+
+      mockRepo.findById.mockResolvedValue(mockCompletion);
+      mockMissionRepo.findById.mockResolvedValue(createMockMission());
+      mockRepo.update.mockResolvedValue(mockUpdatedCompletion);
+
+      // When
+      const result = await service.updateMissionCompletion(
+        mockCompletion.id,
+        updateData,
+        TEST_USER_ID,
+      );
+
+      // Then
+      expect(result).toEqual(mockUpdatedCompletion);
+      expect(mockRepo.update).toHaveBeenCalledWith(
+        mockCompletion.id,
+        expect.objectContaining({
+          minScoreRatio: 50,
+          maxScoreRatio: 100,
+        }),
+        TEST_USER_ID,
+      );
     });
   });
 

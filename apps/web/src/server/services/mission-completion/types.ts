@@ -7,6 +7,8 @@ export type CreateMissionCompletionInput = {
   imageFileUploadId?: string;
   links?: CompletionLinkInput[];
   missionId: string;
+  minScoreRatio?: number | null;
+  maxScoreRatio?: number | null;
 };
 
 export type UpdateMissionCompletionInput = {
@@ -15,4 +17,6 @@ export type UpdateMissionCompletionInput = {
   imageUrl?: string | null;
   imageFileUploadId?: string | null;
   links?: CompletionLinkInput[];
+  minScoreRatio?: number | null;
+  maxScoreRatio?: number | null;
 };
