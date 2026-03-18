@@ -574,6 +574,8 @@ export function useCompletionSettingsCard({
             imageUrl: values.imageUrl ?? null,
             imageFileUploadId: values.imageFileUploadId ?? null,
             links: values.links,
+            minScoreRatio: values.minScoreRatio,
+            maxScoreRatio: values.maxScoreRatio,
           });
           didMutateServer = true;
           if (updated?.data) {
@@ -617,6 +619,8 @@ export function useCompletionSettingsCard({
             imageUrl: values.imageUrl ?? undefined,
             imageFileUploadId: values.imageFileUploadId ?? undefined,
             links: values.links,
+            minScoreRatio: values.minScoreRatio,
+            maxScoreRatio: values.maxScoreRatio,
           });
           didMutateServer = true;
           if (created?.data) {

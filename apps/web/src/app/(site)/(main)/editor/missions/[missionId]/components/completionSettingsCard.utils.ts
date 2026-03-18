@@ -26,6 +26,8 @@ export function mapEditInitialValues(
       imageUrl: link.imageUrl,
       fileUploadId: link.fileUploadId,
     })),
+    minScoreRatio: completion.minScoreRatio ?? null,
+    maxScoreRatio: completion.maxScoreRatio ?? null,
   };
 }
 
@@ -36,6 +38,8 @@ function normalizeValues(values: CompletionFormValues) {
     imageUrl: values.imageUrl ?? null,
     imageFileUploadId: values.imageFileUploadId ?? null,
     links: values.links ?? [],
+    minScoreRatio: values.minScoreRatio ?? null,
+    maxScoreRatio: values.maxScoreRatio ?? null,
   };
 }
 
@@ -52,7 +56,9 @@ export function areCompletionSnapshotsEqual(
     left.description === right.description &&
     (left.imageUrl ?? null) === (right.imageUrl ?? null) &&
     (left.imageFileUploadId ?? null) === (right.imageFileUploadId ?? null) &&
-    JSON.stringify(left.links) === JSON.stringify(right.links)
+    JSON.stringify(left.links) === JSON.stringify(right.links) &&
+    (left.minScoreRatio ?? null) === (right.minScoreRatio ?? null) &&
+    (left.maxScoreRatio ?? null) === (right.maxScoreRatio ?? null)
   );
 }
 
@@ -97,8 +103,8 @@ export function buildPatchedCompletionForCache(params: {
     links: serverData.links ?? [],
     missionId: serverData.missionId ?? currentCompletion?.missionId ?? missionId,
     imageFileUploadId: serverData.imageFileUploadId ?? null,
-    minScoreRatio: currentCompletion?.minScoreRatio ?? null,
-    maxScoreRatio: currentCompletion?.maxScoreRatio ?? null,
+    minScoreRatio: serverData.minScoreRatio ?? currentCompletion?.minScoreRatio ?? null,
+    maxScoreRatio: serverData.maxScoreRatio ?? currentCompletion?.maxScoreRatio ?? null,
     createdAt: toDateOrFallback(serverData.createdAt ?? currentCompletion?.createdAt, now),
     updatedAt: toDateOrFallback(serverData.updatedAt ?? currentCompletion?.updatedAt, now),
     imageFileUpload: serverData.imageFileUpload ?? currentCompletion?.imageFileUpload ?? null,
