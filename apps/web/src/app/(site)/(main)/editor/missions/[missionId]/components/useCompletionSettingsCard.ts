@@ -174,6 +174,32 @@ export function useCompletionSettingsCard({
 
   const [thresholds, setThresholds] = useState<number[]>([]);
   const thresholdsInitializedRef = useRef(false);
+  const autoCreatedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isQuizMode || autoCreatedRef.current) return;
+    if (isLoading) return;
+    if (existingCompletions.length > 0 || completionDrafts.length > 0) {
+      autoCreatedRef.current = true;
+      return;
+    }
+
+    autoCreatedRef.current = true;
+
+    for (let i = 1; i <= 4; i++) {
+      const draftKey = createDraftKey();
+      dispatchAddDraft({ draftKey, title: `결과 ${i}` });
+    }
+
+    setThresholds([25, 50, 75]);
+    thresholdsInitializedRef.current = true;
+  }, [
+    isQuizMode,
+    isLoading,
+    existingCompletions.length,
+    completionDrafts.length,
+    dispatchAddDraft,
+  ]);
 
   useEffect(() => {
     if (!isQuizMode || thresholdsInitializedRef.current) return;
