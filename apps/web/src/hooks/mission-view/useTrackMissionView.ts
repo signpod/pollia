@@ -21,9 +21,8 @@ function markAsViewed(missionId: string): void {
 
 export function useTrackMissionView(missionId: string) {
   useEffect(() => {
-    if (hasViewedToday(missionId)) return;
-
-    markAsViewed(missionId);
+    // if (hasViewedToday(missionId)) return;
+    // markAsViewed(missionId);
     trackMissionView({ missionId }).catch(() => {});
   }, [missionId]);
 }
