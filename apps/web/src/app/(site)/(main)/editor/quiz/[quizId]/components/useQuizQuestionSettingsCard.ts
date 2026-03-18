@@ -19,9 +19,13 @@ import type {
 import {
   areActionSnapshotsEqual,
   areStringArraysEqual,
+  computeOrderedItems,
   createDraftKey,
+  deleteKeyFromRecord,
+  filterByValidKeys,
   getDraftItemKey,
   getExistingItemKey,
+  syncOrderKeys,
 } from "../../../missions/[missionId]/components/actionSettingsCard.utils";
 import type {
   SectionSaveHandle,
@@ -41,26 +45,6 @@ import {
   quizDraftVersionAtom,
 } from "../atoms/quizActionAtoms";
 import { useQuizActionSaveFlow } from "./useQuizActionSaveFlow";
-
-function filterByValidKeys<T>(prev: Record<string, T>, validKeys: Set<string>): Record<string, T> {
-  let hasChange = false;
-  const next: Record<string, T> = {};
-  for (const [key, value] of Object.entries(prev)) {
-    if (validKeys.has(key)) {
-      next[key] = value;
-    } else {
-      hasChange = true;
-    }
-  }
-  return hasChange ? next : prev;
-}
-
-function deleteKeyFromRecord<T>(prev: Record<string, T>, key: string): Record<string, T> {
-  if (!(key in prev)) return prev;
-  const next = { ...prev };
-  delete next[key];
-  return next;
-}
 
 export interface QuizQuestionSettingsCardProps {
   missionId: string;
@@ -186,30 +170,10 @@ export function useQuizQuestionSettingsCard({
     [existingActions, draftItems],
   );
 
-  const orderedActionItems = useMemo<ActionListItem[]>(() => {
-    if (actionItems.length === 0) return [];
-
-    const actionItemByKey = new Map(actionItems.map(item => [item.key, item]));
-    const orderedKeys: string[] = [];
-    const seen = new Set<string>();
-
-    for (const key of itemOrderKeys) {
-      if (seen.has(key) || !actionItemByKey.has(key)) continue;
-      orderedKeys.push(key);
-      seen.add(key);
-    }
-
-    for (const item of actionItems) {
-      if (seen.has(item.key)) continue;
-      orderedKeys.push(item.key);
-      seen.add(item.key);
-    }
-
-    return orderedKeys.flatMap(key => {
-      const item = actionItemByKey.get(key);
-      return item ? [item] : [];
-    });
-  }, [actionItems, itemOrderKeys]);
+  const orderedActionItems = useMemo<ActionListItem[]>(
+    () => computeOrderedItems(actionItems, itemOrderKeys),
+    [actionItems, itemOrderKeys],
+  );
 
   const defaultOrderKeys = useMemo(() => actionItems.map(item => item.key), [actionItems]);
   const orderedItemKeys = useMemo(
@@ -278,18 +242,7 @@ export function useQuizQuestionSettingsCard({
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   useEffect(() => {
     const validKeys = actionItems.map(item => item.key);
-    setItemOrderKeys(prev => {
-      const validKeySet = new Set(validKeys);
-      const next = prev.filter(key => validKeySet.has(key));
-
-      for (const key of validKeys) {
-        if (!next.includes(key)) {
-          next.push(key);
-        }
-      }
-
-      return areStringArraysEqual(prev, next) ? prev : next;
-    });
+    setItemOrderKeys(prev => syncOrderKeys(prev, validKeys));
   }, [actionItems]);
 
   const validationIssueCount = useMemo(

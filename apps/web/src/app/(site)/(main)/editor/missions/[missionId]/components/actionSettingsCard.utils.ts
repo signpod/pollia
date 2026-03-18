@@ -85,6 +85,70 @@ export function parseCompletionDraftSnapshotForOptions(snapshot: unknown): {
   };
 }
 
+export function filterByValidKeys<T>(
+  prev: Record<string, T>,
+  validKeys: Set<string>,
+): Record<string, T> {
+  let hasChange = false;
+  const next: Record<string, T> = {};
+  for (const [key, value] of Object.entries(prev)) {
+    if (validKeys.has(key)) {
+      next[key] = value;
+    } else {
+      hasChange = true;
+    }
+  }
+  return hasChange ? next : prev;
+}
+
+export function deleteKeyFromRecord<T>(prev: Record<string, T>, key: string): Record<string, T> {
+  if (!(key in prev)) return prev;
+  const next = { ...prev };
+  delete next[key];
+  return next;
+}
+
+export function computeOrderedItems<T extends { key: string }>(
+  items: T[],
+  orderKeys: string[],
+): T[] {
+  if (items.length === 0) return [];
+
+  const itemByKey = new Map(items.map(item => [item.key, item]));
+  const orderedKeys: string[] = [];
+  const seen = new Set<string>();
+
+  for (const key of orderKeys) {
+    if (seen.has(key) || !itemByKey.has(key)) continue;
+    orderedKeys.push(key);
+    seen.add(key);
+  }
+
+  for (const item of items) {
+    if (seen.has(item.key)) continue;
+    orderedKeys.push(item.key);
+    seen.add(item.key);
+  }
+
+  return orderedKeys.flatMap(key => {
+    const item = itemByKey.get(key);
+    return item ? [item] : [];
+  });
+}
+
+export function syncOrderKeys(prev: string[], validKeys: string[]): string[] {
+  const validKeySet = new Set(validKeys);
+  const next = prev.filter(key => validKeySet.has(key));
+
+  for (const key of validKeys) {
+    if (!next.includes(key)) {
+      next.push(key);
+    }
+  }
+
+  return areStringArraysEqual(prev, next) ? prev : next;
+}
+
 export function areActionSnapshotsEqual(
   left: ActionFormRawSnapshot | undefined,
   right: ActionFormRawSnapshot,

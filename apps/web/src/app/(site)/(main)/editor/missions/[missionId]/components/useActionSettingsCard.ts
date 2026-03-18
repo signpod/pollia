@@ -42,9 +42,13 @@ import type {
 import {
   areActionSnapshotsEqual,
   areStringArraysEqual,
+  computeOrderedItems,
   createDraftKey,
+  deleteKeyFromRecord,
+  filterByValidKeys,
   getDraftItemKey,
   getExistingItemKey,
+  syncOrderKeys,
 } from "./actionSettingsCard.utils";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle } from "./editor-save.types";
@@ -52,26 +56,6 @@ import { toggleItemWithPreview } from "./editorMobilePreview.utils";
 import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
 import { useActionLinkDerived } from "./useActionLinkDerived";
 import { useActionSaveFlow } from "./useActionSaveFlow";
-
-function filterByValidKeys<T>(prev: Record<string, T>, validKeys: Set<string>): Record<string, T> {
-  let hasChange = false;
-  const next: Record<string, T> = {};
-  for (const [key, value] of Object.entries(prev)) {
-    if (validKeys.has(key)) {
-      next[key] = value;
-    } else {
-      hasChange = true;
-    }
-  }
-  return hasChange ? next : prev;
-}
-
-function deleteKeyFromRecord<T>(prev: Record<string, T>, key: string): Record<string, T> {
-  if (!(key in prev)) return prev;
-  const next = { ...prev };
-  delete next[key];
-  return next;
-}
 
 export interface UseActionSettingsCardReturn {
   viewState: {
@@ -262,36 +246,10 @@ export function useActionSettingsCard({
     [existingActions, draftItems],
   );
 
-  const orderedActionItems = useMemo<ActionListItem[]>(() => {
-    if (actionItems.length === 0) {
-      return [];
-    }
-
-    const actionItemByKey = new Map(actionItems.map(item => [item.key, item]));
-    const orderedKeys: string[] = [];
-    const seen = new Set<string>();
-
-    for (const key of itemOrderKeys) {
-      if (seen.has(key) || !actionItemByKey.has(key)) {
-        continue;
-      }
-      orderedKeys.push(key);
-      seen.add(key);
-    }
-
-    for (const item of actionItems) {
-      if (seen.has(item.key)) {
-        continue;
-      }
-      orderedKeys.push(item.key);
-      seen.add(item.key);
-    }
-
-    return orderedKeys.flatMap(key => {
-      const item = actionItemByKey.get(key);
-      return item ? [item] : [];
-    });
-  }, [actionItems, itemOrderKeys]);
+  const orderedActionItems = useMemo<ActionListItem[]>(
+    () => computeOrderedItems(actionItems, itemOrderKeys),
+    [actionItems, itemOrderKeys],
+  );
 
   const defaultOrderKeys = useMemo(() => actionItems.map(item => item.key), [actionItems]);
 
@@ -388,18 +346,7 @@ export function useActionSettingsCard({
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setItemOrderKeys
   useEffect(() => {
     const validKeys = actionItems.map(item => item.key);
-    setItemOrderKeys(prev => {
-      const validKeySet = new Set(validKeys);
-      const next = prev.filter(key => validKeySet.has(key));
-
-      for (const key of validKeys) {
-        if (!next.includes(key)) {
-          next.push(key);
-        }
-      }
-
-      return areStringArraysEqual(prev, next) ? prev : next;
-    });
+    setItemOrderKeys(prev => syncOrderKeys(prev, validKeys));
   }, [actionItems]);
 
   const validationIssueCount = useMemo(
