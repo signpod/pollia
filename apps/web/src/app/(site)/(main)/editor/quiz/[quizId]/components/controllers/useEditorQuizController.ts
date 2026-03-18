@@ -34,6 +34,7 @@ import type {
   SectionSaveState,
 } from "../../../../missions/[missionId]/components/editor-save.types";
 import { quizDraftVersionAtom } from "../../atoms/quizActionAtoms";
+import { pickNewerDraft } from "./quizDraftResolveModel";
 import { checkQuizPublishGuard } from "./quizPublishGuardModel";
 
 const UNIFIED_SAVE_TOAST_ID = "editor-quiz-save-result";
@@ -116,13 +117,7 @@ function resolveDraftToRestore({
   const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
   const localDraft = localDraftRaw ? toServerEditorDraftPayload(localDraftRaw) : null;
 
-  if (!serverDraft && !localDraft) return null;
-  if (!serverDraft) return localDraft;
-  if (!localDraft) return serverDraft;
-
-  const serverUpdatedAt = serverDraft.meta?.updatedAtMs ?? 0;
-  const localUpdatedAt = localDraft.meta?.updatedAtMs ?? 0;
-  return localUpdatedAt >= serverUpdatedAt ? localDraft : serverDraft;
+  return pickNewerDraft(serverDraft, localDraft);
 }
 
 interface DraftClearResult {
