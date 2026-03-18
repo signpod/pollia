@@ -67,6 +67,14 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const [editorHasReward, setEditorHasReward] = useState(!!reward);
   const [isSavingAll, setIsSavingAll] = useState(false);
 
+  const initialShowHint =
+    mission.quizConfig &&
+    typeof mission.quizConfig === "object" &&
+    "showExplanation" in mission.quizConfig
+      ? (mission.quizConfig as { showExplanation?: boolean }).showExplanation !== false
+      : true;
+  const [showHint, setShowHint] = useState(initialShowHint);
+
   const hasAnyPendingChanges =
     basicState.hasPendingChanges ||
     rewardState.hasPendingChanges ||
@@ -153,6 +161,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
           ref={quizConfigRef}
           mission={mission}
           onSaveStateChange={setQuizConfigState}
+          onShowHintChange={setShowHint}
         />
       </EditorSectionCard>
 
@@ -163,6 +172,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
           ref={questionRef}
           missionId={missionId}
           onSaveStateChange={setQuestionState}
+          showHint={showHint}
         />
       </div>
 

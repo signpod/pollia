@@ -63,10 +63,11 @@ function parseQuizConfig(raw: unknown): QuizConfig {
 interface QuizConfigSettingsCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  onShowHintChange?: (show: boolean) => void;
 }
 
 function QuizConfigSettingsCardComponent(
-  { mission, onSaveStateChange }: QuizConfigSettingsCardProps,
+  { mission, onSaveStateChange, onShowHintChange }: QuizConfigSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const initialConfig = parseQuizConfig(mission.quizConfig);
@@ -75,6 +76,12 @@ function QuizConfigSettingsCardComponent(
     defaultValues: initialConfig,
     mode: "onBlur",
   });
+
+  const watchedShowExplanation = form.watch("showExplanation");
+
+  useEffect(() => {
+    onShowHintChange?.(watchedShowExplanation);
+  }, [watchedShowExplanation, onShowHintChange]);
 
   const hasPendingChanges = form.formState.isDirty;
   const isBusy = form.formState.isSubmitting;

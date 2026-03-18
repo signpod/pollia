@@ -65,6 +65,7 @@ function deleteKeyFromRecord<T>(prev: Record<string, T>, key: string): Record<st
 export interface QuizQuestionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  showHint?: boolean;
 }
 
 export interface UseQuizQuestionSettingsCardReturn {

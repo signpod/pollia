@@ -44,6 +44,7 @@ interface QuizSortableActionItemProps {
   onValidationStateChange: (itemKey: string, issueCount: number) => void;
   onRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
   onMoveItem: (itemKey: string, direction: "up" | "down") => void;
+  showHint?: boolean;
   isFirst: boolean;
   isLast: boolean;
 }
@@ -57,6 +58,7 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
   itemType,
   formKey,
   dirtyBaselineValues,
+  showHint,
   onFormRef,
   onToggle,
   onRemoveDraft,
@@ -181,6 +183,7 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
           enableTypeSelect
           wordingMode="question"
           isQuizMode
+          showHintField={showHint}
           onActionTypeChange={handleTypeChange}
           onDirtyChange={handleDirty}
           onValidationStateChange={handleValidation}

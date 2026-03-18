@@ -46,6 +46,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Textarea,
   TiptapEditor,
   Toggle,
   Typo,
@@ -162,6 +163,7 @@ interface ActionFormProps {
   enforceExclusiveNextLink?: boolean;
   wordingMode?: "action" | "question";
   isQuizMode?: boolean;
+  showHintField?: boolean;
   onActionTypeChange?: (type: ActionType) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   onValidationStateChange?: (issueCount: number) => void;
@@ -327,6 +329,7 @@ function ActionFormComponent(
     allowCompletionLink = true,
     wordingMode = "action",
     isQuizMode = false,
+    showHintField = true,
     onActionTypeChange,
     onDirtyChange,
     onValidationStateChange,
@@ -360,7 +363,9 @@ function ActionFormComponent(
   const [imageFileUploadId, setImageFileUploadId] = useState<string | null>(
     initialValues?.imageFileUploadId ?? null,
   );
-  const [isRequired, setIsRequired] = useState(initialValues?.isRequired ?? true);
+  const [isRequired, setIsRequired] = useState(
+    isQuizMode ? true : (initialValues?.isRequired ?? true),
+  );
   const [hasOther, setHasOther] = useState(initialValues?.hasOther ?? false);
   const [maxSelections, setMaxSelections] = useState(initialValues?.maxSelections ?? 1);
   const [options, setOptions] = useState<OptionFormItem[]>(() => {
@@ -380,7 +385,9 @@ function ActionFormComponent(
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
     normalizedInitialNextCompletionId,
   );
-  const [score, setScore] = useState<number | null>(initialValues?.score ?? null);
+  const [score, setScore] = useState<number | null>(
+    initialValues?.score ?? (isQuizMode ? 10 : null),
+  );
   const [matchMode, setMatchMode] = useState<MatchMode | null>(initialValues?.matchMode ?? null);
   const [hint, setHint] = useState(initialValues?.hint ?? "");
 
@@ -1041,7 +1048,16 @@ function ActionFormComponent(
   };
 
   const handleOptionIsCorrectChange = (optionKey: string, checked: boolean) => {
-    setOptions(prev => patchOptionByKey(prev, optionKey, { isCorrect: checked }));
+    if (isQuizMode && selectedActionType === ActionType.OX) {
+      setOptions(prev =>
+        prev.map(opt => ({
+          ...opt,
+          isCorrect: opt._key === optionKey ? checked : false,
+        })),
+      );
+    } else {
+      setOptions(prev => patchOptionByKey(prev, optionKey, { isCorrect: checked }));
+    }
   };
 
   const [openOptionKey, setOpenOptionKey] = useState<string | null>(null);
@@ -1161,10 +1177,12 @@ function ActionFormComponent(
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <LabelText required={false}>필수 응답</LabelText>
-        <Toggle checked={isRequired} onCheckedChange={setIsRequired} />
-      </div>
+      {!isQuizMode && (
+        <div className="flex items-center justify-between">
+          <LabelText required={false}>필수 응답</LabelText>
+          <Toggle checked={isRequired} onCheckedChange={setIsRequired} />
+        </div>
+      )}
 
       {needsMaxSelections && !isBranch && (
         <div className="flex items-center justify-between">
@@ -1187,7 +1205,39 @@ function ActionFormComponent(
           </div>
         )}
 
-      {needsOptions && (
+      {needsOptions && isQuizMode && selectedActionType === ActionType.OX && (
+        <div className="flex flex-col gap-3">
+          <LabelText required>항목</LabelText>
+          {options.map(option => (
+            <div
+              key={option._key}
+              className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-4"
+            >
+              <div className="flex items-center justify-between">
+                <Typo.Body size="medium" className="font-semibold text-zinc-800">
+                  {option.title}
+                </Typo.Body>
+                <div className="flex items-center gap-2">
+                  <LabelText required={false}>정답</LabelText>
+                  <Toggle
+                    checked={option.isCorrect ?? false}
+                    onCheckedChange={checked => handleOptionIsCorrectChange(option._key, checked)}
+                  />
+                </div>
+              </div>
+              <Textarea
+                placeholder="설명 (선택)"
+                maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                rows={2}
+                value={option.description ?? ""}
+                onChange={e => updateOptionByKey(option._key, "description", e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {needsOptions && !(isQuizMode && selectedActionType === ActionType.OX) && (
         <div className="flex flex-col gap-3">
           <LabelText required>
             {isQuizMode && selectedActionType === ActionType.SHORT_TEXT
@@ -1301,6 +1351,9 @@ function ActionFormComponent(
         <>
           <div className="flex flex-col gap-2">
             <LabelText required={false}>배점</LabelText>
+            <Typo.Body size="medium" className="text-zinc-400">
+              이 질문의 배점을 설정합니다.
+            </Typo.Body>
             <Input
               type="number"
               placeholder="배점을 입력하세요 (선택)"
@@ -1316,6 +1369,9 @@ function ActionFormComponent(
           {selectedActionType === ActionType.SHORT_TEXT && (
             <div className="flex flex-col gap-2">
               <LabelText required={false}>매칭 모드</LabelText>
+              <Typo.Body size="medium" className="text-zinc-400">
+                정답 비교 방식을 선택합니다.
+              </Typo.Body>
               <Select
                 value={matchMode ?? MatchMode.EXACT}
                 onValueChange={value => setMatchMode(value as MatchMode)}
@@ -1331,14 +1387,19 @@ function ActionFormComponent(
             </div>
           )}
 
-          <div className="flex flex-col gap-2">
-            <LabelText required={false}>힌트</LabelText>
-            <Input
-              placeholder="힌트를 입력하세요 (선택)"
-              value={hint}
-              onChange={e => setHint(e.target.value)}
-            />
-          </div>
+          {showHintField && (
+            <div className="flex flex-col gap-2">
+              <LabelText required={false}>힌트</LabelText>
+              <Typo.Body size="medium" className="text-zinc-400">
+                참여자에게 표시할 힌트를 입력합니다.
+              </Typo.Body>
+              <Input
+                placeholder="힌트를 입력하세요 (선택)"
+                value={hint}
+                onChange={e => setHint(e.target.value)}
+              />
+            </div>
+          )}
         </>
       )}
 

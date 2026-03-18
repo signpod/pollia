@@ -201,6 +201,7 @@ function QuizQuestionSettingsCardComponent(
                       itemType={itemType}
                       formKey={formKey}
                       dirtyBaselineValues={dirtyBaselineValues}
+                      showHint={props.showHint}
                       onFormRef={handleFormRef}
                       onToggle={handleToggleItem}
                       onRemoveDraft={handleRemoveDraft}
