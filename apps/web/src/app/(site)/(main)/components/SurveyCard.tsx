@@ -64,10 +64,10 @@ export function SurveyCard({ survey }: SurveyCardProps) {
           <p className="line-clamp-2 text-sm font-semibold leading-normal text-default">
             {survey.title}
           </p>
-          <p className="text-[11px] font-bold text-zinc-400">
+          {/* <p className="text-[11px] font-bold text-zinc-400">
             조회 {formatCompactNumber(survey.viewCount)} · 찜{" "}
             {formatCompactNumber(survey.likesCount)}
-          </p>
+          </p> */}
         </div>
       </div>
     </Link>

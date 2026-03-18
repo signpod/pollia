@@ -3,7 +3,6 @@
 import { MissionImage } from "@/app/(site)/mission/[missionId]/components/MissionImage";
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { WHITE_LABEL_PREFIX } from "@/constants/routes";
-import { formatCompactNumber } from "@/lib/format";
 import Lock from "@public/svgs/lock.svg";
 import { Typo } from "@repo/ui/components";
 import { usePathname } from "next/navigation";
@@ -75,11 +74,11 @@ export function MissionIntroTemplate({
         ) : (
           <div />
         )}
-        {!isWhiteLabel && (
+        {/* {!isWhiteLabel && (
           <Typo.Body size="small" className="text-zinc-400">
             조회 {formatCompactNumber(viewCount)} · 찜 {formatCompactNumber(likesCount)}
           </Typo.Body>
-        )}
+        )} */}
       </div>
 
       <div className="mx-5 h-px bg-zinc-100" />
