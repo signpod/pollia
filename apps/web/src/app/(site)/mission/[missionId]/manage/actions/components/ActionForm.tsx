@@ -125,6 +125,7 @@ export interface ActionFormValues {
   score?: number | null;
   matchMode?: MatchMode | null;
   hint?: string | null;
+  explanation?: string | null;
 }
 
 export interface ActionFormRawSnapshot {
@@ -164,6 +165,7 @@ interface ActionFormProps {
   wordingMode?: "action" | "question";
   isQuizMode?: boolean;
   showHintField?: boolean;
+  showExplanationField?: boolean;
   onActionTypeChange?: (type: ActionType) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   onValidationStateChange?: (issueCount: number) => void;
@@ -312,6 +314,7 @@ function buildActionDirtyComparable(params: {
         score: values.score ?? null,
         matchMode: values.matchMode ?? null,
         hint: values.hint?.trim() ?? null,
+        explanation: values.explanation?.trim() ?? null,
       }),
     },
   };
@@ -337,6 +340,7 @@ function ActionFormComponent(
     wordingMode = "action",
     isQuizMode = false,
     showHintField = true,
+    showExplanationField = false,
     onActionTypeChange,
     onDirtyChange,
     onValidationStateChange,
@@ -397,6 +401,7 @@ function ActionFormComponent(
   );
   const [matchMode, setMatchMode] = useState<MatchMode | null>(initialValues?.matchMode ?? null);
   const [hint, setHint] = useState(initialValues?.hint ?? "");
+  const [explanation, setExplanation] = useState(initialValues?.explanation ?? "");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
@@ -724,6 +729,7 @@ function ActionFormComponent(
           matchMode:
             selectedActionType === ActionType.SHORT_TEXT ? (matchMode ?? MatchMode.EXACT) : null,
           hint: hint.trim() || null,
+          explanation: explanation.trim() || null,
         }),
       };
     },
@@ -751,6 +757,7 @@ function ActionFormComponent(
       score,
       matchMode,
       hint,
+      explanation,
     ],
   );
 
@@ -787,6 +794,7 @@ function ActionFormComponent(
         score,
         matchMode,
         hint: hint || null,
+        explanation: explanation || null,
       }),
     };
 
@@ -814,6 +822,7 @@ function ActionFormComponent(
     score,
     matchMode,
     hint,
+    explanation,
   ]);
 
   const applyRawSnapshot = useCallback(
@@ -848,6 +857,7 @@ function ActionFormComponent(
       setScore(nextValues.score ?? null);
       setMatchMode(nextValues.matchMode ?? null);
       setHint(nextValues.hint ?? "");
+      setExplanation(nextValues.explanation ?? "");
       setErrors({});
     },
     [allowCompletionLink, onActionTypeChange],
@@ -873,7 +883,7 @@ function ActionFormComponent(
             }),
             nextActionId,
             nextCompletionId,
-            ...(isQuizMode && { score, matchMode, hint }),
+            ...(isQuizMode && { score, matchMode, hint, explanation }),
           },
           allowCompletionLink,
           enableEditorActionMedia,
@@ -902,6 +912,7 @@ function ActionFormComponent(
       score,
       matchMode,
       hint,
+      explanation,
     ],
   );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
@@ -1485,6 +1496,20 @@ function ActionFormComponent(
                 placeholder="힌트를 입력하세요 (선택)"
                 value={hint}
                 onChange={e => setHint(e.target.value)}
+              />
+            </div>
+          )}
+
+          {showExplanationField && (
+            <div className="flex flex-col gap-2">
+              <LabelText required={false}>정답 설명</LabelText>
+              <Typo.Body size="medium" className="text-zinc-400">
+                오답 시 표시할 정답에 대한 설명을 입력합니다.
+              </Typo.Body>
+              <Input
+                placeholder="정답 설명을 입력하세요 (선택)"
+                value={explanation}
+                onChange={e => setExplanation(e.target.value)}
               />
             </div>
           )}

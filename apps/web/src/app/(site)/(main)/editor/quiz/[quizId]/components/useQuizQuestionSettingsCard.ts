@@ -50,6 +50,7 @@ export interface QuizQuestionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
   showHint?: boolean;
+  showCorrectOnWrong?: boolean;
 }
 
 export interface UseQuizQuestionSettingsCardReturn {

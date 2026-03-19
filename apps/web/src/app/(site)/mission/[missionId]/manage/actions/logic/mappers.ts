@@ -81,6 +81,7 @@ export function mapCreateActionInput(params: {
     ...(values.score !== undefined && { score: values.score }),
     ...(values.matchMode !== undefined && { matchMode: values.matchMode }),
     ...(values.hint !== undefined && { hint: values.hint }),
+    ...(values.explanation !== undefined && { explanation: values.explanation }),
     ...(values.options && {
       options: values.options.map((option, index) => ({
         title: option.title,
@@ -138,6 +139,7 @@ export function mapUpdateActionInput(params: {
     ...(values.score !== undefined && { score: values.score }),
     ...(values.matchMode !== undefined && { matchMode: values.matchMode }),
     ...(values.hint !== undefined && { hint: values.hint }),
+    ...(values.explanation !== undefined && { explanation: values.explanation }),
     ...(mappedOptions && { options: mappedOptions }),
     ...(!hasOptions && switchedToNonOptionType && { options: [] as Array<never> }),
   };
@@ -168,5 +170,6 @@ export function mapEditInitialValues(action: ActionDetail): ActionFormValues {
     score: action.score,
     matchMode: action.matchMode,
     hint: action.hint,
+    explanation: action.explanation,
   };
 }

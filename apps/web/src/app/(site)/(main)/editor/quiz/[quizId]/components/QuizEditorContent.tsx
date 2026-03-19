@@ -47,6 +47,9 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const [rewardValidationCount, setRewardValidationCount] = useState(0);
 
   const [showHint, setShowHint] = useState(parseQuizConfig(mission.quizConfig).showExplanation);
+  const [showCorrectOnWrong, setShowCorrectOnWrong] = useState(
+    parseQuizConfig(mission.quizConfig).showCorrectOnWrong,
+  );
 
   const missionQuery = useReadMission(missionId);
   const actionsQuery = useReadActionsDetail(missionId);
@@ -59,7 +62,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
   const questionDraftItems = useAtomValue(quizActionDraftItemsAtom);
   const completionDrafts = useAtomValue(completionDraftsAtom);
 
-  const { refs, sectionBindings, viewState, actions } = useEditorQuizController({
+  const { refs, sectionBindings, viewState, actions, undoRedo } = useEditorQuizController({
     quizId: missionId,
     mission,
     currentTab,
@@ -98,10 +101,13 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         onSave={() => {
           void actions.onSave();
         }}
+        canUndo={undoRedo.canUndo}
+        onUndo={() => void undoRedo.undo()}
       />
     ),
     [
       actions,
+      undoRedo,
       viewState.hasAnyBusySection,
       viewState.hasAnyPendingChanges,
       viewState.hasAnyValidationIssues,
@@ -160,6 +166,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
             mission={mission}
             onSaveStateChange={sectionBindings.onQuizConfigStateChange}
             onShowHintChange={setShowHint}
+            onShowCorrectOnWrongChange={setShowCorrectOnWrong}
           />
         </EditorSectionCard>
 
@@ -171,6 +178,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
             missionId={missionId}
             onSaveStateChange={sectionBindings.onQuestionStateChange}
             showHint={showHint}
+            showCorrectOnWrong={showCorrectOnWrong}
           />
         </div>
 
