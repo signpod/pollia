@@ -109,6 +109,8 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         }}
         canUndo={undoRedo.canUndo}
         onUndo={() => void undoRedo.undo()}
+        canRedo={undoRedo.canRedo}
+        onRedo={() => void undoRedo.redo()}
         totalValidationIssueCount={viewState.totalValidationIssueCount}
         onScrollToFirstError={actions.scrollToFirstError}
       />

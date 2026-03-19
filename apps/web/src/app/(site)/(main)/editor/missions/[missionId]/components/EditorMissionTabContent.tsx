@@ -234,6 +234,8 @@ export function EditorMissionTabContent({
         }}
         canUndo={undoRedo.canUndo}
         onUndo={() => void undoRedo.undo()}
+        canRedo={undoRedo.canRedo}
+        onRedo={() => void undoRedo.redo()}
       />
     ),
     [
