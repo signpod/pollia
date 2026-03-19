@@ -94,7 +94,8 @@ export class QuizGradingService {
     }>,
     scoreRatio: number,
   ): string | null {
-    const sorted = [...completions].sort((a, b) => (a.minScoreRatio ?? 0) - (b.minScoreRatio ?? 0));
+    const withRange = completions.filter(c => c.minScoreRatio != null || c.maxScoreRatio != null);
+    const sorted = [...withRange].sort((a, b) => (a.minScoreRatio ?? 0) - (b.minScoreRatio ?? 0));
 
     const matched = sorted.find(c => {
       const min = c.minScoreRatio ?? 0;
@@ -102,7 +103,10 @@ export class QuizGradingService {
       return scoreRatio >= min && scoreRatio <= max;
     });
 
-    return matched?.id ?? null;
+    if (matched) return matched.id;
+
+    const fallback = completions.find(c => c.minScoreRatio == null && c.maxScoreRatio == null);
+    return fallback?.id ?? null;
   }
 }
 
