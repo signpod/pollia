@@ -309,7 +309,13 @@ function getUserAnswerText(
 function getCorrectAnswerText(action?: ActionDetail): string | null {
   if (!action) return null;
 
-  const correctOptions = action.options.filter(opt => opt.isCorrect);
+  let correctOptions = action.options.filter(opt => opt.isCorrect);
+  if (
+    correctOptions.length === 0 &&
+    (action.type === ActionType.SHORT_TEXT || action.type === ActionType.SUBJECTIVE)
+  ) {
+    correctOptions = action.options;
+  }
   if (correctOptions.length === 0) return null;
 
   return correctOptions.map(opt => opt.title).join(", ");

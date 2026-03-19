@@ -564,6 +564,60 @@ describe("QuizGradingService", () => {
     });
   });
 
+  describe("gradeResponse - SHORT_TEXT isCorrect 미설정 (퀴즈 에디터 기본 동작)", () => {
+    it("isCorrect가 없는 SHORT_TEXT 옵션도 정답으로 처리한다", async () => {
+      // Given
+      const actions = [
+        createActionWithOptions(
+          "a1",
+          10,
+          ActionType.SHORT_TEXT,
+          [{ id: "ans1", title: "서울", isCorrect: false }],
+          MatchMode.EXACT,
+        ),
+      ];
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions as never);
+
+      mockAnswerRepo.findByResponseId.mockResolvedValue([
+        createTextAnswer("a1", 10, "서울"),
+      ] as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.gradedItems).toHaveLength(1);
+      expect(result.gradedItems[0]!.isCorrect).toBe(true);
+      expect(result.totalScore).toBe(10);
+    });
+
+    it("isCorrect가 없는 SHORT_TEXT에서 오답은 0점이다", async () => {
+      // Given
+      const actions = [
+        createActionWithOptions(
+          "a1",
+          10,
+          ActionType.SHORT_TEXT,
+          [{ id: "ans1", title: "서울", isCorrect: false }],
+          MatchMode.EXACT,
+        ),
+      ];
+      mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions as never);
+
+      mockAnswerRepo.findByResponseId.mockResolvedValue([
+        createTextAnswer("a1", 10, "부산"),
+      ] as never);
+
+      // When
+      const result = await service.gradeResponse("r1", "m1");
+
+      // Then
+      expect(result.gradedItems).toHaveLength(1);
+      expect(result.gradedItems[0]!.isCorrect).toBe(false);
+      expect(result.totalScore).toBe(0);
+    });
+  });
+
   describe("scoreRatio 반올림 정확성", () => {
     it("1/3 정답 -> 33%", async () => {
       // Given

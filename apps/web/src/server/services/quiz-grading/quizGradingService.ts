@@ -37,7 +37,10 @@ export class QuizGradingService {
       const fullAction = actionMap.get(action.id);
       if (!fullAction) continue;
 
-      const correctOptions = fullAction.options.filter(opt => opt.isCorrect);
+      let correctOptions = fullAction.options.filter(opt => opt.isCorrect);
+      if (correctOptions.length === 0 && action.type === ActionType.SHORT_TEXT) {
+        correctOptions = fullAction.options;
+      }
       if (correctOptions.length === 0) continue;
 
       const isCorrect =
