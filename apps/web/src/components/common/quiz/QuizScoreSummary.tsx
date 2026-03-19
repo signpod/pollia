@@ -16,9 +16,10 @@ import { useCallback, useState } from "react";
 
 interface QuizScoreSummaryProps {
   missionId: string;
+  showCorrectOnWrong?: boolean;
 }
 
-export function QuizScoreSummary({ missionId }: QuizScoreSummaryProps) {
+export function QuizScoreSummary({ missionId, showCorrectOnWrong = true }: QuizScoreSummaryProps) {
   const { data: responseData } = useReadMissionResponseForMission({ missionId });
   const responseId = responseData?.data?.id;
 
@@ -48,6 +49,7 @@ export function QuizScoreSummary({ missionId }: QuizScoreSummaryProps) {
         missionId={missionId}
         gradedItems={gradeResult.gradedItems}
         responseData={responseData?.data ? (responseData as GetMissionResponseResponse) : undefined}
+        showCorrectOnWrong={showCorrectOnWrong}
       />
     </div>
   );
@@ -129,10 +131,12 @@ function QuestionReviewSection({
   missionId,
   gradedItems,
   responseData,
+  showCorrectOnWrong,
 }: {
   missionId: string;
   gradedItems: GradedItem[];
   responseData?: GetMissionResponseResponse;
+  showCorrectOnWrong: boolean;
 }) {
   const { data: actionsData } = useReadActionsDetail(missionId);
   const actions = actionsData?.data ?? [];
@@ -154,6 +158,7 @@ function QuestionReviewSection({
               index={index}
               action={action}
               userAnswer={answer}
+              showCorrectOnWrong={showCorrectOnWrong}
             />
           );
         })}
@@ -167,14 +172,16 @@ function QuestionReviewItem({
   index,
   action,
   userAnswer,
+  showCorrectOnWrong,
 }: {
   item: GradedItem;
   index: number;
   action?: ActionDetail;
   userAnswer?: GetMissionResponseResponse["data"]["answers"][number];
+  showCorrectOnWrong: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const canExpand = !item.isCorrect && !!action;
+  const canExpand = !item.isCorrect && !!action && showCorrectOnWrong;
 
   const handleToggle = useCallback(() => {
     if (canExpand) setIsOpen(prev => !prev);
@@ -185,11 +192,11 @@ function QuestionReviewItem({
 
   return (
     <div className="rounded-xl ring-1 ring-default overflow-hidden">
-      <button
-        type="button"
+      <div
+        role={canExpand ? "button" : undefined}
+        tabIndex={canExpand ? 0 : undefined}
         className={cn("flex w-full items-center gap-3 px-4 py-3", canExpand && "cursor-pointer")}
-        onClick={handleToggle}
-        disabled={!canExpand}
+        onClick={canExpand ? handleToggle : undefined}
       >
         {item.isCorrect ? (
           <CheckCircle2Icon className="size-5 shrink-0 text-blue-500" />
@@ -218,7 +225,7 @@ function QuestionReviewItem({
             )}
           />
         )}
-      </button>
+      </div>
 
       <AnimatePresence>
         {isOpen && canExpand && (
@@ -240,7 +247,7 @@ function QuestionReviewItem({
                   </Typo.Body>
                 </div>
               )}
-              {correctAnswerText && (
+              {showCorrectOnWrong && correctAnswerText && (
                 <div className="flex items-start gap-2">
                   <Typo.Body size="small" className="shrink-0 text-violet-600 font-semibold">
                     정답

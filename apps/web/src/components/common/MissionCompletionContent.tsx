@@ -13,6 +13,7 @@ import { useReadMission } from "@/hooks/mission";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { useShareTracking } from "@/hooks/share/useShareTracking";
+import { quizConfigSchema } from "@/schemas/mission/quizConfigSchema";
 import { MissionCategory, MissionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
@@ -115,7 +116,15 @@ export function MissionCompletionContent({
         ) : undefined
       }
       quizResult={
-        category === MissionCategory.QUIZ ? <QuizScoreSummary missionId={missionId} /> : undefined
+        category === MissionCategory.QUIZ ? (
+          <QuizScoreSummary
+            missionId={missionId}
+            showCorrectOnWrong={
+              quizConfigSchema.safeParse(mission?.data?.quizConfig ?? {}).data
+                ?.showCorrectOnWrong ?? true
+            }
+          />
+        ) : undefined
       }
       completionLinks={
         completionLinks && completionLinks.length > 0 ? (

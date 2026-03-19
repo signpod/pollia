@@ -186,16 +186,42 @@ function ActionStepWrapper({
     [currentActionData],
   );
 
+  const getCorrectAnswerText = useCallback((): string | null => {
+    const options = currentActionData.options ?? [];
+    const actionType = currentActionData.type;
+
+    if (actionType === ActionType.OX || actionType === ActionType.MULTIPLE_CHOICE) {
+      const correct = options.filter(opt => opt.isCorrect);
+      return correct.length > 0 ? correct.map(opt => opt.title).join(", ") : null;
+    }
+
+    if (actionType === ActionType.SHORT_TEXT || actionType === ActionType.SUBJECTIVE) {
+      const correct = options.filter(opt => opt.isCorrect);
+      return correct.length > 0 ? correct.map(opt => opt.title).join(", ") : null;
+    }
+
+    return null;
+  }, [currentActionData]);
+
   const showQuizFeedbackModal = useCallback(
     (isCorrect: boolean, onNext: () => void, isLastStep = false) => {
+      let description = isCorrect ? "잘 맞혔어요 👏" : "아쉽지만 틀렸어요";
+
+      if (!isCorrect && quiz?.quizConfig.showCorrectOnWrong) {
+        const correctText = getCorrectAnswerText();
+        if (correctText) {
+          description = `아쉽지만 틀렸어요\n정답: ${correctText}`;
+        }
+      }
+
       showModal({
         title: isCorrect ? "정답이에요!" : "오답이에요",
-        description: isCorrect ? "잘 맞혔어요 👏" : "아쉽지만 틀렸어요",
+        description,
         confirmText: isLastStep ? "제출하기" : "다음",
         onConfirm: onNext,
       });
     },
-    [showModal],
+    [showModal, quiz?.quizConfig.showCorrectOnWrong, getCorrectAnswerText],
   );
 
   const quizNavigateToAction = useCallback(
