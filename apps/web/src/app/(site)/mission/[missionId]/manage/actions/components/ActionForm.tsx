@@ -630,6 +630,13 @@ function ActionFormComponent(
       }
     }
 
+    if (isQuizMode && needsOptions && selectedActionType !== ActionType.SHORT_TEXT) {
+      const hasCorrectAnswer = options.some(o => o.isCorrect);
+      if (!hasCorrectAnswer) {
+        newErrors.correctAnswer = "정답을 1개 이상 선택해주세요.";
+      }
+    }
+
     if (!isQuizMode && hasLinkTargets) {
       if (isBranch) {
         const missingBranchNext =
@@ -651,6 +658,8 @@ function ActionFormComponent(
     needsOptions,
     options,
     optionLimits.min,
+    isQuizMode,
+    selectedActionType,
     isBranch,
     allowCompletionLink,
     nextActionId,
@@ -1276,6 +1285,11 @@ function ActionFormComponent(
               />
             </div>
           ))}
+          {errors.correctAnswer && (
+            <Typo.Body size="small" className="text-red-500">
+              {errors.correctAnswer}
+            </Typo.Body>
+          )}
         </div>
       )}
 
@@ -1425,6 +1439,11 @@ function ActionFormComponent(
             {errors.options && (
               <Typo.Body size="small" className="text-red-500">
                 {errors.options}
+              </Typo.Body>
+            )}
+            {errors.correctAnswer && (
+              <Typo.Body size="small" className="text-red-500">
+                {errors.correctAnswer}
               </Typo.Body>
             )}
             {errors.branchNextAction && (
