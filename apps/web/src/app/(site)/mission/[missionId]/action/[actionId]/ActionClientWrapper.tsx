@@ -171,11 +171,12 @@ function ActionStepWrapper({
 
       if (actionType === ActionType.SHORT_TEXT || actionType === ActionType.SUBJECTIVE) {
         if (options.length === 0) return null;
-        const userText = ("textAnswer" in answer ? answer.textAnswer : "")?.trim() ?? "";
+        const userText =
+          ("textAnswer" in answer ? answer.textAnswer : "")?.replace(/\s/g, "") ?? "";
         if (!userText) return false;
         const matchMode = currentActionData.matchMode ?? MatchMode.EXACT;
         return options.some(opt => {
-          const correctText = opt.title.trim();
+          const correctText = opt.title.replace(/\s/g, "");
           if (matchMode === MatchMode.CONTAINS) {
             return userText.toLowerCase().includes(correctText.toLowerCase());
           }

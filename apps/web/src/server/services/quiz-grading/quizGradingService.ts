@@ -37,10 +37,7 @@ export class QuizGradingService {
       const fullAction = actionMap.get(action.id);
       if (!fullAction) continue;
 
-      let correctOptions = fullAction.options.filter(opt => opt.isCorrect);
-      if (correctOptions.length === 0 && action.type === ActionType.SHORT_TEXT) {
-        correctOptions = fullAction.options;
-      }
+      const correctOptions = fullAction.options.filter(opt => opt.isCorrect);
       if (correctOptions.length === 0) continue;
 
       const isCorrect =
@@ -77,11 +74,11 @@ export class QuizGradingService {
     matchMode: MatchMode | null,
   ): boolean {
     if (!textAnswer) return false;
-    const normalizedAnswer = textAnswer.trim().toLowerCase();
+    const normalizedAnswer = textAnswer.replace(/\s/g, "").toLowerCase();
     if (normalizedAnswer.length === 0) return false;
 
     return correctOptions.some(opt => {
-      const normalizedCorrect = opt.title.trim().toLowerCase();
+      const normalizedCorrect = opt.title.replace(/\s/g, "").toLowerCase();
       if (matchMode === MatchMode.CONTAINS) {
         return normalizedAnswer.includes(normalizedCorrect);
       }
