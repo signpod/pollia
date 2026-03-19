@@ -22,13 +22,17 @@ import { missionCompletionRepository } from "@/server/repositories/mission-compl
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import { type Action, ActionType, Prisma } from "@prisma/client";
 import { z } from "zod";
-import { actionSectionDraftSnapshotSchema } from "./actionSectionDraftSchema";
+import {
+  actionSectionDraftSnapshotSchema,
+  completionSectionDraftSnapshotSchema,
+} from "./actionSectionDraftSchema";
 import type {
   ActionCreatedResult,
   ActionToCreate,
   ActionToUpdate,
   BaseActionInput,
   BaseActionInputWithOptions,
+  CompletionToCreate,
   CreateBranchInput,
   CreateDateInput,
   CreateEitherOrInput,
@@ -1139,6 +1143,7 @@ export class ActionService {
 
     const draft = mission.editorDraft as Record<string, unknown>;
     const actionSection = draft.action ?? null;
+    const completionSection = draft.completion ?? null;
 
     if (!actionSection) {
       return {
@@ -1158,6 +1163,28 @@ export class ActionService {
     }
 
     const actionDraft = actionParseResult.data;
+
+    const completionsToCreate: CompletionToCreate[] = [];
+    if (completionSection) {
+      const completionParseResult =
+        completionSectionDraftSnapshotSchema.safeParse(completionSection);
+      if (completionParseResult.success) {
+        for (const item of completionParseResult.data.draftItems) {
+          const tempId = `draft:completion:${item.key}`;
+          const snapshotKey = `draft:${item.key}`;
+          const snapshot = completionParseResult.data.formSnapshotByItemKey[snapshotKey];
+          if (snapshot) {
+            completionsToCreate.push({
+              tempId,
+              title: snapshot.title,
+              description: snapshot.description,
+              imageUrl: snapshot.imageUrl,
+              imageFileUploadId: snapshot.imageFileUploadId,
+            });
+          }
+        }
+      }
+    }
 
     const actionsToCreate: ActionToCreate[] = [];
     const actionsToUpdate: ActionToUpdate[] = [];
@@ -1203,7 +1230,7 @@ export class ActionService {
     const result = await this.saveActionSection(
       {
         missionId,
-        completionsToCreate: [],
+        completionsToCreate,
         actionsToCreate,
         actionsToUpdate,
         actionOrder,
