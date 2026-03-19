@@ -25,6 +25,7 @@ import {
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
+import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { countValidationIssues } from "../../../utils/countValidationIssues";
 import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
@@ -136,8 +137,10 @@ function ContentBasicInfoCardComponent(
     [form.formState.errors],
   );
 
+  const { hasPendingChanges, markClean } = useFormDirtySnapshot(form);
+
   const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
-    hasPendingChanges: form.formState.isDirty,
+    hasPendingChanges,
     isBusy: form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy,
     hasValidationIssues: validationIssueCount > 0,
     validationIssueCount,
@@ -186,7 +189,7 @@ function ContentBasicInfoCardComponent(
         return { status: "failed", message: "이미지 업로드가 완료된 뒤 저장해주세요." };
       }
 
-      if (!form.formState.isDirty) {
+      if (!getHasPendingChanges()) {
         return { status: "no_changes" };
       }
 
@@ -220,6 +223,7 @@ function ContentBasicInfoCardComponent(
         thumbnailImageUpload.deleteMarkedInitial();
         brandLogoImageUpload.deleteMarkedInitial();
         form.reset(values);
+        markClean();
 
         if (!silent) {
           toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다.` });
@@ -243,7 +247,7 @@ function ContentBasicInfoCardComponent(
         return { status: "failed", message };
       }
     },
-    [brandLogoImageUpload, form, mission.id, thumbnailImageUpload],
+    [brandLogoImageUpload, form, getHasPendingChanges, markClean, mission.id, thumbnailImageUpload],
   );
 
   useImperativeHandle(

@@ -17,6 +17,7 @@ import {
 import { AlertCircle } from "lucide-react";
 import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
+import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import type {
   SectionSaveHandle,
@@ -68,8 +69,10 @@ function QuizConfigSettingsCardComponent(
     onShowCorrectOnWrongChange?.(watchedShowCorrectOnWrong);
   }, [watchedShowCorrectOnWrong, onShowCorrectOnWrongChange]);
 
+  const { hasPendingChanges, markClean } = useFormDirtySnapshot(form);
+
   const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
-    hasPendingChanges: form.formState.isDirty,
+    hasPendingChanges,
     isBusy: form.formState.isSubmitting,
     onSaveStateChange,
   });
@@ -80,7 +83,7 @@ function QuizConfigSettingsCardComponent(
         return { status: "failed", message: "퀴즈 설정 저장이 진행 중입니다." };
       }
 
-      if (!form.formState.isDirty) {
+      if (!getHasPendingChanges()) {
         return { status: "no_changes" };
       }
 
@@ -89,6 +92,7 @@ function QuizConfigSettingsCardComponent(
       try {
         await updateMission(mission.id, { quizConfig: values });
         form.reset(values);
+        markClean();
 
         if (!silent) {
           toast({ message: "퀴즈 설정이 수정되었습니다." });
@@ -105,7 +109,7 @@ function QuizConfigSettingsCardComponent(
         return { status: "failed", message };
       }
     },
-    [form, mission.id],
+    [form, getHasPendingChanges, markClean, mission.id],
   );
 
   useImperativeHandle(

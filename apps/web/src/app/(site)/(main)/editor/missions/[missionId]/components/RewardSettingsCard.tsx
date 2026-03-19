@@ -29,6 +29,7 @@ import {
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
+import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { countValidationIssues } from "../../../utils/countValidationIssues";
 import type {
@@ -146,8 +147,10 @@ function RewardSettingsCardComponent(
     [form.formState.errors],
   );
 
+  const { hasPendingChanges, markClean } = useFormDirtySnapshot(form);
+
   const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
-    hasPendingChanges: form.formState.isDirty,
+    hasPendingChanges,
     isBusy: form.formState.isSubmitting || rewardImageUpload.isUploading,
     hasValidationIssues: validationIssueCount > 0,
     validationIssueCount,
@@ -173,7 +176,7 @@ function RewardSettingsCardComponent(
         return { status: "failed", message: "이미지 업로드가 완료된 뒤 저장해주세요." };
       }
 
-      if (!form.formState.isDirty) {
+      if (!getHasPendingChanges()) {
         return { status: "no_changes" };
       }
 
@@ -194,6 +197,7 @@ function RewardSettingsCardComponent(
 
           setCurrentReward(null);
           form.reset(buildDefaultValues(mission, null));
+          markClean();
 
           if (!silent) {
             toast({ message: "리워드 설정이 저장되었습니다." });
@@ -232,6 +236,7 @@ function RewardSettingsCardComponent(
         }
 
         rewardImageUpload.deleteMarkedInitial();
+        markClean();
 
         if (!silent) {
           toast({ message: "리워드 설정이 저장되었습니다." });
@@ -252,7 +257,7 @@ function RewardSettingsCardComponent(
         return { status: "failed", message };
       }
     },
-    [currentReward, form, mission, rewardImageUpload],
+    [currentReward, form, getHasPendingChanges, markClean, mission, rewardImageUpload],
   );
 
   useImperativeHandle(
