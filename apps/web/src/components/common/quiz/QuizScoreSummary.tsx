@@ -249,7 +249,7 @@ function QuestionReviewItem({
             className="overflow-hidden"
           >
             <div className="flex flex-col gap-2 border-t border-zinc-100 px-4 py-3">
-              {userAnswerText && (
+              {!item.isCorrect && userAnswerText && (
                 <div className="flex items-start gap-2">
                   <Typo.Body size="small" className="shrink-0 text-zinc-400 font-semibold">
                     내 답
@@ -259,7 +259,7 @@ function QuestionReviewItem({
                   </Typo.Body>
                 </div>
               )}
-              {showCorrectOnWrong && correctAnswerText && (
+              {!item.isCorrect && showCorrectOnWrong && correctAnswerText && (
                 <div className="flex items-start gap-2">
                   <Typo.Body size="small" className="shrink-0 text-violet-600 font-semibold">
                     정답
