@@ -7,12 +7,13 @@ import { PurchaseLinkCarousel } from "@/app/(site)/mission/[missionId]/done/ui/P
 import { useCompletionImageDownload } from "@/app/(site)/mission/[missionId]/done/ui/hooks";
 import { MissionCarousel } from "@/components/common/MissionCarousel";
 import { MissionCompletionPage } from "@/components/common/pages/MissionCompletionPage";
+import { QuizScoreSummary } from "@/components/common/quiz/QuizScoreSummary";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { useShareTracking } from "@/hooks/share/useShareTracking";
-import { MissionType } from "@prisma/client";
+import { MissionCategory, MissionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
 
@@ -40,7 +41,13 @@ export function MissionCompletionContent({
 
   const missionCompletion = completionId ? missionCompletionById : missionCompletionByMission;
 
-  const { imageUrl, title: missionTitle, rewardId, type: missionType } = mission?.data ?? {};
+  const {
+    imageUrl,
+    title: missionTitle,
+    rewardId,
+    type: missionType,
+    category,
+  } = mission?.data ?? {};
   const { data: rewardQuery } = useReadReward(rewardId || "");
   const {
     title: completionTitle,
@@ -68,7 +75,7 @@ export function MissionCompletionContent({
 
   return (
     <MissionCompletionPage
-      imageUrl={completionImageUrl ?? initialImageUrl ?? imageUrl}
+      imageUrl={completionImageUrl ?? initialImageUrl}
       missionTitle={missionTitle}
       title={completionTitle}
       description={completionDescription}
@@ -106,6 +113,9 @@ export function MissionCompletionContent({
             cardClassName="w-[159.5px] sm:w-[200px]"
           />
         ) : undefined
+      }
+      quizResult={
+        category === MissionCategory.QUIZ ? <QuizScoreSummary missionId={missionId} /> : undefined
       }
       completionLinks={
         completionLinks && completionLinks.length > 0 ? (
