@@ -18,6 +18,7 @@ interface ActionContextValue {
   onAnswerChange: (answer: ActionAnswerItem) => void;
   missionResponse?: GetMissionResponseResponse;
   animationName?: string;
+  shuffleChoices?: boolean;
 }
 
 const ActionContext = createContext<ActionContextValue | null>(null);

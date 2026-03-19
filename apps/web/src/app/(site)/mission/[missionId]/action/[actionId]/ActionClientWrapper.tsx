@@ -352,6 +352,7 @@ function ActionStepWrapper({
       missionResponse:
         missionResponse?.data && !missionResponse.data.completedAt ? missionResponse : undefined,
       animationName,
+      shuffleChoices: quiz?.quizConfig.shuffleChoices,
     }),
     [
       progressInfo.currentOrder,

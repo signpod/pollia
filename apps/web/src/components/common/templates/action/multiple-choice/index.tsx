@@ -2,10 +2,11 @@ import { ActionOptionButton } from "@/app/(site)/mission/[missionId]/components"
 import { ActionStepContentProps, CLIENT_OTHER_OPTION_ID } from "@/constants/action";
 import { cn } from "@repo/ui/lib";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useActionContext } from "../common/ActionContext";
 import { SurveyQuestionTemplate } from "../common/ActionTemplate";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "../common/MultipleChoiceProvider";
+import { shuffleArray } from "../common/shuffleArray";
 
 export function MultipleChoice({ actionData }: ActionStepContentProps) {
   const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
@@ -31,6 +32,7 @@ function SurveyMultipleChoiceContent({ actionData }: ActionStepContentProps) {
   const isMultipleChoice = !!actionData.maxSelections && actionData.maxSelections > 1;
   const { selectedIds, toggleSelectedId, textAnswer, setTextAnswer, isOtherSelected } =
     useSurveyMultipleChoice();
+  const { shuffleChoices } = useActionContext();
 
   const [showOtherError, setShowOtherError] = useState(false);
 
@@ -42,7 +44,10 @@ function SurveyMultipleChoiceContent({ actionData }: ActionStepContentProps) {
     }
   }, [isOtherSelected]);
 
-  const regularOptions = actionData.options || [];
+  const regularOptions = useMemo(() => {
+    const opts = actionData.options || [];
+    return shuffleChoices ? shuffleArray(opts) : opts;
+  }, [actionData.options, shuffleChoices]);
   const otherOption = actionData.hasOther
     ? {
         id: CLIENT_OTHER_OPTION_ID,

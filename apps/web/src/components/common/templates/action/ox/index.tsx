@@ -1,9 +1,11 @@
 import { ActionOptionButton } from "@/app/(site)/mission/[missionId]/components";
 import type { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@/types/domain/action";
+import { useMemo } from "react";
 import { useActionContext } from "../common/ActionContext";
 import { SurveyQuestionTemplate } from "../common/ActionTemplate";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "../common/MultipleChoiceProvider";
+import { shuffleArray } from "../common/shuffleArray";
 
 export function OXChoice({ actionData }: ActionStepContentProps) {
   const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
@@ -34,7 +36,15 @@ const OX_IMAGES: Record<number, string> = {
 
 function OXChoiceContent({ actionData }: ActionStepContentProps) {
   const { selectedIds, toggleSelectedId } = useSurveyMultipleChoice();
+  const { shuffleChoices } = useActionContext();
   const options = actionData.options ?? [];
+
+  const originalIndexMap = useMemo(() => new Map(options.map((opt, i) => [opt.id, i])), [options]);
+
+  const displayOptions = useMemo(
+    () => (shuffleChoices ? shuffleArray(options) : options),
+    [options, shuffleChoices],
+  );
 
   return (
     <SurveyQuestionTemplate
@@ -45,12 +55,12 @@ function OXChoiceContent({ actionData }: ActionStepContentProps) {
       hint={actionData.hint ?? undefined}
     >
       <div className="grid grid-cols-2 gap-3">
-        {options.map((option, index) => (
+        {displayOptions.map(option => (
           <ActionOptionButton
             key={option.id}
             selectType="radio"
             title={option.title}
-            imageUrl={option.fileUploadId ?? OX_IMAGES[index]}
+            imageUrl={option.fileUploadId ?? OX_IMAGES[originalIndexMap.get(option.id) ?? 0]}
             isSelected={selectedIds.has(option.id)}
             onClick={() => toggleSelectedId(option.id)}
           />
