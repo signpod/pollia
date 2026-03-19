@@ -42,6 +42,7 @@ interface ActionOptionInputWithOptionalOrder {
   description?: string | null;
   imageUrl?: string | null;
   fileUploadId?: string | null;
+  isCorrect?: boolean;
   nextActionId?: string | null;
   nextCompletionId?: string | null;
   order?: number;
@@ -92,6 +93,7 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
           description: opt.description,
           imageUrl: opt.imageUrl,
           fileUploadId: opt.fileUploadId,
+          isCorrect: opt.isCorrect,
           nextActionId: opt.nextActionId,
           nextCompletionId: opt.nextCompletionId,
           order: opt.order ?? index,
@@ -126,6 +128,7 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
         case "SHORT_TEXT": {
           const request: CreateShortTextActionRequest = {
             ...baseFields,
+            options: buildOptions(input.options),
           };
           return createShortTextAction(request);
         }
