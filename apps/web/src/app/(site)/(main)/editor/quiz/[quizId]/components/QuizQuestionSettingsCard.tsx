@@ -41,10 +41,13 @@ function QuizQuestionSettingsCardComponent(
   props: QuizQuestionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
-  const { viewState, listState, formRefs, deleteDialog, handlers, saveHandle } =
+  const { viewState, listState, formRefs, deleteDialog, handlers, saveHandle, scrollToFirstError } =
     useQuizQuestionSettingsCard(props);
 
-  useImperativeHandle(ref, () => saveHandle, [saveHandle]);
+  useImperativeHandle(ref, () => ({ ...saveHandle, scrollToFirstError }), [
+    saveHandle,
+    scrollToFirstError,
+  ]);
 
   const { isBusy, isActionsLoading, hasValidationIssues, validationIssueCount } = viewState;
 

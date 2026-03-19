@@ -91,6 +91,7 @@ export interface UseQuizQuestionSettingsCardReturn {
     handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
+  scrollToFirstError: () => void;
 }
 
 export function useQuizQuestionSettingsCard({
@@ -403,6 +404,28 @@ export function useQuizQuestionSettingsCard({
     deleteAction.mutate({ actionId: deleteTarget.id, missionId });
   }, [deleteTarget, deleteAction, missionId]);
 
+  const scrollToFirstError = useCallback(() => {
+    const firstErrorItem = orderedActionItems.find(
+      item => (validationIssueCountByItemKey[item.key] ?? 0) > 0,
+    );
+    if (!firstErrorItem) return;
+    formRefs.current[firstErrorItem.key]?.validateAndGetValues({ showErrors: true });
+    setOpenItemKey(firstErrorItem.key);
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.querySelector("[data-field-error]");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      attempts++;
+      if (attempts < 15) {
+        requestAnimationFrame(tryScroll);
+      }
+    };
+    requestAnimationFrame(tryScroll);
+  }, [orderedActionItems, validationIssueCountByItemKey, setOpenItemKey]);
+
   return {
     viewState: {
       isBusy: isBusyTotal,
@@ -439,5 +462,6 @@ export function useQuizQuestionSettingsCard({
       handleDuplicateItem,
     },
     saveHandle,
+    scrollToFirstError,
   };
 }

@@ -1151,17 +1151,22 @@ function ActionFormComponent(
         </div>
       )}
 
-      <Input
-        label="제목"
-        required
-        placeholder={`${itemLabel} 제목을 입력해주세요`}
-        maxLength={ACTION_TITLE_MAX_LENGTH}
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        errorMessage={errors.title}
-      />
+      <div data-field-error={errors.title ? "title" : undefined}>
+        <Input
+          label="제목"
+          required
+          placeholder={`${itemLabel} 제목을 입력해주세요`}
+          maxLength={ACTION_TITLE_MAX_LENGTH}
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          errorMessage={errors.title}
+        />
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div
+        className="flex flex-col gap-2"
+        data-field-error={errors.description ? "description" : undefined}
+      >
         <div className="flex items-center justify-between">
           <LabelText required={false}>설명</LabelText>
           <Typo.Body
@@ -1245,7 +1250,10 @@ function ActionFormComponent(
         )}
 
       {needsOptions && isQuizMode && selectedActionType === ActionType.OX && (
-        <div className="flex flex-col gap-3">
+        <div
+          className="flex flex-col gap-3"
+          data-field-error={errors.correctAnswer ? "correctAnswer" : undefined}
+        >
           <LabelText required>항목</LabelText>
           {options.map(option => (
             <div
@@ -1282,7 +1290,10 @@ function ActionFormComponent(
       )}
 
       {needsOptions && isQuizMode && selectedActionType === ActionType.SHORT_TEXT && (
-        <div className="flex flex-col gap-3">
+        <div
+          className="flex flex-col gap-3"
+          data-field-error={errors.options ? "options" : undefined}
+        >
           <LabelText required>{`정답 목록 (${options.length}/${optionLimits.max})`}</LabelText>
           <Typo.Body size="medium" className="text-zinc-400">
             허용할 정답 텍스트를 입력합니다. 참여자의 답변이 이 중 하나와 일치하면 정답으로
@@ -1332,7 +1343,14 @@ function ActionFormComponent(
           isQuizMode &&
           (selectedActionType === ActionType.OX || selectedActionType === ActionType.SHORT_TEXT)
         ) && (
-          <div className="flex flex-col gap-3">
+          <div
+            className="flex flex-col gap-3"
+            data-field-error={
+              errors.options || errors.correctAnswer || errors.branchNextAction
+                ? "options"
+                : undefined
+            }
+          >
             <LabelText required>{`항목 (${options.length}/${optionLimits.max})`}</LabelText>
             <DndContext
               sensors={optionSensors}
@@ -1517,7 +1535,10 @@ function ActionFormComponent(
       )}
 
       {!isQuizMode && !isBranch && (hasLinkTargets || hasCreateCallbacks) && (
-        <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4">
+        <div
+          className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4"
+          data-field-error={errors.nextLink ? "nextLink" : undefined}
+        >
           <LabelText required={allowCompletionLink && hasLinkTargets}>다음 이동 설정</LabelText>
 
           <NextLinkDisplay

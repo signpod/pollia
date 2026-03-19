@@ -109,6 +109,8 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         }}
         canUndo={undoRedo.canUndo}
         onUndo={() => void undoRedo.undo()}
+        totalValidationIssueCount={viewState.totalValidationIssueCount}
+        onScrollToFirstError={actions.scrollToFirstError}
       />
     ),
     [
@@ -118,6 +120,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
       viewState.hasAnyPendingChanges,
       viewState.hasAnyValidationIssues,
       viewState.isSavingAll,
+      viewState.totalValidationIssueCount,
     ],
   );
 

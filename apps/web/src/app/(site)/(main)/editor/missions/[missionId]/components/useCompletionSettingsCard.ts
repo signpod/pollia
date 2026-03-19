@@ -102,6 +102,7 @@ export interface UseCompletionSettingsCardReturn {
     handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
+  scrollToFirstError: () => void;
 }
 
 export function useCompletionSettingsCard({
@@ -989,6 +990,28 @@ export function useCompletionSettingsCard({
     ],
   );
 
+  const scrollToFirstError = useCallback(() => {
+    const firstErrorItem = completionItems.find(
+      item => (validationIssueCountByItemKey[item.key] ?? 0) > 0,
+    );
+    if (!firstErrorItem) return;
+    formRefs.current[firstErrorItem.key]?.validateAndGetValues({ showErrors: true });
+    setOpenItemKey(firstErrorItem.key);
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.querySelector("[data-field-error]");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      attempts++;
+      if (attempts < 15) {
+        requestAnimationFrame(tryScroll);
+      }
+    };
+    requestAnimationFrame(tryScroll);
+  }, [completionItems, validationIssueCountByItemKey, setOpenItemKey]);
+
   return {
     viewState: {
       isSaving,
@@ -1024,5 +1047,6 @@ export function useCompletionSettingsCard({
       handleDuplicateItem,
     },
     saveHandle,
+    scrollToFirstError,
   };
 }
