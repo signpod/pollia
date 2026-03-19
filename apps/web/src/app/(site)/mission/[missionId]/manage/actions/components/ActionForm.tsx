@@ -958,26 +958,8 @@ function ActionFormComponent(
   }, [getRawSnapshot, onRawSnapshotChange]);
 
   useEffect(() => {
-    if (!hasValidationStarted) {
-      return;
-    }
-
-    runValidation();
-  }, [
-    description,
-    hasLinkTargets,
-    hasValidationStarted,
-    itemLabel,
-    needsOptions,
-    nextActionId,
-    nextCompletionId,
-    optionLimits.min,
-    options,
-    runValidation,
-    title,
-    isBranch,
-    allowCompletionLink,
-  ]);
+    runValidation({ showErrors: hasValidationStarted });
+  }, [hasValidationStarted, runValidation]);
 
   useImperativeHandle(
     ref,

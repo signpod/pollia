@@ -298,11 +298,7 @@ function CompletionFormComponent(
   );
 
   useEffect(() => {
-    if (!hasValidationStarted) {
-      return;
-    }
-
-    runValidation();
+    runValidation({ showErrors: hasValidationStarted });
   }, [hasValidationStarted, runValidation]);
 
   const buildValidatedValues = useCallback(
