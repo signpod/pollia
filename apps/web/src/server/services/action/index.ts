@@ -589,6 +589,7 @@ export class ActionService {
       score: original.score,
       matchMode: original.matchMode,
       hint: original.hint,
+      explanation: original.explanation,
     };
 
     const createdAction =
@@ -947,6 +948,7 @@ export class ActionService {
           score: values.score ?? null,
           matchMode: values.matchMode ?? null,
           hint: values.hint ?? null,
+          explanation: values.explanation ?? null,
         };
 
         let created: Action;
@@ -1063,6 +1065,7 @@ export class ActionService {
           score: values.score ?? null,
           matchMode: values.matchMode ?? null,
           hint: values.hint ?? null,
+          explanation: values.explanation ?? null,
         };
 
         if (hasOptions && values.options) {

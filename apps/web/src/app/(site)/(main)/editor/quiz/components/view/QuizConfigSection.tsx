@@ -71,7 +71,7 @@ export function QuizConfigSection() {
         render={({ field }) => (
           <ToggleSettingRow
             label="오답 시 정답 표시"
-            description="오답인 경우 올바른 정답을 함께 표시합니다."
+            description="오답인 경우 올바른 정답과 설명을 함께 표시합니다. 활성화하면 각 질문에 정답 설명을 입력할 수 있습니다."
             checked={field.value}
             onChange={field.onChange}
           />

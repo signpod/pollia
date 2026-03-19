@@ -17,6 +17,10 @@ import {
   editorPublishGuardAtom,
 } from "../../../../atoms/editorPublishGuardAtom";
 import {
+  type UseEditorUndoRedoResult,
+  useEditorUndoRedo,
+} from "../../../../hooks/useEditorUndoRedo";
+import {
   type PostSectionSaveOutcome,
   checkUnifiedSaveGuard,
   resolvePostSectionSaveOutcome,
@@ -34,6 +38,7 @@ import type {
   SectionSaveState,
 } from "../../../../missions/[missionId]/components/editor-save.types";
 import { quizDraftVersionAtom } from "../../atoms/quizActionAtoms";
+import { pickNewerDraft } from "./quizDraftResolveModel";
 import { checkQuizPublishGuard } from "./quizPublishGuardModel";
 
 const UNIFIED_SAVE_TOAST_ID = "editor-quiz-save-result";
@@ -116,13 +121,7 @@ function resolveDraftToRestore({
   const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
   const localDraft = localDraftRaw ? toServerEditorDraftPayload(localDraftRaw) : null;
 
-  if (!serverDraft && !localDraft) return null;
-  if (!serverDraft) return localDraft;
-  if (!localDraft) return serverDraft;
-
-  const serverUpdatedAt = serverDraft.meta?.updatedAtMs ?? 0;
-  const localUpdatedAt = localDraft.meta?.updatedAtMs ?? 0;
-  return localUpdatedAt >= serverUpdatedAt ? localDraft : serverDraft;
+  return pickNewerDraft(serverDraft, localDraft);
 }
 
 interface DraftClearResult {
@@ -167,6 +166,7 @@ export interface UseEditorQuizControllerResult {
   actions: {
     onSave: () => Promise<void>;
   };
+  undoRedo: Pick<UseEditorUndoRedoResult, "undo" | "redo" | "canUndo" | "canRedo">;
 }
 
 export function useEditorQuizController({
@@ -188,6 +188,7 @@ export function useEditorQuizController({
   const completionRef = useRef<SectionSaveHandle | null>(null);
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
+  const lastAutoSaveTimeRef = useRef(0);
 
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [sectionStates, setSectionStates] = useState<Record<QuizSectionKey, SectionSaveState>>({
@@ -286,6 +287,14 @@ export function useEditorQuizController({
     ]);
   }, []);
 
+  const { pushSnapshot, undo, redo, canUndo, canRedo, getIsUndoRedoInProgress } = useEditorUndoRedo(
+    {
+      collectSnapshot: collectLocalDraftPayload,
+      applySnapshot: applyDraftPayload,
+      enabled: isEditorTab,
+    },
+  );
+
   const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
     clearLocalDraftPayload(quizId);
 
@@ -323,10 +332,14 @@ export function useEditorQuizController({
     });
     draftRestoreAppliedRef.current = true;
 
-    if (!selectedDraft) return;
+    if (!selectedDraft) {
+      pushSnapshot();
+      return;
+    }
 
     void applyDraftPayload(selectedDraft)
       .then(() => {
+        pushSnapshot();
         toast({ message: "임시 저장된 편집 내용이 복원되었습니다." });
       })
       .catch(error => {
@@ -338,15 +351,17 @@ export function useEditorQuizController({
     isCompletionsLoading,
     isEditorTab,
     mission,
+    pushSnapshot,
     quizId,
     missionQueryData,
   ]);
 
-  // --- Auto-save to localStorage ---
+  // --- Auto-save to localStorage + undo history push (throttle) ---
   // biome-ignore lint/correctness/useExhaustiveDependencies: draftVersion and sectionStates are intentional triggers
   useEffect(() => {
     if (!isEditorTab || typeof window === "undefined") return;
     if (!draftRestoreAppliedRef.current) return;
+    if (getIsUndoRedoInProgress()) return;
     if (
       !basicInfoRef.current ||
       !rewardRef.current ||
@@ -360,19 +375,31 @@ export function useEditorQuizController({
     const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
     if (!hasPendingChangesNow) return;
 
-    const timeoutId = window.setTimeout(() => {
-      writeLocalDraftPayload(quizId, collectLocalDraftPayload());
-    }, LOCAL_DRAFT_AUTOSAVE_DELAY_MS);
+    const elapsed = Date.now() - lastAutoSaveTimeRef.current;
 
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    if (elapsed >= LOCAL_DRAFT_AUTOSAVE_DELAY_MS) {
+      lastAutoSaveTimeRef.current = Date.now();
+      writeLocalDraftPayload(quizId, collectLocalDraftPayload());
+      pushSnapshot();
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      lastAutoSaveTimeRef.current = Date.now();
+      if (getIsUndoRedoInProgress()) return;
+      writeLocalDraftPayload(quizId, collectLocalDraftPayload());
+      pushSnapshot();
+    }, LOCAL_DRAFT_AUTOSAVE_DELAY_MS - elapsed);
+
+    return () => clearTimeout(timeoutId);
   }, [
     collectLocalDraftPayload,
     draftVersion,
+    getIsUndoRedoInProgress,
     hasAnyPendingChanges,
     hasPendingChangesFromRefs,
     isEditorTab,
+    pushSnapshot,
     quizId,
     sectionStates,
   ]);
@@ -565,10 +592,8 @@ export function useEditorQuizController({
   }, [collectLocalDraftPayload, quizId]);
 
   const handleSave = useCallback(async () => {
-    const result = await runUnifiedSave({ mode: "manual" });
-    if (result === "failed") {
-      await saveDraft();
-    }
+    await saveDraft();
+    await runUnifiedSave({ mode: "manual" });
   }, [runUnifiedSave, saveDraft]);
 
   // --- Section state change callbacks ---
@@ -616,6 +641,12 @@ export function useEditorQuizController({
     },
     actions: {
       onSave: handleSave,
+    },
+    undoRedo: {
+      undo,
+      redo,
+      canUndo,
+      canRedo,
     },
   };
 }

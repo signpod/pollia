@@ -125,6 +125,7 @@ export interface ActionFormValues {
   score?: number | null;
   matchMode?: MatchMode | null;
   hint?: string | null;
+  explanation?: string | null;
 }
 
 export interface ActionFormRawSnapshot {
@@ -164,6 +165,7 @@ interface ActionFormProps {
   wordingMode?: "action" | "question";
   isQuizMode?: boolean;
   showHintField?: boolean;
+  showExplanationField?: boolean;
   onActionTypeChange?: (type: ActionType) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   onValidationStateChange?: (issueCount: number) => void;
@@ -214,6 +216,13 @@ function getDefaultOptions(type: ActionType, isQuizMode = false): OptionFormItem
   }
   if (isQuizMode && type === ActionType.SHORT_TEXT) {
     return [{ _key: generateOptionKey(), title: "", order: 0 }];
+  }
+  if (isQuizMode && type === ActionType.MULTIPLE_CHOICE) {
+    return Array.from({ length: 4 }, (_, i) => ({
+      _key: generateOptionKey(),
+      title: "",
+      order: i,
+    }));
   }
   return [
     { _key: generateOptionKey(), title: "", order: 0 },
@@ -305,6 +314,7 @@ function buildActionDirtyComparable(params: {
         score: values.score ?? null,
         matchMode: values.matchMode ?? null,
         hint: values.hint?.trim() ?? null,
+        explanation: values.explanation?.trim() ?? null,
       }),
     },
   };
@@ -330,6 +340,7 @@ function ActionFormComponent(
     wordingMode = "action",
     isQuizMode = false,
     showHintField = true,
+    showExplanationField = false,
     onActionTypeChange,
     onDirtyChange,
     onValidationStateChange,
@@ -390,6 +401,7 @@ function ActionFormComponent(
   );
   const [matchMode, setMatchMode] = useState<MatchMode | null>(initialValues?.matchMode ?? null);
   const [hint, setHint] = useState(initialValues?.hint ?? "");
+  const [explanation, setExplanation] = useState(initialValues?.explanation ?? "");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
@@ -618,6 +630,13 @@ function ActionFormComponent(
       }
     }
 
+    if (isQuizMode && needsOptions && selectedActionType !== ActionType.SHORT_TEXT) {
+      const hasCorrectAnswer = options.some(o => o.isCorrect);
+      if (!hasCorrectAnswer) {
+        newErrors.correctAnswer = "정답을 1개 이상 선택해주세요.";
+      }
+    }
+
     if (!isQuizMode && hasLinkTargets) {
       if (isBranch) {
         const missingBranchNext =
@@ -639,6 +658,8 @@ function ActionFormComponent(
     needsOptions,
     options,
     optionLimits.min,
+    isQuizMode,
+    selectedActionType,
     isBranch,
     allowCompletionLink,
     nextActionId,
@@ -717,6 +738,7 @@ function ActionFormComponent(
           matchMode:
             selectedActionType === ActionType.SHORT_TEXT ? (matchMode ?? MatchMode.EXACT) : null,
           hint: hint.trim() || null,
+          explanation: explanation.trim() || null,
         }),
       };
     },
@@ -744,6 +766,7 @@ function ActionFormComponent(
       score,
       matchMode,
       hint,
+      explanation,
     ],
   );
 
@@ -780,6 +803,7 @@ function ActionFormComponent(
         score,
         matchMode,
         hint: hint || null,
+        explanation: explanation || null,
       }),
     };
 
@@ -807,6 +831,7 @@ function ActionFormComponent(
     score,
     matchMode,
     hint,
+    explanation,
   ]);
 
   const applyRawSnapshot = useCallback(
@@ -841,6 +866,7 @@ function ActionFormComponent(
       setScore(nextValues.score ?? null);
       setMatchMode(nextValues.matchMode ?? null);
       setHint(nextValues.hint ?? "");
+      setExplanation(nextValues.explanation ?? "");
       setErrors({});
     },
     [allowCompletionLink, onActionTypeChange],
@@ -866,7 +892,7 @@ function ActionFormComponent(
             }),
             nextActionId,
             nextCompletionId,
-            ...(isQuizMode && { score, matchMode, hint }),
+            ...(isQuizMode && { score, matchMode, hint, explanation }),
           },
           allowCompletionLink,
           enableEditorActionMedia,
@@ -895,6 +921,7 @@ function ActionFormComponent(
       score,
       matchMode,
       hint,
+      explanation,
     ],
   );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
@@ -1055,8 +1082,32 @@ function ActionFormComponent(
           isCorrect: opt._key === optionKey ? checked : false,
         })),
       );
+    } else if (isQuizMode && selectedActionType === ActionType.MULTIPLE_CHOICE) {
+      if (checked) {
+        const correctCount = options.filter(o => o.isCorrect).length;
+        if (correctCount >= maxSelections) return;
+      }
+      setOptions(prev => patchOptionByKey(prev, optionKey, { isCorrect: checked }));
     } else {
       setOptions(prev => patchOptionByKey(prev, optionKey, { isCorrect: checked }));
+    }
+  };
+
+  const handleMaxSelectionsChange = (value: number) => {
+    setMaxSelections(value);
+    if (isQuizMode) {
+      setOptions(prev => {
+        let correctCount = 0;
+        return prev.map(opt => {
+          if (opt.isCorrect) {
+            correctCount++;
+            if (correctCount > value) {
+              return { ...opt, isCorrect: false };
+            }
+          }
+          return opt;
+        });
+      });
     }
   };
 
@@ -1186,12 +1237,12 @@ function ActionFormComponent(
 
       {needsMaxSelections && !isBranch && (
         <div className="flex items-center justify-between">
-          <LabelText required={false}>최대 선택 수</LabelText>
+          <LabelText required={false}>{isQuizMode ? "정답 수" : "최대 선택 수"}</LabelText>
           <CounterInput
             value={maxSelections}
-            onChange={setMaxSelections}
+            onChange={handleMaxSelectionsChange}
             min={1}
-            max={needsOptions ? options.length : 10}
+            max={isQuizMode ? 2 : needsOptions ? options.length : 10}
           />
         </div>
       )}
@@ -1234,6 +1285,11 @@ function ActionFormComponent(
               />
             </div>
           ))}
+          {errors.correctAnswer && (
+            <Typo.Body size="small" className="text-red-500">
+              {errors.correctAnswer}
+            </Typo.Body>
+          )}
         </div>
       )}
 
@@ -1299,81 +1355,95 @@ function ActionFormComponent(
                 items={options.map(o => o._key)}
                 strategy={verticalListSortingStrategy}
               >
-                {options.map((option, index) => {
-                  const optionPreviewUrl = showOptionImage
-                    ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
-                    : undefined;
+                {(() => {
+                  const correctCount = options.filter(o => o.isCorrect).length;
+                  const isCorrectLimitReached =
+                    isQuizMode &&
+                    selectedActionType === ActionType.MULTIPLE_CHOICE &&
+                    correctCount >= maxSelections;
 
-                  return (
-                    <SortableOptionItem
-                      key={option._key}
-                      optionKey={option._key}
-                      index={index}
-                      title={option.title}
-                      description={option.description ?? null}
-                      previewImageUrl={optionPreviewUrl}
-                      isOpen={openOptionKey === option._key}
-                      isFirst={index === 0}
-                      isLast={index === options.length - 1}
-                      showDescription={showOptionDescription}
-                      showImage={showOptionImage}
-                      showDelete={!isBranch && options.length > optionLimits.min}
-                      showIsCorrect={isQuizMode && selectedActionType !== ActionType.SHORT_TEXT}
-                      isCorrect={option.isCorrect ?? false}
-                      disabled={isLoading}
-                      isImageUploading={optionImages.isUploading(option._key)}
-                      titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
-                      descriptionMaxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
-                      onToggle={() =>
-                        setOpenOptionKey(prev => (prev === option._key ? null : option._key))
-                      }
-                      onTitleChange={value => updateOptionByKey(option._key, "title", value)}
-                      onDescriptionChange={value =>
-                        updateOptionByKey(option._key, "description", value)
-                      }
-                      onIsCorrectChange={checked =>
-                        handleOptionIsCorrectChange(option._key, checked)
-                      }
-                      onImageSelect={file => {
-                        if (option.fileUploadId) {
-                          optionImages.markInitialForDeletion(option.fileUploadId);
+                  return options.map((option, index) => {
+                    const optionPreviewUrl = showOptionImage
+                      ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
+                      : undefined;
+
+                    return (
+                      <SortableOptionItem
+                        key={option._key}
+                        optionKey={option._key}
+                        index={index}
+                        title={option.title}
+                        description={option.description ?? null}
+                        previewImageUrl={optionPreviewUrl}
+                        isOpen={openOptionKey === option._key}
+                        isFirst={index === 0}
+                        isLast={index === options.length - 1}
+                        showDescription={showOptionDescription}
+                        showImage={showOptionImage}
+                        showDelete={!isBranch && options.length > optionLimits.min}
+                        showIsCorrect={isQuizMode && selectedActionType !== ActionType.SHORT_TEXT}
+                        isCorrect={option.isCorrect ?? false}
+                        isCorrectDisabled={isCorrectLimitReached && !option.isCorrect}
+                        disabled={isLoading}
+                        isImageUploading={optionImages.isUploading(option._key)}
+                        titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+                        descriptionMaxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                        onToggle={() =>
+                          setOpenOptionKey(prev => (prev === option._key ? null : option._key))
                         }
-                        optionImages.upload(option._key, file);
-                      }}
-                      onImageDelete={() => {
-                        optionImages.discard(option._key);
-                        updateOptionByKey(option._key, "imageUrl", null);
-                        updateOptionByKey(option._key, "fileUploadId", null);
-                      }}
-                      onDelete={() => removeOptionByOptionKey(option._key)}
-                      onMoveUp={() => handleMoveOption(option._key, "up")}
-                      onMoveDown={() => handleMoveOption(option._key, "down")}
-                      branchSlot={
-                        !isQuizMode && isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
-                          <div className="flex flex-col gap-2">
-                            <LabelText required={allowCompletionLink}>다음 이동</LabelText>
-                            <NextLinkDisplay
-                              itemLabel={itemLabel}
-                              nextActionId={option.nextActionId ?? null}
-                              nextCompletionId={option.nextCompletionId ?? null}
-                              selectableActions={selectableActions}
-                              completionOptions={completionOptions}
-                              onAdd={() => setDrawerOpenKey(option._key)}
-                              onEdit={() => setDrawerOpenKey(option._key)}
-                              onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
-                            />
-                          </div>
-                        ) : undefined
-                      }
-                    />
-                  );
-                })}
+                        onTitleChange={value => updateOptionByKey(option._key, "title", value)}
+                        onDescriptionChange={value =>
+                          updateOptionByKey(option._key, "description", value)
+                        }
+                        onIsCorrectChange={checked =>
+                          handleOptionIsCorrectChange(option._key, checked)
+                        }
+                        onImageSelect={file => {
+                          if (option.fileUploadId) {
+                            optionImages.markInitialForDeletion(option.fileUploadId);
+                          }
+                          optionImages.upload(option._key, file);
+                        }}
+                        onImageDelete={() => {
+                          optionImages.discard(option._key);
+                          updateOptionByKey(option._key, "imageUrl", null);
+                          updateOptionByKey(option._key, "fileUploadId", null);
+                        }}
+                        onDelete={() => removeOptionByOptionKey(option._key)}
+                        onMoveUp={() => handleMoveOption(option._key, "up")}
+                        onMoveDown={() => handleMoveOption(option._key, "down")}
+                        branchSlot={
+                          !isQuizMode && isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
+                            <div className="flex flex-col gap-2">
+                              <LabelText required={allowCompletionLink}>다음 이동</LabelText>
+                              <NextLinkDisplay
+                                itemLabel={itemLabel}
+                                nextActionId={option.nextActionId ?? null}
+                                nextCompletionId={option.nextCompletionId ?? null}
+                                selectableActions={selectableActions}
+                                completionOptions={completionOptions}
+                                onAdd={() => setDrawerOpenKey(option._key)}
+                                onEdit={() => setDrawerOpenKey(option._key)}
+                                onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
+                              />
+                            </div>
+                          ) : undefined
+                        }
+                      />
+                    );
+                  });
+                })()}
               </SortableContext>
             </DndContext>
 
             {errors.options && (
               <Typo.Body size="small" className="text-red-500">
                 {errors.options}
+              </Typo.Body>
+            )}
+            {errors.correctAnswer && (
+              <Typo.Body size="small" className="text-red-500">
+                {errors.correctAnswer}
               </Typo.Body>
             )}
             {errors.branchNextAction && (
@@ -1445,6 +1515,20 @@ function ActionFormComponent(
                 placeholder="힌트를 입력하세요 (선택)"
                 value={hint}
                 onChange={e => setHint(e.target.value)}
+              />
+            </div>
+          )}
+
+          {showExplanationField && (
+            <div className="flex flex-col gap-2">
+              <LabelText required={false}>정답 설명</LabelText>
+              <Typo.Body size="medium" className="text-zinc-400">
+                오답 시 표시할 정답에 대한 설명을 입력합니다.
+              </Typo.Body>
+              <Input
+                placeholder="정답 설명을 입력하세요 (선택)"
+                value={explanation}
+                onChange={e => setExplanation(e.target.value)}
               />
             </div>
           )}

@@ -395,9 +395,9 @@ function LikedListItem({ mission }: { mission: Mission }) {
         <Typo.Body size="medium" className="truncate">
           {mission.title}
         </Typo.Body>
-        <Typo.Body size="small" className="text-[11px] font-bold text-zinc-400">
+        {/* <Typo.Body size="small" className="text-[11px] font-bold text-zinc-400">
           조회 {formatCount(mission.viewCount)} · 찜 {formatCount(mission.likesCount)}
-        </Typo.Body>
+        </Typo.Body> */}
       </Link>
       <MissionLikeButton missionId={mission.id} />
     </div>
@@ -766,7 +766,14 @@ function MyContentListItem({
 
   return (
     <div className="flex items-start gap-2">
-      <Link href={ROUTES.EDITOR_MISSION(mission.id)} className="flex min-w-0 flex-1 gap-3">
+      <Link
+        href={
+          mission.category === "QUIZ"
+            ? ROUTES.EDITOR_QUIZ_MISSION(mission.id)
+            : ROUTES.EDITOR_MISSION(mission.id)
+        }
+        className="flex min-w-0 flex-1 gap-3"
+      >
         <div className="relative size-[89px] shrink-0 overflow-hidden rounded-xl border border-zinc-200">
           <Image
             src={showFallback ? thumbnailFallback : (mission.imageUrl ?? "")}
@@ -782,9 +789,9 @@ function MyContentListItem({
             {categoryLabel}
           </Typo.Body>
           <Typo.Body size="medium">{mission.title}</Typo.Body>
-          <Typo.Body size="small" className="text-[11px] font-bold text-zinc-400">
+          {/* <Typo.Body size="small" className="text-[11px] font-bold text-zinc-400">
             조회 {formatCount(mission.viewCount)} · 찜 {formatCount(mission.likesCount)}
-          </Typo.Body>
+          </Typo.Body> */}
         </div>
       </Link>
       <button

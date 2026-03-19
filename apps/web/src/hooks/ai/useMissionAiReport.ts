@@ -1,15 +1,12 @@
 "use client";
 
 import { getMissionAiReport } from "@/actions/ai";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useQuery } from "@tanstack/react-query";
-
-const aiReportQueryKeys = {
-  report: (missionId: string) => ["mission-ai-report", missionId] as const,
-};
 
 export function useMissionAiReport(missionId: string) {
   return useQuery({
-    queryKey: aiReportQueryKeys.report(missionId),
+    queryKey: missionQueryKeys.aiReport(missionId),
     queryFn: () => getMissionAiReport(missionId),
   });
 }

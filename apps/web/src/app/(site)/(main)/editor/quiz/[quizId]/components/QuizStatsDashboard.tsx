@@ -2,22 +2,26 @@
 
 import { Separator } from "@/components/ui/separator";
 import { useReadMissionStats } from "@/hooks/mission-response";
+import { useReadQuizStats } from "@/hooks/quiz-stats/useReadQuizStats";
 import { formatMillisecondsToKorean } from "@/lib/utils";
-import { Typo } from "@repo/ui/components";
 import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
-import { ActionStatsSection } from "./action-stats/ActionStatsSection";
-import { AiReportSection } from "./report/AiReportSection";
-import { ResponseResultsAccordion } from "./stats/ResponseResultsAccordion";
-import { ResultDistributionAccordion } from "./stats/ResultDistributionAccordion";
-import { StatsDetailAccordion } from "./stats/StatsDetailAccordion";
+import { StatCard } from "../../../missions/[missionId]/components/MissionStatsDashboard";
+import { AiReportSection } from "../../../missions/[missionId]/components/report/AiReportSection";
+import { ResponseResultsAccordion } from "../../../missions/[missionId]/components/stats/ResponseResultsAccordion";
+import { ResultDistributionAccordion } from "../../../missions/[missionId]/components/stats/ResultDistributionAccordion";
+import { StatsDetailAccordion } from "../../../missions/[missionId]/components/stats/StatsDetailAccordion";
+import { QuizActionStatsSection } from "./stats/QuizActionStatsSection";
 
-interface MissionStatsDashboardProps {
+interface QuizStatsDashboardProps {
   missionId: string;
 }
 
-export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps) {
+export function QuizStatsDashboard({ missionId }: QuizStatsDashboardProps) {
   const statsQuery = useReadMissionStats(missionId);
   const stats = statsQuery.data?.data;
+
+  const quizStatsQuery = useReadQuizStats(missionId);
+  const quizStats = quizStatsQuery.data?.data;
 
   return (
     <>
@@ -32,6 +36,12 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
             title="완주율"
             value={stats ? `${stats.completionRate.toFixed(1)}%` : "-"}
             isLoading={statsQuery.isPending}
+          />
+          <StatCard
+            title="평균 점수"
+            value={quizStats ? `${quizStats.averageTotalScore}점` : "-"}
+            subValue={quizStats ? `${quizStats.perfectScore}점` : undefined}
+            isLoading={quizStatsQuery.isPending}
           />
           <StatCard
             title="평균 소요시간"
@@ -64,30 +74,9 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
       <Separator className="h-2" />
 
       <div className="divide-y divide-zinc-200 border border-zinc-200 bg-white">
-        <ActionStatsSection missionId={missionId} />
+        <QuizActionStatsSection missionId={missionId} />
         <AiReportSection missionId={missionId} hasResponses={(stats?.total ?? 0) > 0} />
       </div>
     </>
-  );
-}
-
-export function StatCard({
-  title,
-  value,
-  subValue,
-  isLoading,
-}: { title: string; value: string; subValue?: string; isLoading: boolean }) {
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4">
-      <Typo.Body size="small" className="text-zinc-500">
-        {title}
-      </Typo.Body>
-      <Typo.SubTitle className="mt-1 text-2xl">
-        {isLoading ? "..." : value}
-        {!isLoading && subValue && (
-          <span className="text-sm font-normal text-zinc-400">/{subValue}</span>
-        )}
-      </Typo.SubTitle>
-    </div>
   );
 }

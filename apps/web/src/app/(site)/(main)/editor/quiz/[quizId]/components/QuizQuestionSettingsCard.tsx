@@ -66,6 +66,7 @@ function QuizQuestionSettingsCardComponent(
     handleItemDirtyChange,
     handleItemValidationChange,
     handleItemRawSnapshotChange,
+    handleDuplicateItem,
   } = handlers;
 
   const handleFormRef = useCallback(
@@ -202,6 +203,7 @@ function QuizQuestionSettingsCardComponent(
                       formKey={formKey}
                       dirtyBaselineValues={dirtyBaselineValues}
                       showHint={props.showHint}
+                      showCorrectOnWrong={props.showCorrectOnWrong}
                       onFormRef={handleFormRef}
                       onToggle={handleToggleItem}
                       onRemoveDraft={handleRemoveDraft}
@@ -211,6 +213,7 @@ function QuizQuestionSettingsCardComponent(
                       onValidationStateChange={handleItemValidationChange}
                       onRawSnapshotChange={handleItemRawSnapshotChange}
                       onMoveItem={handleMoveItem}
+                      onDuplicateItem={handleDuplicateItem}
                       isFirst={index === 0}
                       isLast={index === orderedActionItems.length - 1}
                     />

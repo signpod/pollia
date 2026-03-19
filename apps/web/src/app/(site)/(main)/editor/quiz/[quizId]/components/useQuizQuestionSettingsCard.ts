@@ -50,6 +50,7 @@ export interface QuizQuestionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
   showHint?: boolean;
+  showCorrectOnWrong?: boolean;
 }
 
 export interface UseQuizQuestionSettingsCardReturn {
@@ -85,6 +86,7 @@ export interface UseQuizQuestionSettingsCardReturn {
     handleItemDirtyChange: (itemKey: string, isDirty: boolean) => void;
     handleItemValidationChange: (itemKey: string, issueCount: number) => void;
     handleItemRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
+    handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
 }
@@ -306,6 +308,35 @@ export function useQuizQuestionSettingsCard({
   }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
+  const handleDuplicateItem = useCallback(
+    (itemKey: string) => {
+      const snapshot = formRefs.current[itemKey]?.getRawSnapshot();
+      if (!snapshot) return;
+
+      const draftKey = createDraftKey();
+      const newItemKey = getDraftItemKey(draftKey);
+
+      setDraftItems(prev => [...prev, { key: draftKey }]);
+      setActionTypeByItemKey(prev => ({ ...prev, [newItemKey]: snapshot.actionType }));
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [newItemKey]: {
+          ...snapshot,
+          values: {
+            ...snapshot.values,
+            title: `${snapshot.values.title} (복제)`,
+            nextActionId: null,
+            nextCompletionId: null,
+          },
+        },
+      }));
+      setOpenItemKey(newItemKey);
+      setScrollTarget(newItemKey);
+    },
+    [setScrollTarget],
+  );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
 
@@ -395,6 +426,7 @@ export function useQuizQuestionSettingsCard({
       handleItemDirtyChange,
       handleItemValidationChange,
       handleItemRawSnapshotChange,
+      handleDuplicateItem,
     },
     saveHandle,
   };

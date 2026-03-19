@@ -24,6 +24,7 @@ export type CreateMultipleChoiceInput = BaseActionInputWithOptions & {
   maxSelections: number;
   score?: number | null;
   hint?: string | null;
+  explanation?: string | null;
 };
 
 export type CreateScaleInput = BaseActionInputWithOptions;
@@ -39,6 +40,7 @@ export type CreateShortTextInput = BaseActionInput & {
   score?: number | null;
   matchMode?: MatchMode | null;
   hint?: string | null;
+  explanation?: string | null;
 };
 
 export type CreateEitherOrInput = BaseActionInput;
@@ -72,6 +74,7 @@ export type CreateOXInput = BaseActionInputWithOptions & {
   score?: number | null;
   correctOptionId?: string | null;
   hint?: string | null;
+  explanation?: string | null;
 };
 
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
@@ -148,6 +151,7 @@ export interface ActionFormValuesInput {
   score?: number | null;
   matchMode?: MatchMode | null;
   hint?: string | null;
+  explanation?: string | null;
 }
 
 export interface SaveActionOptionInput {
