@@ -527,13 +527,6 @@ export function useCompletionSettingsCard({
 
   const handleRemoveExisting = useCallback(
     (completionId: string) => {
-      const confirmed = window.confirm(
-        "결과 화면을 제거하면 저장 시 실제 삭제됩니다.\n액션에서 연결된 완료 화면 설정은 비워질 수 있습니다.\n계속하시겠습니까?",
-      );
-      if (!confirmed) {
-        return;
-      }
-
       dispatchMarkRemoved(completionId);
       setOpenItemKey(prev => (prev === getExistingItemKey(completionId) ? null : prev));
 
