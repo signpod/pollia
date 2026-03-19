@@ -123,6 +123,10 @@ export function MissionCompletionContent({
               quizConfigSchema.safeParse(mission?.data?.quizConfig ?? {}).data
                 ?.showCorrectOnWrong ?? true
             }
+            showExplanation={
+              quizConfigSchema.safeParse(mission?.data?.quizConfig ?? {}).data?.showExplanation ??
+              true
+            }
           />
         ) : undefined
       }
