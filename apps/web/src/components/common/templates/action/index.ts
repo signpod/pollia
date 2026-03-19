@@ -7,6 +7,7 @@ import { Branch } from "./branch";
 import { ActionDate } from "./date";
 import { ActionImage } from "./image";
 import { MultipleChoice } from "./multiple-choice";
+import { OXChoice } from "./ox";
 import { ActionPdf } from "./pdf";
 import { MissionStarScale } from "./rating";
 import { MissionRatingScale } from "./scale";
@@ -29,6 +30,7 @@ export {
   ActionDate,
   ActionTime,
   Branch,
+  OXChoice,
 };
 
 export function createActionSteps({
@@ -74,6 +76,8 @@ export function ActionRenderer(type: ActionType): ComponentType<ActionStepConten
       return ActionTime;
     case ActionType.BRANCH:
       return Branch;
+    case ActionType.OX:
+      return OXChoice;
     default:
       throw new Error(`Unsupported action type: ${type}`);
   }

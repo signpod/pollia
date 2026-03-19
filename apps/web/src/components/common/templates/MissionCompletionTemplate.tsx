@@ -19,6 +19,7 @@ export interface MissionCompletionTemplateProps {
   recommendation?: ReactNode;
   completionLinks?: ReactNode;
   purchaseLinks?: ReactNode;
+  quizResult?: ReactNode;
   onSave?: () => void;
   isSaving?: boolean;
   canSave?: boolean;
@@ -35,6 +36,7 @@ export function MissionCompletionTemplate({
   recommendation,
   completionLinks,
   purchaseLinks,
+  quizResult,
   onSave,
   isSaving,
   canSave,
@@ -109,6 +111,8 @@ export function MissionCompletionTemplate({
             {/* {reward} */}
           </div>
         </div>
+
+        {quizResult}
 
         {recommendation}
       </div>

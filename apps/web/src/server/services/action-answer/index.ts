@@ -324,7 +324,8 @@ export class ActionAnswerService {
     switch (answer.type) {
       case ActionType.MULTIPLE_CHOICE:
       case ActionType.TAG:
-      case ActionType.BRANCH: {
+      case ActionType.BRANCH:
+      case ActionType.OX: {
         const answerData: Prisma.ActionAnswerCreateInput = { ...baseAnswer };
 
         // Connect multiple options to single answer
@@ -399,6 +400,7 @@ export class ActionAnswerService {
         );
 
       case ActionType.BRANCH:
+      case ActionType.OX:
         return !answer.selectedOptionIds || answer.selectedOptionIds.length === 0;
 
       case ActionType.SCALE:
@@ -434,6 +436,7 @@ export class ActionAnswerService {
       case ActionType.RATING:
         return ratingAnswerInputSchema;
       case ActionType.MULTIPLE_CHOICE:
+      case ActionType.OX:
         return multipleChoiceAnswerInputSchema;
       case ActionType.TAG:
         return tagAnswerInputSchema;

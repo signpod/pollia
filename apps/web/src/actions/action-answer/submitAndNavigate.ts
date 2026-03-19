@@ -178,6 +178,10 @@ function buildUpdateData(answer: ActionAnswerItem) {
         selectedOptionIds: answer.selectedOptionIds,
         ...(answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
       };
+    case ActionType.OX:
+      return {
+        selectedOptionIds: answer.selectedOptionIds,
+      };
     default:
       return null;
   }
@@ -194,6 +198,7 @@ function buildAnswerPayload(answer: ActionAnswerItem) {
     case ActionType.MULTIPLE_CHOICE:
     case ActionType.TAG:
     case ActionType.BRANCH:
+    case ActionType.OX:
       return {
         ...base,
         selectedOptionIds: answer.selectedOptionIds,

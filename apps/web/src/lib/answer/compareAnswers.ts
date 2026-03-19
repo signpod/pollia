@@ -17,7 +17,8 @@ export function isAnswerSameAsSubmitted(
   if (
     answer.type === ActionType.MULTIPLE_CHOICE ||
     answer.type === ActionType.TAG ||
-    answer.type === ActionType.BRANCH
+    answer.type === ActionType.BRANCH ||
+    answer.type === ActionType.OX
   ) {
     const submittedOptionIds = answersForAction.flatMap(a => a.options.map(opt => opt.id)).sort();
     const currentOptionIds = answer.selectedOptionIds ? [...answer.selectedOptionIds].sort() : [];
