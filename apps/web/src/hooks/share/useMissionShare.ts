@@ -22,10 +22,15 @@ export function useMissionShare({ missionId, title, imageUrl }: UseMissionShareO
     return `${window.location.origin}${ROUTES.MISSION(missionId)}`;
   }, [missionId]);
 
+  const ogImageUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/api/og/${missionId}`;
+  }, [missionId]);
+
   const { handleKakaoShare: kakaoShare } = useKakaoShare({
     shareUrl,
     title,
-    imageUrl,
+    imageUrl: ogImageUrl,
   });
 
   const handleKakaoShare = useCallback(() => {
