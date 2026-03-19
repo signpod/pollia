@@ -88,6 +88,7 @@ export const multipleChoiceInputSchema = baseActionSchema
       .max(MULTIPLE_CHOICE_MAX_OPTIONS, `최대 ${MULTIPLE_CHOICE_MAX_OPTIONS}개까지 가능합니다.`),
     score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
     hint: z.string().nullable().optional(),
+    explanation: z.string().nullable().optional(),
   })
   .refine(data => data.maxSelections <= data.options.length, {
     message: "최대 선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
@@ -108,6 +109,7 @@ export const shortTextInputSchema = baseActionSchema.extend({
   score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
   matchMode: z.nativeEnum(MatchMode).nullable().optional(),
   hint: z.string().nullable().optional(),
+  explanation: z.string().nullable().optional(),
 });
 
 export const eitherOrInputSchema = baseActionSchema;
@@ -186,6 +188,7 @@ export const oxInputSchema = baseActionSchema.extend({
   score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
   correctOptionId: z.string().nullable().optional(),
   hint: z.string().nullable().optional(),
+  explanation: z.string().nullable().optional(),
 });
 
 export const actionUpdateSchema = z
@@ -210,6 +213,7 @@ export const actionUpdateSchema = z
     score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
     matchMode: z.nativeEnum(MatchMode).nullable().optional(),
     hint: z.string().nullable().optional(),
+    explanation: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

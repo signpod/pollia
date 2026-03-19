@@ -29,6 +29,7 @@ const actionFormValuesSchema = z.object({
   score: z.number().nullable().optional(),
   matchMode: z.nativeEnum(MatchMode).nullable().optional(),
   hint: z.string().nullable().optional(),
+  explanation: z.string().nullable().optional(),
 });
 
 const actionFormRawSnapshotSchema = z.object({
