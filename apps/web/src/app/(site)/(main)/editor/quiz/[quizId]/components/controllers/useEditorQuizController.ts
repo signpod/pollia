@@ -162,9 +162,11 @@ export interface UseEditorQuizControllerResult {
     hasAnyBusySection: boolean;
     hasAnyPendingChanges: boolean;
     hasAnyValidationIssues: boolean;
+    totalValidationIssueCount: number;
   };
   actions: {
     onSave: () => Promise<void>;
+    scrollToFirstError: () => void;
   };
   undoRedo: Pick<UseEditorUndoRedoResult, "undo" | "redo" | "canUndo" | "canRedo">;
 }
@@ -618,6 +620,27 @@ export function useEditorQuizController({
     [updateSectionState],
   );
 
+  const totalValidationIssueCount = useMemo(
+    () => Object.values(sectionStates).reduce((sum, s) => sum + s.validationIssueCount, 0),
+    [sectionStates],
+  );
+
+  const scrollToFirstError = useCallback(() => {
+    const sectionOrder: Array<{ key: QuizSectionKey; ref: RefObject<SectionSaveHandle | null> }> = [
+      { key: "basic", ref: basicInfoRef },
+      { key: "reward", ref: rewardRef },
+      { key: "quizConfig", ref: quizConfigRef },
+      { key: "question", ref: questionRef },
+      { key: "completion", ref: completionRef },
+    ];
+    for (const section of sectionOrder) {
+      if (sectionStates[section.key].hasValidationIssues) {
+        section.ref.current?.scrollToFirstError?.();
+        return;
+      }
+    }
+  }, [sectionStates]);
+
   return {
     refs: {
       basicInfoRef,
@@ -638,9 +661,11 @@ export function useEditorQuizController({
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasAnyValidationIssues,
+      totalValidationIssueCount,
     },
     actions: {
       onSave: handleSave,
+      scrollToFirstError,
     },
     undoRedo: {
       undo,

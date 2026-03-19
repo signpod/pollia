@@ -9,11 +9,12 @@ import { useReadMission } from "@/hooks/mission";
 import { parseQuizConfig } from "@/schemas/mission/quizConfigSchema";
 import type { GetMissionResponse } from "@/types/dto";
 import { useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
 import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
 import { completionDraftsAtom } from "../../../missions/[missionId]/atoms/editorCompletionAtoms";
+import { mobilePreviewRefreshKeyAtom } from "../../../missions/[missionId]/atoms/editorMobilePreviewAtom";
 import { CompletionSettingsCard } from "../../../missions/[missionId]/components/CompletionSettingsCard";
 import { ContentBasicInfoCard } from "../../../missions/[missionId]/components/ContentBasicInfoCard";
 import { EditorBottomSaveSlot } from "../../../missions/[missionId]/components/EditorBottomSaveSlot";
@@ -23,6 +24,8 @@ import {
   RewardSettingsCard,
   type RewardSnapshot,
 } from "../../../missions/[missionId]/components/RewardSettingsCard";
+import { EditorDesktopAbsolute } from "../../../missions/[missionId]/components/desktop/EditorDesktopAbsolute";
+import { EditorDesktopMobilePanel } from "../../../missions/[missionId]/components/desktop/EditorDesktopMobilePanel";
 import type { SectionSaveState } from "../../../missions/[missionId]/components/editor-save.types";
 import { EditorMissionActionBar } from "../../../missions/[missionId]/components/views/EditorMissionActionBar";
 import { quizActionDraftItemsAtom } from "../atoms/quizActionAtoms";
@@ -75,6 +78,8 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
     isCompletionsLoading: completionsQuery.isLoading,
   });
 
+  const bumpPreviewRefresh = useSetAtom(mobilePreviewRefreshKeyAtom);
+
   const handleBasicStateChange = useCallback(
     (state: SectionSaveState) => {
       setBasicValidationCount(state.validationIssueCount);
@@ -91,6 +96,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
     [sectionBindings.onRewardStateChange],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - bumpPreviewRefresh
   const saveButtonNode = useMemo(
     () => (
       <EditorMissionActionBar
@@ -99,10 +105,12 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
         hasAnyPendingChanges={viewState.hasAnyPendingChanges}
         hasAnyValidationIssues={viewState.hasAnyValidationIssues}
         onSave={() => {
-          void actions.onSave();
+          void actions.onSave().then(() => bumpPreviewRefresh(v => v + 1));
         }}
         canUndo={undoRedo.canUndo}
         onUndo={() => void undoRedo.undo()}
+        totalValidationIssueCount={viewState.totalValidationIssueCount}
+        onScrollToFirstError={actions.scrollToFirstError}
       />
     ),
     [
@@ -112,12 +120,20 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
       viewState.hasAnyPendingChanges,
       viewState.hasAnyValidationIssues,
       viewState.isSavingAll,
+      viewState.totalValidationIssueCount,
     ],
+  );
+
+  const mobilePanel = (
+    <EditorDesktopAbsolute side="right" panelWidth={440}>
+      <EditorDesktopMobilePanel missionId={missionId} />
+    </EditorDesktopAbsolute>
   );
 
   if (currentTab === "stats") {
     return (
       <>
+        {mobilePanel}
         <EditorBottomSaveSlot
           slotKey={`quiz-editor-save:${missionId}`}
           isActive={false}
@@ -130,6 +146,7 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
 
   return (
     <>
+      {mobilePanel}
       <EditorBottomSaveSlot
         slotKey={`quiz-editor-save:${missionId}`}
         isActive={currentTab === "editor"}

@@ -1,5 +1,6 @@
 "use client";
 
+import { CounterSettingRow } from "@/app/(site)/(main)/create/components/CounterSettingRow";
 import { getActionTypeLabel } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useMultipleImages, useSingleImage } from "@/hooks/image";
@@ -37,7 +38,6 @@ import {
 import { ActionType, MatchMode } from "@prisma/client";
 import {
   Button,
-  CounterInput,
   ImageSelector,
   Input,
   LabelText,
@@ -396,9 +396,7 @@ function ActionFormComponent(
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
     normalizedInitialNextCompletionId,
   );
-  const [score, setScore] = useState<number | null>(
-    initialValues?.score ?? (isQuizMode ? 10 : null),
-  );
+  const [score, setScore] = useState<number>(initialValues?.score ?? 10);
   const [matchMode, setMatchMode] = useState<MatchMode | null>(initialValues?.matchMode ?? null);
   const [hint, setHint] = useState(initialValues?.hint ?? "");
   const [explanation, setExplanation] = useState(initialValues?.explanation ?? "");
@@ -864,7 +862,7 @@ function ActionFormComponent(
       setOptions(nextOptions);
       setNextActionId(nextValues.nextActionId ?? null);
       setNextCompletionId(allowCompletionLink ? (nextValues.nextCompletionId ?? null) : null);
-      setScore(nextValues.score ?? null);
+      setScore(nextValues.score ?? 10);
       setMatchMode(nextValues.matchMode ?? null);
       setHint(nextValues.hint ?? "");
       setExplanation(nextValues.explanation ?? "");
@@ -960,26 +958,8 @@ function ActionFormComponent(
   }, [getRawSnapshot, onRawSnapshotChange]);
 
   useEffect(() => {
-    if (!hasValidationStarted) {
-      return;
-    }
-
-    runValidation();
-  }, [
-    description,
-    hasLinkTargets,
-    hasValidationStarted,
-    itemLabel,
-    needsOptions,
-    nextActionId,
-    nextCompletionId,
-    optionLimits.min,
-    options,
-    runValidation,
-    title,
-    isBranch,
-    allowCompletionLink,
-  ]);
+    runValidation({ showErrors: hasValidationStarted });
+  }, [hasValidationStarted, runValidation]);
 
   useImperativeHandle(
     ref,
@@ -1171,17 +1151,22 @@ function ActionFormComponent(
         </div>
       )}
 
-      <Input
-        label="제목"
-        required
-        placeholder={`${itemLabel} 제목을 입력해주세요`}
-        maxLength={ACTION_TITLE_MAX_LENGTH}
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        errorMessage={errors.title}
-      />
+      <div data-field-error={errors.title ? "title" : undefined}>
+        <Input
+          label="제목"
+          required
+          placeholder={`${itemLabel} 제목을 입력해주세요`}
+          maxLength={ACTION_TITLE_MAX_LENGTH}
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          errorMessage={errors.title}
+        />
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div
+        className="flex flex-col gap-2"
+        data-field-error={errors.description ? "description" : undefined}
+      >
         <div className="flex items-center justify-between">
           <LabelText required={false}>설명</LabelText>
           <Typo.Body
@@ -1241,15 +1226,18 @@ function ActionFormComponent(
       )}
 
       {needsMaxSelections && !isBranch && (
-        <div className="flex items-center justify-between">
-          <LabelText required={false}>{isQuizMode ? "정답 수" : "최대 선택 수"}</LabelText>
-          <CounterInput
-            value={maxSelections}
-            onChange={handleMaxSelectionsChange}
-            min={1}
-            max={isQuizMode ? 2 : needsOptions ? options.length : 10}
-          />
-        </div>
+        <CounterSettingRow
+          label={isQuizMode ? "정답 수" : "최대 선택 수"}
+          description={
+            isQuizMode
+              ? "정답으로 인정할 선택지 개수를 설정합니다."
+              : "사용자가 선택할 수 있는 최대 개수를 설정합니다."
+          }
+          value={maxSelections}
+          onChange={handleMaxSelectionsChange}
+          min={1}
+          max={isQuizMode ? 2 : needsOptions ? options.length : 10}
+        />
       )}
 
       {!isQuizMode &&
@@ -1262,7 +1250,10 @@ function ActionFormComponent(
         )}
 
       {needsOptions && isQuizMode && selectedActionType === ActionType.OX && (
-        <div className="flex flex-col gap-3">
+        <div
+          className="flex flex-col gap-3"
+          data-field-error={errors.correctAnswer ? "correctAnswer" : undefined}
+        >
           <LabelText required>항목</LabelText>
           {options.map(option => (
             <div
@@ -1299,7 +1290,10 @@ function ActionFormComponent(
       )}
 
       {needsOptions && isQuizMode && selectedActionType === ActionType.SHORT_TEXT && (
-        <div className="flex flex-col gap-3">
+        <div
+          className="flex flex-col gap-3"
+          data-field-error={errors.options ? "options" : undefined}
+        >
           <LabelText required>{`정답 목록 (${options.length}/${optionLimits.max})`}</LabelText>
           <Typo.Body size="medium" className="text-zinc-400">
             허용할 정답 텍스트를 입력합니다. 참여자의 답변이 이 중 하나와 일치하면 정답으로
@@ -1349,7 +1343,14 @@ function ActionFormComponent(
           isQuizMode &&
           (selectedActionType === ActionType.OX || selectedActionType === ActionType.SHORT_TEXT)
         ) && (
-          <div className="flex flex-col gap-3">
+          <div
+            className="flex flex-col gap-3"
+            data-field-error={
+              errors.options || errors.correctAnswer || errors.branchNextAction
+                ? "options"
+                : undefined
+            }
+          >
             <LabelText required>{`항목 (${options.length}/${optionLimits.max})`}</LabelText>
             <DndContext
               sensors={optionSensors}
@@ -1472,22 +1473,14 @@ function ActionFormComponent(
 
       {isQuizMode && (
         <>
-          <div className="flex flex-col gap-2">
-            <LabelText required={false}>배점</LabelText>
-            <Typo.Body size="medium" className="text-zinc-400">
-              이 질문의 배점을 설정합니다.
-            </Typo.Body>
-            <Input
-              type="number"
-              placeholder="배점을 입력하세요 (선택)"
-              value={score ?? ""}
-              onChange={e => {
-                const val = e.target.value;
-                setScore(val === "" ? null : Number(val));
-              }}
-              min={0}
-            />
-          </div>
+          <CounterSettingRow
+            label="배점"
+            description="이 질문의 배점을 설정합니다. 기본값은 10점입니다."
+            value={score}
+            onChange={setScore}
+            min={0}
+            max={100}
+          />
 
           {selectedActionType === ActionType.SHORT_TEXT && (
             <div className="flex flex-col gap-2">
@@ -1530,10 +1523,11 @@ function ActionFormComponent(
               <Typo.Body size="medium" className="text-zinc-400">
                 오답 시 표시할 정답에 대한 설명을 입력합니다.
               </Typo.Body>
-              <Input
+              <Textarea
                 placeholder="정답 설명을 입력하세요 (선택)"
                 value={explanation}
                 onChange={e => setExplanation(e.target.value)}
+                rows={3}
               />
             </div>
           )}
@@ -1541,7 +1535,10 @@ function ActionFormComponent(
       )}
 
       {!isQuizMode && !isBranch && (hasLinkTargets || hasCreateCallbacks) && (
-        <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4">
+        <div
+          className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4"
+          data-field-error={errors.nextLink ? "nextLink" : undefined}
+        >
           <LabelText required={allowCompletionLink && hasLinkTargets}>다음 이동 설정</LabelText>
 
           <NextLinkDisplay

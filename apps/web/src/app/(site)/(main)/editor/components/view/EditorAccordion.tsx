@@ -46,9 +46,9 @@ export function EditorAccordion({
 
         <div className="flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-3 text-left">
           <div className="min-w-0 overflow-hidden">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-semibold text-zinc-800">{title}</span>
-              {badge}
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 truncate text-sm font-semibold text-zinc-800">{title}</span>
+              {badge ? <span className="shrink-0">{badge}</span> : null}
             </div>
             {subtitle ? (
               <span className="mt-1 block truncate text-xs text-zinc-500">{subtitle}</span>

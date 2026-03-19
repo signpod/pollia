@@ -62,6 +62,7 @@ import {
 } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
 import { toggleItemWithPreview } from "./editorMobilePreview.utils";
+import { scrollToFirstFieldError } from "./editorScrollToItem";
 
 function getDraftItemKey(draftKey: string) {
   return getCompletionDraftItemKey(draftKey);
@@ -102,6 +103,7 @@ export interface UseCompletionSettingsCardReturn {
     handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
+  scrollToFirstError: () => void;
 }
 
 export function useCompletionSettingsCard({
@@ -526,13 +528,6 @@ export function useCompletionSettingsCard({
 
   const handleRemoveExisting = useCallback(
     (completionId: string) => {
-      const confirmed = window.confirm(
-        "결과 화면을 제거하면 저장 시 실제 삭제됩니다.\n액션에서 연결된 완료 화면 설정은 비워질 수 있습니다.\n계속하시겠습니까?",
-      );
-      if (!confirmed) {
-        return;
-      }
-
       dispatchMarkRemoved(completionId);
       setOpenItemKey(prev => (prev === getExistingItemKey(completionId) ? null : prev));
 
@@ -759,7 +754,8 @@ export function useCompletionSettingsCard({
         }
       }
 
-      for (const draft of draftsToCreate) {
+      for (let _di = 0; _di < draftsToCreate.length; _di++) {
+        const draft = draftsToCreate[_di]!;
         const itemKey = getDraftItemKey(draft.key);
         if (settledItemKeys.has(itemKey)) {
           continue;
@@ -989,6 +985,15 @@ export function useCompletionSettingsCard({
     ],
   );
 
+  const scrollToFirstError = useCallback(() => {
+    scrollToFirstFieldError({
+      items: completionItems,
+      validationIssueCountByItemKey,
+      formRefs,
+      setOpenItemKey,
+    });
+  }, [completionItems, validationIssueCountByItemKey, setOpenItemKey]);
+
   return {
     viewState: {
       isSaving,
@@ -1024,5 +1029,6 @@ export function useCompletionSettingsCard({
       handleDuplicateItem,
     },
     saveHandle,
+    scrollToFirstError,
   };
 }

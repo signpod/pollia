@@ -27,10 +27,13 @@ function CompletionSettingsCardComponent(
   props: CompletionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
-  const { viewState, listState, quizState, formRefs, handlers, saveHandle } =
+  const { viewState, listState, quizState, formRefs, handlers, saveHandle, scrollToFirstError } =
     useCompletionSettingsCard(props);
 
-  useImperativeHandle(ref, () => saveHandle, [saveHandle]);
+  useImperativeHandle(ref, () => ({ ...saveHandle, scrollToFirstError }), [
+    saveHandle,
+    scrollToFirstError,
+  ]);
 
   const { isSaving, isLoading, hasValidationIssues, validationIssueCount } = viewState;
 

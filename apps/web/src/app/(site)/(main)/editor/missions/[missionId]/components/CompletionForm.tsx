@@ -298,11 +298,7 @@ function CompletionFormComponent(
   );
 
   useEffect(() => {
-    if (!hasValidationStarted) {
-      return;
-    }
-
-    runValidation();
+    runValidation({ showErrors: hasValidationStarted });
   }, [hasValidationStarted, runValidation]);
 
   const buildValidatedValues = useCallback(
@@ -409,17 +405,22 @@ function CompletionFormComponent(
     <div className="flex flex-col gap-5 p-4" onBlurCapture={handleBlurCapture}>
       {!hideTitle && <Typo.SubTitle>결과 화면 편집</Typo.SubTitle>}
 
-      <Input
-        label="제목"
-        required
-        placeholder="결과 화면 제목을 입력해주세요"
-        maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
-        value={title}
-        onChange={e => handleTitleChange(e.target.value)}
-        errorMessage={errors.title}
-      />
+      <div data-field-error={errors.title ? "title" : undefined}>
+        <Input
+          label="제목"
+          required
+          placeholder="결과 화면 제목을 입력해주세요"
+          maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
+          value={title}
+          onChange={e => handleTitleChange(e.target.value)}
+          errorMessage={errors.title}
+        />
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div
+        className="flex flex-col gap-2"
+        data-field-error={errors.description ? "description" : undefined}
+      >
         <div className="flex items-center justify-between">
           <LabelText required>설명</LabelText>
           <Typo.Body
@@ -468,7 +469,14 @@ function CompletionFormComponent(
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div
+        className="flex flex-col gap-3"
+        data-field-error={
+          links.some((_, i) => errors[`link_${i}_name`] || errors[`link_${i}_url`])
+            ? "links"
+            : undefined
+        }
+      >
         <div className="flex items-center justify-between">
           <Typo.Body size="medium" className="font-semibold text-zinc-800">
             링크 ({links.length}/{MISSION_COMPLETION_LINKS_MAX_COUNT})
