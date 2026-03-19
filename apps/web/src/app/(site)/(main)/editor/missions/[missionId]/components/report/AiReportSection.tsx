@@ -1,5 +1,6 @@
 "use client";
 
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useGenerateMissionAiReport, useMissionAiReport } from "@/hooks/ai";
 import { Typo } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,7 +20,7 @@ export function AiReportSection({ missionId, hasResponses: _hasResponses }: AiRe
   const generateMutation = useGenerateMissionAiReport({
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["mission-ai-report", missionId],
+        queryKey: missionQueryKeys.aiReport(missionId),
       });
     },
   });
