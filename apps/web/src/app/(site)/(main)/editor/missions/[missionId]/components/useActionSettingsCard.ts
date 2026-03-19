@@ -105,6 +105,7 @@ export interface UseActionSettingsCardReturn {
     handleItemDirtyChange: (itemKey: string, isDirty: boolean) => void;
     handleItemValidationChange: (itemKey: string, issueCount: number) => void;
     handleItemRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
+    handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
 }
@@ -472,6 +473,35 @@ export function useActionSettingsCard({
     setDraftHydrationVersion(v => v + 1);
   }, [orderedActionItems, actionTypeByItemKey, draftFormSnapshotByItemKey]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDraftFormSnapshotByItemKey, setOpenItemKey, setScrollTarget
+  const handleDuplicateItem = useCallback(
+    (itemKey: string) => {
+      const snapshot = formRefs.current[itemKey]?.getRawSnapshot();
+      if (!snapshot) return;
+
+      const draftKey = createDraftKey();
+      const newItemKey = getDraftItemKey(draftKey);
+
+      setDraftItems(prev => [...prev, { key: draftKey }]);
+      setActionTypeByItemKey(prev => ({ ...prev, [newItemKey]: snapshot.actionType }));
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [newItemKey]: {
+          ...snapshot,
+          values: {
+            ...snapshot.values,
+            title: `${snapshot.values.title} (복제)`,
+            nextActionId: null,
+            nextCompletionId: null,
+          },
+        },
+      }));
+      setOpenItemKey(newItemKey);
+      setScrollTarget(newItemKey);
+    },
+    [setScrollTarget],
+  );
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
   const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
@@ -588,6 +618,7 @@ export function useActionSettingsCard({
       handleItemDirtyChange,
       handleItemValidationChange,
       handleItemRawSnapshotChange,
+      handleDuplicateItem,
     },
     saveHandle,
   };

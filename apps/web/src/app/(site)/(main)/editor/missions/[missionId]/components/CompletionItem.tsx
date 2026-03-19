@@ -4,7 +4,7 @@ import { useAtomValue } from "jotai";
 import { selectAtom } from "jotai/utils";
 import { memo, useCallback, useMemo } from "react";
 import { EditorAccordion } from "../../../components/view/EditorAccordion";
-import { EditorDeleteSlot } from "../../../components/view/EditorDeleteSlot";
+import { EditorItemMenuSlot } from "../../../components/view/EditorItemMenuSlot";
 import { completionFormSnapshotByItemKeyAtom } from "../atoms/editorCompletionAtoms";
 import {
   CompletionForm,
@@ -35,6 +35,7 @@ interface CompletionItemProps {
   onValidationStateChange: (itemKey: string, issueCount: number) => void;
   onRawSnapshotChange: (itemKey: string, snapshot: CompletionFormRawSnapshot) => void;
   onDraftTitleChange: (draftKey: string, titleValue: string) => void;
+  onDuplicateItem: (itemKey: string) => void;
 }
 
 export const CompletionItem = memo(function CompletionItem({
@@ -55,6 +56,7 @@ export const CompletionItem = memo(function CompletionItem({
   onValidationStateChange,
   onRawSnapshotChange,
   onDraftTitleChange,
+  onDuplicateItem,
 }: CompletionItemProps) {
   const snapshotAtom = useMemo(
     () => selectAtom(completionFormSnapshotByItemKeyAtom, snapshots => snapshots[itemKey]),
@@ -79,6 +81,7 @@ export const CompletionItem = memo(function CompletionItem({
   const draftKey = item.kind === "draft" ? item.draft.key : null;
 
   const handleToggle = useCallback(() => onToggle(itemKey), [itemKey, onToggle]);
+  const handleDuplicate = useCallback(() => onDuplicateItem(itemKey), [itemKey, onDuplicateItem]);
 
   const handleDelete = useCallback(() => {
     if (existingCompletionId) {
@@ -128,9 +131,11 @@ export const CompletionItem = memo(function CompletionItem({
           previewImageUrl ? { src: previewImageUrl, alt: `${title} 미리보기 이미지` } : null
         }
         rightSlot={
-          <EditorDeleteSlot
+          <EditorItemMenuSlot
             onDelete={handleDelete}
-            ariaLabel={item.kind === "existing" ? "결과 화면 제거" : "신규 결과 화면 제거"}
+            onDuplicate={handleDuplicate}
+            deleteDisabled={isSaving}
+            duplicateDisabled={isSaving}
           />
         }
       >

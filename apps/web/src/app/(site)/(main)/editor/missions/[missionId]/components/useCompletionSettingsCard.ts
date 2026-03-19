@@ -99,6 +99,7 @@ export interface UseCompletionSettingsCardReturn {
     handleItemRawSnapshotChange: (itemKey: string, snapshot: CompletionFormRawSnapshot) => void;
     setCompletionDraftTitle: (draftKey: string, title: string) => void;
     registerCompletionDraftForm: (draftKey: string, instance: CompletionFormHandle | null) => void;
+    handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
 }
@@ -440,6 +441,27 @@ export function useCompletionSettingsCard({
     setOpenItemKey(itemKey);
     setScrollTarget(itemKey);
   };
+
+  const handleDuplicateItem = useCallback(
+    (itemKey: string) => {
+      if (isSaving) return;
+
+      const snapshot = formRefs.current[itemKey]?.getRawSnapshot();
+      if (!snapshot) return;
+
+      const draftKey = createDraftKey();
+      const newItemKey = getDraftItemKey(draftKey);
+
+      dispatchAddDraft({ draftKey, title: `${snapshot.title} (복제)` });
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [newItemKey]: { ...snapshot, title: `${snapshot.title} (복제)` },
+      }));
+      setOpenItemKey(newItemKey);
+      setScrollTarget(newItemKey);
+    },
+    [isSaving, dispatchAddDraft, setDraftFormSnapshotByItemKey, setOpenItemKey, setScrollTarget],
+  );
 
   const handleToggleItem = useCallback(
     (itemKey: string) => {
@@ -999,6 +1021,7 @@ export function useCompletionSettingsCard({
       handleItemRawSnapshotChange,
       setCompletionDraftTitle,
       registerCompletionDraftForm,
+      handleDuplicateItem,
     },
     saveHandle,
   };

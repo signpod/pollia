@@ -16,7 +16,7 @@ import { useAtomValue } from "jotai";
 import { selectAtom } from "jotai/utils";
 import { memo, useCallback, useMemo } from "react";
 import { EditorAccordion } from "../../../components/view/EditorAccordion";
-import { EditorDeleteSlot } from "../../../components/view/EditorDeleteSlot";
+import { EditorItemMenuSlot } from "../../../components/view/EditorItemMenuSlot";
 import { EditorSortControls } from "../../../components/view/EditorSortControls";
 import type { ActionListItem } from "../../../missions/[missionId]/components/actionSettingsCard.types";
 import { quizActionFormSnapshotByItemKeyAtom } from "../atoms/quizActionAtoms";
@@ -44,6 +44,7 @@ interface QuizSortableActionItemProps {
   onValidationStateChange: (itemKey: string, issueCount: number) => void;
   onRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
   onMoveItem: (itemKey: string, direction: "up" | "down") => void;
+  onDuplicateItem: (itemKey: string) => void;
   showHint?: boolean;
   showCorrectOnWrong?: boolean;
   isFirst: boolean;
@@ -70,6 +71,7 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
   onValidationStateChange,
   onRawSnapshotChange,
   onMoveItem,
+  onDuplicateItem,
   isFirst,
   isLast,
 }: QuizSortableActionItemProps) {
@@ -135,6 +137,7 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
   );
   const handleMoveUp = useCallback(() => onMoveItem(itemKey, "up"), [itemKey, onMoveItem]);
   const handleMoveDown = useCallback(() => onMoveItem(itemKey, "down"), [itemKey, onMoveItem]);
+  const handleDuplicate = useCallback(() => onDuplicateItem(itemKey), [itemKey, onDuplicateItem]);
 
   return (
     <div ref={setNodeRef} style={style} data-editor-item-key={item.key} className="scroll-mt-28">
@@ -159,10 +162,11 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
           />
         }
         rightSlot={
-          <EditorDeleteSlot
+          <EditorItemMenuSlot
             onDelete={handleDelete}
-            disabled={item.kind !== "draft" && isBusy}
-            ariaLabel="질문 삭제"
+            onDuplicate={handleDuplicate}
+            deleteDisabled={item.kind !== "draft" && isBusy}
+            duplicateDisabled={isBusy}
           />
         }
       >

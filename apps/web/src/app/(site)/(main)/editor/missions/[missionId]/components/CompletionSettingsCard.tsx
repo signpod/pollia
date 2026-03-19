@@ -47,6 +47,7 @@ function CompletionSettingsCardComponent(
     handleItemRawSnapshotChange,
     setCompletionDraftTitle,
     registerCompletionDraftForm,
+    handleDuplicateItem,
   } = handlers;
 
   const handleFormRef = useCallback(
@@ -189,6 +190,7 @@ function CompletionSettingsCardComponent(
                   onValidationStateChange={handleItemValidationChange}
                   onRawSnapshotChange={handleItemRawSnapshotChange}
                   onDraftTitleChange={setCompletionDraftTitle}
+                  onDuplicateItem={handleDuplicateItem}
                 />
               );
             })}
