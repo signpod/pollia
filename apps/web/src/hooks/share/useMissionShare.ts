@@ -10,10 +10,9 @@ import { useCallback, useMemo, useState } from "react";
 interface UseMissionShareOptions {
   missionId: string;
   title?: string;
-  imageUrl?: string | null;
 }
 
-export function useMissionShare({ missionId, title, imageUrl }: UseMissionShareOptions) {
+export function useMissionShare({ missionId, title }: UseMissionShareOptions) {
   const [isSharing, setIsSharing] = useState(false);
   const { trackShare } = useShareTracking(missionId);
 

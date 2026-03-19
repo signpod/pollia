@@ -5,15 +5,13 @@ import { useMissionShare as useBaseMissionShare } from "@/hooks/share/useMission
 interface UseMissionShareOptions {
   missionId: string;
   title?: string;
-  imageUrl?: string | null;
 }
 
-export function useMissionShare({ missionId, title, imageUrl }: UseMissionShareOptions) {
+export function useMissionShare({ missionId, title }: UseMissionShareOptions) {
   const { handleKakaoShare, handleLinkShare, handleXShare, isSharing, shareUrl } =
     useBaseMissionShare({
       missionId,
       title,
-      imageUrl,
     });
 
   return {
