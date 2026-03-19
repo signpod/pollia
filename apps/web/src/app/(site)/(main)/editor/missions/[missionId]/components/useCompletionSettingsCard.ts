@@ -760,7 +760,8 @@ export function useCompletionSettingsCard({
         }
       }
 
-      for (const draft of draftsToCreate) {
+      for (let _di = 0; _di < draftsToCreate.length; _di++) {
+        const draft = draftsToCreate[_di]!;
         const itemKey = getDraftItemKey(draft.key);
         if (settledItemKeys.has(itemKey)) {
           continue;
