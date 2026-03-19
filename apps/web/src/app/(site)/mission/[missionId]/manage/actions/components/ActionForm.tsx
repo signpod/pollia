@@ -689,6 +689,7 @@ function ActionFormComponent(
 
   const buildValidatedValues = useCallback(
     ({ showErrors = true }: { showErrors?: boolean } = {}): ActionFormValues | null => {
+      setHasValidationStarted(true);
       const validationResult = runValidation({ showErrors });
       if (!validationResult.isValid) {
         return null;
@@ -1075,6 +1076,10 @@ function ActionFormComponent(
   };
 
   const handleOptionIsCorrectChange = (optionKey: string, checked: boolean) => {
+    if (isQuizMode) {
+      setHasValidationStarted(true);
+    }
+
     if (isQuizMode && selectedActionType === ActionType.OX) {
       setOptions(prev =>
         prev.map(opt => ({

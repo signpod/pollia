@@ -79,7 +79,7 @@ describe("useQuizQuestionSettingsCard", () => {
 
       const draftItems = store.get(quizActionDraftItemsAtom);
       expect(draftItems).toHaveLength(1);
-      expect(draftItems[0].key).toBeDefined();
+      expect(draftItems[0]!.key).toBeDefined();
     });
 
     // Given: 빈 상태
@@ -94,7 +94,7 @@ describe("useQuizQuestionSettingsCard", () => {
 
       const items = result.current.listState.orderedActionItems;
       expect(items).toHaveLength(1);
-      expect(result.current.listState.actionTypeByItemKey[items[0].key]).toBe(
+      expect(result.current.listState.actionTypeByItemKey[items[0]!.key]).toBe(
         ActionType.MULTIPLE_CHOICE,
       );
     });
@@ -110,7 +110,7 @@ describe("useQuizQuestionSettingsCard", () => {
       });
 
       const items = result.current.listState.orderedActionItems;
-      expect(result.current.listState.openItemKey).toBe(items[0].key);
+      expect(result.current.listState.openItemKey).toBe(items[0]!.key);
     });
 
     // Given: 빈 상태
@@ -140,7 +140,7 @@ describe("useQuizQuestionSettingsCard", () => {
         result.current.handlers.handleAddDraft();
       });
 
-      const draftKey = store.get(quizActionDraftItemsAtom)[0].key;
+      const draftKey = store.get(quizActionDraftItemsAtom)[0]!.key;
 
       act(() => {
         result.current.handlers.handleRemoveDraft(draftKey);
@@ -159,7 +159,7 @@ describe("useQuizQuestionSettingsCard", () => {
         result.current.handlers.handleAddDraft();
       });
 
-      const draftKey = store.get(quizActionDraftItemsAtom)[0].key;
+      const draftKey = store.get(quizActionDraftItemsAtom)[0]!.key;
       expect(result.current.listState.openItemKey).not.toBeNull();
 
       act(() => {
@@ -181,7 +181,7 @@ describe("useQuizQuestionSettingsCard", () => {
         result.current.handlers.handleAddDraft();
       });
 
-      const itemKey = result.current.listState.orderedActionItems[0].key;
+      const itemKey = result.current.listState.orderedActionItems[0]!.key;
       expect(result.current.listState.openItemKey).toBe(itemKey);
 
       act(() => {
@@ -201,7 +201,7 @@ describe("useQuizQuestionSettingsCard", () => {
         result.current.handlers.handleAddDraft();
       });
 
-      const itemKey = result.current.listState.orderedActionItems[0].key;
+      const itemKey = result.current.listState.orderedActionItems[0]!.key;
 
       act(() => {
         result.current.handlers.handleToggleItem(itemKey);
@@ -226,7 +226,7 @@ describe("useQuizQuestionSettingsCard", () => {
         result.current.handlers.handleAddDraft();
       });
 
-      const itemKey = result.current.listState.orderedActionItems[0].key;
+      const itemKey = result.current.listState.orderedActionItems[0]!.key;
 
       act(() => {
         result.current.handlers.handleActionTypeChange(itemKey, ActionType.OX);
@@ -249,16 +249,16 @@ describe("useQuizQuestionSettingsCard", () => {
       });
 
       const items = result.current.listState.orderedActionItems;
-      const firstKey = items[0].key;
-      const secondKey = items[1].key;
+      const firstKey = items[0]!.key;
+      const secondKey = items[1]!.key;
 
       act(() => {
         result.current.handlers.handleMoveItem(firstKey, "down");
       });
 
       const reordered = result.current.listState.orderedActionItems;
-      expect(reordered[0].key).toBe(secondKey);
-      expect(reordered[1].key).toBe(firstKey);
+      expect(reordered[0]!.key).toBe(secondKey);
+      expect(reordered[1]!.key).toBe(firstKey);
     });
 
     // Given: 첫 번째 아이템
@@ -273,13 +273,13 @@ describe("useQuizQuestionSettingsCard", () => {
       });
 
       const items = result.current.listState.orderedActionItems;
-      const firstKey = items[0].key;
+      const firstKey = items[0]!.key;
 
       act(() => {
         result.current.handlers.handleMoveItem(firstKey, "up");
       });
 
-      expect(result.current.listState.orderedActionItems[0].key).toBe(firstKey);
+      expect(result.current.listState.orderedActionItems[0]!.key).toBe(firstKey);
     });
   });
 
@@ -320,7 +320,7 @@ describe("useQuizQuestionSettingsCard", () => {
         result.current.handlers.handleAddDraft();
       });
 
-      const itemKey = result.current.listState.orderedActionItems[0].key;
+      const itemKey = result.current.listState.orderedActionItems[0]!.key;
 
       act(() => {
         result.current.handlers.handleItemValidationChange(itemKey, 3);
@@ -342,7 +342,7 @@ describe("useQuizQuestionSettingsCard", () => {
         result.current.handlers.handleAddDraft();
       });
 
-      const itemKey = result.current.listState.orderedActionItems[0].key;
+      const itemKey = result.current.listState.orderedActionItems[0]!.key;
 
       act(() => {
         result.current.handlers.handleItemDirtyChange(itemKey, true);

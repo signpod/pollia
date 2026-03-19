@@ -59,6 +59,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     score: null,
     matchMode: null,
     hint: null,
+    explanation: null,
     ...overrides,
   });
 

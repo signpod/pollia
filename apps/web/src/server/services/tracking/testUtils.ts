@@ -32,6 +32,7 @@ export function createMockAction(
     score: null,
     matchMode: null,
     hint: null,
+    explanation: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     options: [],
