@@ -14,7 +14,7 @@ import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import type { ActionAnswerItem, ActionDetail, GetMissionResponseResponse } from "@/types/dto";
 import { useModal } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 const SURVEY_SUBMIT_MODAL = {
   title: "완료할까요?",
@@ -80,6 +80,7 @@ interface UseClientActionSubmitParams {
   navigateToAction: (actionId: string) => void;
   navigateToDone: (completionId?: string) => void;
   navigateToMission: () => void;
+  shuffleQuestions?: boolean;
 }
 
 interface UseClientActionSubmitReturn {
@@ -102,6 +103,16 @@ function findNextActionByOrder(
   return nextAction?.id ?? null;
 }
 
+function findNextActionShuffle(
+  currentActionId: string,
+  actions: ActionForProgress[],
+  submittedActionIds: Set<string>,
+): string | null {
+  const candidates = actions.filter(a => a.id !== currentActionId && !submittedActionIds.has(a.id));
+  if (candidates.length === 0) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)]!.id;
+}
+
 export function useClientActionSubmit({
   missionId,
   actionData,
@@ -111,6 +122,7 @@ export function useClientActionSubmit({
   navigateToAction,
   navigateToDone,
   navigateToMission,
+  shuffleQuestions,
 }: UseClientActionSubmitParams): UseClientActionSubmitReturn {
   const queryClient = useQueryClient();
   const { showModal } = useModal();
@@ -123,7 +135,13 @@ export function useClientActionSubmit({
 
   const toastStorageKey = `mission-toast-${missionId}`;
   const responseId = missionResponse?.data?.id ?? "";
-  const queryKey = missionQueryKeys.missionResponseForMission(missionId);
+  const actorKey = user?.id ?? "guest";
+  const queryKey = [...missionQueryKeys.missionResponseForMission(missionId), actorKey];
+
+  const submittedActionIds = useMemo(
+    () => new Set(missionResponse?.data?.answers?.map(a => a.actionId) ?? []),
+    [missionResponse?.data?.answers],
+  );
 
   const handleAlreadyCompleted = useCallback(() => {
     toast.warning("이미 완료된 컨텐츠입니다", { id: "mission-already-completed" });
@@ -171,12 +189,30 @@ export function useClientActionSubmit({
     }
   }, [queryClient, queryKey]);
 
-  const isActualLastStep =
-    !!currentAnswer?.nextCompletionId || progressInfo.currentOrder === progressInfo.totalCount;
+  const shuffleRemainingCount = shuffleQuestions
+    ? actions.filter(a => a.id !== actionData.id && !submittedActionIds.has(a.id)).length
+    : undefined;
+
+  const isActualLastStep = shuffleQuestions
+    ? shuffleRemainingCount === 0
+    : !!currentAnswer?.nextCompletionId || progressInfo.currentOrder === progressInfo.totalCount;
 
   const navigateToNext = useCallback(
     (answer: ActionAnswerItem, isActualLast: boolean) => {
-      if (isActualLast || answer.nextCompletionId) {
+      if (isActualLast) {
+        removeSessionStorage(toastStorageKey);
+        navigateToDone(answer.nextCompletionId);
+      } else if (shuffleQuestions) {
+        const updatedSubmitted = new Set(submittedActionIds);
+        updatedSubmitted.add(answer.actionId);
+        const nextId = findNextActionShuffle(answer.actionId, actions, updatedSubmitted);
+        if (nextId) {
+          navigateToAction(nextId);
+        } else {
+          removeSessionStorage(toastStorageKey);
+          navigateToDone();
+        }
+      } else if (answer.nextCompletionId) {
         removeSessionStorage(toastStorageKey);
         navigateToDone(answer.nextCompletionId);
       } else if (answer.nextActionId) {
@@ -188,7 +224,15 @@ export function useClientActionSubmit({
         }
       }
     },
-    [navigateToAction, navigateToDone, toastStorageKey, actionData, actions],
+    [
+      navigateToAction,
+      navigateToDone,
+      toastStorageKey,
+      actionData,
+      actions,
+      shuffleQuestions,
+      submittedActionIds,
+    ],
   );
 
   const executeSubmitAndNavigate = useCallback(
@@ -254,10 +298,15 @@ export function useClientActionSubmit({
         navigateToNext(answer, isActualLast);
         setIsSubmitting(false);
 
+        // shuffle 모드에서는 nextCompletionId를 제거하여 서버에서 조기 완료 방지
+        const answerForServer = shuffleQuestions
+          ? { ...answer, nextCompletionId: undefined }
+          : answer;
+
         submitAnswerOnly({
           missionId,
           responseId,
-          answer,
+          answer: answerForServer,
           isLastAction: false,
         })
           .then(result => {
@@ -290,6 +339,7 @@ export function useClientActionSubmit({
       toastStorageKey,
       updateCacheOptimistically,
       rollbackCache,
+      shuffleQuestions,
     ],
   );
 
@@ -308,9 +358,10 @@ export function useClientActionSubmit({
         | ((typeof submittedAnswers)[number] & { nextActionId?: string; nextCompletionId?: string })
         | undefined;
       if (existingAnswer) {
-        const isActualLast =
-          !!existingAnswer.nextCompletionId ||
-          progressInfo.currentOrder === progressInfo.totalCount;
+        const isActualLast = shuffleQuestions
+          ? shuffleRemainingCount === 0
+          : !!existingAnswer.nextCompletionId ||
+            progressInfo.currentOrder === progressInfo.totalCount;
         const isAlreadyCompleted = !!missionResponse?.data?.completedAt;
 
         if (isActualLast && !isAlreadyCompleted) {
@@ -334,6 +385,11 @@ export function useClientActionSubmit({
         } else if (isActualLast) {
           removeSessionStorage(toastStorageKey);
           navigateToDone(existingAnswer.nextCompletionId);
+        } else if (shuffleQuestions) {
+          const nextId = findNextActionShuffle(actionData.id, actions, submittedActionIds);
+          if (nextId) {
+            navigateToAction(nextId);
+          }
         } else if (existingAnswer.nextActionId) {
           navigateToAction(existingAnswer.nextActionId);
         } else if (actionData.nextActionId) {
@@ -371,8 +427,9 @@ export function useClientActionSubmit({
     const submittedAnswers = missionResponse?.data?.answers ?? [];
     const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
 
-    const isActualLast =
-      !!currentAnswer?.nextCompletionId || progressInfo.currentOrder === progressInfo.totalCount;
+    const isActualLast = shuffleQuestions
+      ? shuffleRemainingCount === 0
+      : !!currentAnswer?.nextCompletionId || progressInfo.currentOrder === progressInfo.totalCount;
 
     // 이미 저장된 답변이면 바로 이동 (서버 호출 없이)
     if (isSame) {
@@ -432,6 +489,10 @@ export function useClientActionSubmit({
     navigateToAction,
     navigateToDone,
     toastStorageKey,
+    shuffleQuestions,
+    shuffleRemainingCount,
+    submittedActionIds,
+    actions,
   ]);
 
   return {

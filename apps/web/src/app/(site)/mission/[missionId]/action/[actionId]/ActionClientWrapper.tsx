@@ -239,6 +239,7 @@ function ActionStepWrapper({
     actions,
     submittedAnswers,
     entryActionId,
+    shuffleQuestions: quiz?.quizConfig.shuffleQuestions,
   } satisfies UseActionProgressParams);
 
   const isFirstStep = currentActionData.id === (entryActionId ?? actions[0]?.id);
@@ -252,6 +253,7 @@ function ActionStepWrapper({
     navigateToAction: isInstantQuiz ? quizNavigateToAction : navigateToAction,
     navigateToDone: isInstantQuiz ? quizNavigateToDone : navigateToDone,
     navigateToMission,
+    shuffleQuestions: quiz?.quizConfig.shuffleQuestions,
   });
 
   const updateCanGoNext = useCallback((value: boolean) => {
