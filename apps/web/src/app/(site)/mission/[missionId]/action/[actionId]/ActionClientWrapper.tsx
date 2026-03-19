@@ -23,6 +23,7 @@ import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
+import { type QuizFeedbackConfig, QuizFeedbackModal } from "./quiz/QuizFeedbackModal";
 import { QuizProvider, useQuizContext } from "./quiz/QuizProvider";
 
 let navigationDirection: "forward" | "backward" = "forward";
@@ -147,6 +148,7 @@ function ActionStepWrapper({
 }: ActionStepWrapperProps) {
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const [canGoNext, setCanGoNext] = useState(false);
+  const [quizFeedback, setQuizFeedback] = useState<QuizFeedbackConfig | null>(null);
   const quiz = useQuizContext();
   const { showModal } = useModal();
 
@@ -205,23 +207,21 @@ function ActionStepWrapper({
 
   const showQuizFeedbackModal = useCallback(
     (isCorrect: boolean, onNext: () => void, isLastStep = false) => {
-      let description = isCorrect ? "잘 맞혔어요 👏" : "아쉽지만 틀렸어요";
-
-      if (!isCorrect && quiz?.quizConfig.showCorrectOnWrong) {
-        const correctText = getCorrectAnswerText();
-        if (correctText) {
-          description = `아쉽지만 틀렸어요\n정답: ${correctText}`;
-        }
-      }
-
-      showModal({
-        title: isCorrect ? "정답이에요!" : "오답이에요",
-        description,
+      setQuizFeedback({
+        isCorrect,
+        correctAnswer:
+          !isCorrect && quiz?.quizConfig.showCorrectOnWrong ? getCorrectAnswerText() : null,
+        explanation: quiz?.quizConfig.showExplanation ? currentActionData.explanation : null,
         confirmText: isLastStep ? "제출하기" : "다음",
         onConfirm: onNext,
       });
     },
-    [showModal, quiz?.quizConfig.showCorrectOnWrong, getCorrectAnswerText],
+    [
+      quiz?.quizConfig.showCorrectOnWrong,
+      quiz?.quizConfig.showExplanation,
+      currentActionData.explanation,
+      getCorrectAnswerText,
+    ],
   );
 
   const quizNavigateToAction = useCallback(
@@ -408,6 +408,7 @@ function ActionStepWrapper({
   return (
     <ActionProvider value={contextValue}>
       <ContentComponent actionData={currentActionData} />
+      <QuizFeedbackModal config={quizFeedback} onClose={() => setQuizFeedback(null)} />
     </ActionProvider>
   );
 }

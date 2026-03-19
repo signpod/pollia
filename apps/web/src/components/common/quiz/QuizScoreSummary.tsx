@@ -17,9 +17,14 @@ import { useCallback, useState } from "react";
 interface QuizScoreSummaryProps {
   missionId: string;
   showCorrectOnWrong?: boolean;
+  showExplanation?: boolean;
 }
 
-export function QuizScoreSummary({ missionId, showCorrectOnWrong = true }: QuizScoreSummaryProps) {
+export function QuizScoreSummary({
+  missionId,
+  showCorrectOnWrong = true,
+  showExplanation = true,
+}: QuizScoreSummaryProps) {
   const { data: responseData } = useReadMissionResponseForMission({ missionId });
   const responseId = responseData?.data?.id;
 
@@ -50,6 +55,7 @@ export function QuizScoreSummary({ missionId, showCorrectOnWrong = true }: QuizS
         gradedItems={gradeResult.gradedItems}
         responseData={responseData?.data ? (responseData as GetMissionResponseResponse) : undefined}
         showCorrectOnWrong={showCorrectOnWrong}
+        showExplanation={showExplanation}
       />
     </div>
   );
@@ -132,11 +138,13 @@ function QuestionReviewSection({
   gradedItems,
   responseData,
   showCorrectOnWrong,
+  showExplanation,
 }: {
   missionId: string;
   gradedItems: GradedItem[];
   responseData?: GetMissionResponseResponse;
   showCorrectOnWrong: boolean;
+  showExplanation: boolean;
 }) {
   const { data: actionsData } = useReadActionsDetail(missionId);
   const actions = actionsData?.data ?? [];
@@ -159,6 +167,7 @@ function QuestionReviewSection({
               action={action}
               userAnswer={answer}
               showCorrectOnWrong={showCorrectOnWrong}
+              showExplanation={showExplanation}
             />
           );
         })}
@@ -173,15 +182,18 @@ function QuestionReviewItem({
   action,
   userAnswer,
   showCorrectOnWrong,
+  showExplanation,
 }: {
   item: GradedItem;
   index: number;
   action?: ActionDetail;
   userAnswer?: GetMissionResponseResponse["data"]["answers"][number];
   showCorrectOnWrong: boolean;
+  showExplanation: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const canExpand = !item.isCorrect && !!action && showCorrectOnWrong;
+  const hasExplanation = showExplanation && !!action?.explanation;
+  const canExpand = (!!action && !item.isCorrect && showCorrectOnWrong) || hasExplanation;
 
   const handleToggle = useCallback(() => {
     if (canExpand) setIsOpen(prev => !prev);
@@ -254,6 +266,16 @@ function QuestionReviewItem({
                   </Typo.Body>
                   <Typo.Body size="small" className="text-violet-600">
                     {correctAnswerText}
+                  </Typo.Body>
+                </div>
+              )}
+              {hasExplanation && (
+                <div className="flex items-start gap-2">
+                  <Typo.Body size="small" className="shrink-0 text-emerald-600 font-semibold">
+                    해설
+                  </Typo.Body>
+                  <Typo.Body size="small" className="text-emerald-600">
+                    {action.explanation}
                   </Typo.Body>
                 </div>
               )}
