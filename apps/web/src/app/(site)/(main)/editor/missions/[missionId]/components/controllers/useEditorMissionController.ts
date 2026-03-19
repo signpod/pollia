@@ -12,6 +12,10 @@ import { toast } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type UseEditorUndoRedoResult,
+  useEditorUndoRedo,
+} from "../../../../hooks/useEditorUndoRedo";
 import { editorDraftVersionAtom } from "../../atoms/editorDraftVersionAtom";
 import type { ServerActionLike, ServerCompletionLike } from "../editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "../editor-save.types";
@@ -167,6 +171,7 @@ export interface UseEditorMissionControllerResult {
   actions: {
     onSave: () => Promise<void>;
   };
+  undoRedo: Pick<UseEditorUndoRedoResult, "undo" | "redo" | "canUndo" | "canRedo">;
 }
 
 function readUseAiCompletionFromBasicDraft(snapshot: unknown): boolean | null {
@@ -198,6 +203,7 @@ export function useEditorMissionController({
   const completionRef = useRef<SectionSaveHandle | null>(null);
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
+  const lastAutoSaveTimeRef = useRef(0);
 
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [publishSnapshotVersion, setPublishSnapshotVersion] = useState(0);
@@ -379,6 +385,14 @@ export function useEditorMissionController({
     ]);
   }, []);
 
+  const { pushSnapshot, undo, redo, canUndo, canRedo, getIsUndoRedoInProgress } = useEditorUndoRedo(
+    {
+      collectSnapshot: collectLocalDraftPayload,
+      applySnapshot: applyDraftPayload,
+      enabled: isEditorTab,
+    },
+  );
+
   const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
     clearLocalDraftPayload(missionId);
 
@@ -429,12 +443,14 @@ export function useEditorMissionController({
     draftRestoreAppliedRef.current = true;
 
     if (!selectedDraft) {
+      pushSnapshot();
       return;
     }
 
     void applyDraftPayload(selectedDraft)
       .then(() => {
         setPublishSnapshotVersion(prev => prev + 1);
+        pushSnapshot();
         toast({
           message: "임시 저장된 편집 내용이 복원되었습니다.",
         });
@@ -450,16 +466,14 @@ export function useEditorMissionController({
     mission,
     missionId,
     missionQueryData,
+    pushSnapshot,
   ]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: draftVersion and sectionStates are intentional triggers
   useEffect(() => {
-    if (!isEditorTab || typeof window === "undefined") {
-      return;
-    }
-    if (!draftRestoreAppliedRef.current) {
-      return;
-    }
+    if (!isEditorTab || typeof window === "undefined") return;
+    if (!draftRestoreAppliedRef.current) return;
+    if (getIsUndoRedoInProgress()) return;
     if (
       !basicInfoRef.current ||
       !rewardRef.current ||
@@ -470,24 +484,34 @@ export function useEditorMissionController({
     }
 
     const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
-    if (!hasPendingChangesNow) {
+    if (!hasPendingChangesNow) return;
+
+    const elapsed = Date.now() - lastAutoSaveTimeRef.current;
+
+    if (elapsed >= LOCAL_DRAFT_AUTOSAVE_DELAY_MS) {
+      lastAutoSaveTimeRef.current = Date.now();
+      writeLocalDraftPayload(missionId, collectLocalDraftPayload());
+      pushSnapshot();
       return;
     }
 
     const timeoutId = window.setTimeout(() => {
+      lastAutoSaveTimeRef.current = Date.now();
+      if (getIsUndoRedoInProgress()) return;
       writeLocalDraftPayload(missionId, collectLocalDraftPayload());
-    }, LOCAL_DRAFT_AUTOSAVE_DELAY_MS);
+      pushSnapshot();
+    }, LOCAL_DRAFT_AUTOSAVE_DELAY_MS - elapsed);
 
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    return () => clearTimeout(timeoutId);
   }, [
     collectLocalDraftPayload,
     draftVersion,
+    getIsUndoRedoInProgress,
     hasAnyPendingChanges,
     hasPendingChangesFromRefs,
     isEditorTab,
     missionId,
+    pushSnapshot,
     sectionStates,
   ]);
 
@@ -755,6 +779,12 @@ export function useEditorMissionController({
     publishState,
     actions: {
       onSave: handleSave,
+    },
+    undoRedo: {
+      undo,
+      redo,
+      canUndo,
+      canRedo,
     },
   };
 }

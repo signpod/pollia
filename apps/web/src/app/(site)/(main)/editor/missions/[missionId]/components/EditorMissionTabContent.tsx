@@ -82,7 +82,7 @@ export function EditorMissionTabContent({
     staleTime: 5 * 60 * 1000,
   });
 
-  const { refs, sectionBindings, viewState, actions } = useEditorMissionController({
+  const { refs, sectionBindings, viewState, actions, undoRedo } = useEditorMissionController({
     missionId,
     mission,
     currentTab,
@@ -232,10 +232,13 @@ export function EditorMissionTabContent({
         onSave={() => {
           void actions.onSave().then(() => bumpPreviewRefresh(v => v + 1));
         }}
+        canUndo={undoRedo.canUndo}
+        onUndo={() => void undoRedo.undo()}
       />
     ),
     [
       actions,
+      undoRedo,
       viewState.hasAnyBusySection,
       viewState.hasAnyPendingChanges,
       viewState.hasAnyValidationIssues,

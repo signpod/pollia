@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@repo/ui/components";
-import { Save } from "lucide-react";
+import { Save, Undo2 } from "lucide-react";
 
 export interface EditorMissionActionBarProps {
   isSavingAll: boolean;
@@ -9,6 +9,8 @@ export interface EditorMissionActionBarProps {
   hasAnyPendingChanges: boolean;
   hasAnyValidationIssues: boolean;
   onSave: () => void;
+  canUndo?: boolean;
+  onUndo?: () => void;
 }
 
 export function EditorMissionActionBar({
@@ -17,9 +19,20 @@ export function EditorMissionActionBar({
   hasAnyPendingChanges,
   hasAnyValidationIssues,
   onSave,
+  canUndo = false,
+  onUndo,
 }: EditorMissionActionBarProps) {
   return (
-    <div className="flex gap-2 px-5 py-3">
+    <div className="flex items-center gap-2 px-5 py-3">
+      <Button
+        variant="secondary"
+        className="w-12 shrink-0 px-0"
+        onClick={onUndo}
+        disabled={!canUndo || isSavingAll}
+        aria-label="실행 취소"
+      >
+        <Undo2 className="size-4" />
+      </Button>
       <Button
         variant="primary"
         fullWidth
