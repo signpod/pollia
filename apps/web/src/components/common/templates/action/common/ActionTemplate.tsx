@@ -2,8 +2,9 @@ import { AdaptiveImage } from "@/components/common/AdaptiveImage";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { ButtonV2, FixedBottomLayout, ProgressBarV3, Typo } from "@repo/ui/components";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
-import { ChevronLeftIcon } from "lucide-react";
-import { type PropsWithChildren, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronLeftIcon, LightbulbIcon } from "lucide-react";
+import { type PropsWithChildren, useEffect, useRef, useState } from "react";
 import { useActionContext } from "./ActionContext";
 import { useProgressBar } from "./ProgressBarProvider";
 
@@ -12,6 +13,7 @@ interface ActionTemplateProps extends PropsWithChildren {
   description?: string;
   imageUrl?: string;
   isRequired?: boolean;
+  hint?: string;
 }
 
 export function SurveyQuestionTemplate({
@@ -20,6 +22,7 @@ export function SurveyQuestionTemplate({
   imageUrl,
   children,
   isRequired,
+  hint,
 }: ActionTemplateProps) {
   const {
     currentOrder,
@@ -96,6 +99,8 @@ export function SurveyQuestionTemplate({
         </section>
 
         {children}
+
+        {hint && <HintToggle hint={hint} />}
       </div>
 
       <FixedBottomLayout.Content className="px-5 py-3">
@@ -142,6 +147,50 @@ const REQUIRED_TEXT_LABELS = {
   required: "필수 답변",
   optional: "선택 답변",
 } as const;
+
+function HintToggle({ hint }: { hint: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="rounded-lg ring-1 ring-violet-200 overflow-hidden">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between px-4 py-3"
+        onClick={() => setIsOpen(prev => !prev)}
+      >
+        <div className="flex items-center gap-1.5">
+          <LightbulbIcon className="size-4 text-violet-500" />
+          <Typo.Body size="medium" className="font-semibold text-violet-600">
+            힌트
+          </Typo.Body>
+        </div>
+        <ChevronDown
+          className={cn(
+            "size-4 text-violet-400 transition-transform duration-200",
+            isOpen && "rotate-180",
+          )}
+        />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="bg-violet-50 px-4 py-3">
+              <Typo.Body size="medium" className="text-violet-700">
+                {hint}
+              </Typo.Body>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function RequiredIndicator({ isRequired }: RequiredIndicatorProps) {
   return (

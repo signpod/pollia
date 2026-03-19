@@ -36,6 +36,7 @@ export function Subjective({ actionData }: ActionStepContentProps) {
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isRequired={actionData.isRequired}
+      hint={actionData.hint ?? undefined}
     >
       <Textarea
         placeholder={ACTION_PLACEHOLDER}

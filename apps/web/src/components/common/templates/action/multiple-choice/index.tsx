@@ -74,6 +74,7 @@ function SurveyMultipleChoiceContent({ actionData }: ActionStepContentProps) {
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isRequired={actionData.isRequired}
+      hint={actionData.hint ?? undefined}
     >
       <div className="flex flex-col gap-2 w-full">
         <div className={cn("gap-2 w-full", hasImage ? "grid grid-cols-2" : "flex flex-col")}>
