@@ -31,7 +31,7 @@ export function EditorMissionActionBar({
         variant="secondary"
         className="w-12 shrink-0 px-0"
         onClick={onUndo}
-        disabled={!canUndo || isSavingAll}
+        disabled={!canUndo || isSavingAll || !hasAnyPendingChanges}
         aria-label="실행 취소"
       >
         <Undo2 className="size-4" />
