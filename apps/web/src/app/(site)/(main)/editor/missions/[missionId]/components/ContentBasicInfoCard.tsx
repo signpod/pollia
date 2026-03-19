@@ -25,6 +25,7 @@ import {
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { countValidationIssues } from "../../../utils/countValidationIssues";
 import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import type {
@@ -130,28 +131,25 @@ function ContentBasicInfoCardComponent(
     form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
   };
 
-  const hasPendingChanges = form.formState.isDirty;
-  const isBusy = form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy;
   const validationIssueCount = useMemo(
     () => countValidationIssues(form.formState.errors),
     [form.formState.errors],
   );
-  const hasValidationIssues = validationIssueCount > 0;
+
+  const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
+    hasPendingChanges: form.formState.isDirty,
+    isBusy: form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy,
+    hasValidationIssues: validationIssueCount > 0,
+    validationIssueCount,
+    onSaveStateChange,
+  });
+
   const watchedImageUrl = form.watch("imageUrl");
   const watchedBrandLogoUrl = form.watch("brandLogoUrl");
   const watchedUseAiCompletion = useWatch({
     control: form.control,
     name: "useAiCompletion",
   });
-
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
 
   const incrementDraftVersion = useSetAtom(editorDraftVersionAtom);
 
@@ -252,11 +250,8 @@ function ContentBasicInfoCardComponent(
     ref,
     () => ({
       save,
-      hasPendingChanges: () => form.formState.isDirty,
-      isBusy: () =>
-        form.formState.isSubmitting ||
-        thumbnailImageUpload.isUploading ||
-        brandLogoImageUpload.isUploading,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getIsBusy,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -307,15 +302,7 @@ function ContentBasicInfoCardComponent(
         form.reset(nextValues, { keepDefaultValues: true });
       },
     }),
-    [
-      brandLogoImageUpload.isUploading,
-      form.formState.isDirty,
-      form.formState.isSubmitting,
-      form,
-      mission,
-      save,
-      thumbnailImageUpload.isUploading,
-    ],
+    [form, mission, save, getHasPendingChanges, getIsBusy],
   );
 
   const imageUploaders = (

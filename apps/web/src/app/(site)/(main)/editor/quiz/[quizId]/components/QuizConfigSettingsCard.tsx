@@ -15,15 +15,9 @@ import {
   toast,
 } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
-import {
-  type ForwardedRef,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from "react";
+import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -74,18 +68,11 @@ function QuizConfigSettingsCardComponent(
     onShowCorrectOnWrongChange?.(watchedShowCorrectOnWrong);
   }, [watchedShowCorrectOnWrong, onShowCorrectOnWrongChange]);
 
-  const hasPendingChanges = form.formState.isDirty;
-  const isBusy = form.formState.isSubmitting;
-  const [validationIssueCount] = useState(0);
-
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy,
-      hasValidationIssues: validationIssueCount > 0,
-      validationIssueCount,
-    });
-  }, [hasPendingChanges, isBusy, onSaveStateChange, validationIssueCount]);
+  const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
+    hasPendingChanges: form.formState.isDirty,
+    isBusy: form.formState.isSubmitting,
+    onSaveStateChange,
+  });
 
   const save = useCallback(
     async ({ silent = false }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
@@ -125,8 +112,8 @@ function QuizConfigSettingsCardComponent(
     ref,
     () => ({
       save,
-      hasPendingChanges: () => form.formState.isDirty,
-      isBusy: () => form.formState.isSubmitting,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getIsBusy,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") return;
@@ -134,7 +121,7 @@ function QuizConfigSettingsCardComponent(
         form.reset(parsed, { keepDefaultValues: true });
       },
     }),
-    [form, save],
+    [form, save, getHasPendingChanges, getIsBusy],
   );
 
   return (

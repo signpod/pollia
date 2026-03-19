@@ -12,6 +12,7 @@ import { toast } from "@repo/ui/components";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { mobilePreviewModeAtom } from "../../../missions/[missionId]/atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
@@ -262,21 +263,22 @@ export function useQuizQuestionSettingsCard({
   );
   const hasValidationIssues = validationIssueCount > 0;
 
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy: isBusyTotal || isActionsLoading,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [
+  const { getHasPendingChanges, getIsBusy: getSectionIsBusy } = useSectionSaveState({
     hasPendingChanges,
+    isBusy: isBusyTotal || isActionsLoading,
     hasValidationIssues,
-    isBusyTotal,
-    isActionsLoading,
-    onSaveStateChange,
     validationIssueCount,
-  ]);
+    onSaveStateChange,
+  });
+
+  const enhancedSaveHandle = useMemo<SectionSaveHandle>(
+    () => ({
+      ...saveHandle,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getSectionIsBusy,
+    }),
+    [saveHandle, getHasPendingChanges, getSectionIsBusy],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
   const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {
@@ -449,7 +451,7 @@ export function useQuizQuestionSettingsCard({
       handleItemRawSnapshotChange,
       handleDuplicateItem,
     },
-    saveHandle,
+    saveHandle: enhancedSaveHandle,
     scrollToFirstError,
   };
 }

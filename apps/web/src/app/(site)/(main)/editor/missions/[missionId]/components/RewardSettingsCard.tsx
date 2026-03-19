@@ -29,6 +29,7 @@ import {
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { countValidationIssues } from "../../../utils/countValidationIssues";
 import type {
   SectionSaveHandle,
@@ -140,22 +141,18 @@ function RewardSettingsCardComponent(
     form.setValue("reward.imageFileUploadId", null, { shouldDirty: true });
   };
 
-  const hasPendingChanges = form.formState.isDirty;
-  const isBusy = form.formState.isSubmitting || rewardImageUpload.isUploading;
   const validationIssueCount = useMemo(
     () => countValidationIssues(form.formState.errors),
     [form.formState.errors],
   );
-  const hasValidationIssues = validationIssueCount > 0;
 
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
+  const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
+    hasPendingChanges: form.formState.isDirty,
+    isBusy: form.formState.isSubmitting || rewardImageUpload.isUploading,
+    hasValidationIssues: validationIssueCount > 0,
+    validationIssueCount,
+    onSaveStateChange,
+  });
 
   const watchedHasReward = useWatch({ control: form.control, name: "hasReward" });
 
@@ -262,8 +259,8 @@ function RewardSettingsCardComponent(
     ref,
     () => ({
       save,
-      hasPendingChanges: () => form.formState.isDirty,
-      isBusy: () => form.formState.isSubmitting || rewardImageUpload.isUploading,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getIsBusy,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -325,15 +322,7 @@ function RewardSettingsCardComponent(
         form.reset(nextValues, { keepDefaultValues: true });
       },
     }),
-    [
-      currentReward,
-      form,
-      form.formState.isDirty,
-      form.formState.isSubmitting,
-      mission,
-      rewardImageUpload.isUploading,
-      save,
-    ],
+    [currentReward, form, mission, save, getHasPendingChanges, getIsBusy],
   );
 
   const rewardImageUploader = (
