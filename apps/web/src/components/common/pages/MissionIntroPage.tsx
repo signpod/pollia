@@ -250,11 +250,7 @@ export function MissionIntroPage({
           reward={reward}
           missionType={missionType}
           shareButtons={
-            <SocialShareButtonsWithData
-              missionId={missionId}
-              title={missionTitle ?? undefined}
-              imageUrl={missionImageUrl ?? undefined}
-            />
+            <SocialShareButtonsWithData missionId={missionId} title={missionTitle ?? undefined} />
           }
         />
       </MissionIntroTemplate>

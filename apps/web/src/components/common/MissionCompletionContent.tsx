@@ -99,11 +99,7 @@ export function MissionCompletionContent({
       }
       shareButtons={
         missionType !== MissionType.EXPERIENCE_GROUP ? (
-          <SocialShareButtonsWithData
-            missionId={missionId}
-            title={missionTitle ?? undefined}
-            imageUrl={imageUrl ?? undefined}
-          />
+          <SocialShareButtonsWithData missionId={missionId} title={missionTitle ?? undefined} />
         ) : undefined
       }
       recommendation={
