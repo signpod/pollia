@@ -28,6 +28,7 @@ import { EditorMissionActionBar } from "../../../missions/[missionId]/components
 import { quizActionDraftItemsAtom } from "../atoms/quizActionAtoms";
 import { QuizConfigSettingsCard } from "./QuizConfigSettingsCard";
 import { QuizQuestionSettingsCard } from "./QuizQuestionSettingsCard";
+import { QuizStatsDashboard } from "./QuizStatsDashboard";
 import { useEditorQuizController } from "./controllers/useEditorQuizController";
 
 interface QuizEditorContentProps {
@@ -107,6 +108,19 @@ export function QuizEditorContent({ missionId, mission, reward }: QuizEditorCont
       viewState.isSavingAll,
     ],
   );
+
+  if (currentTab === "stats") {
+    return (
+      <>
+        <EditorBottomSaveSlot
+          slotKey={`quiz-editor-save:${missionId}`}
+          isActive={false}
+          node={saveButtonNode}
+        />
+        <QuizStatsDashboard missionId={missionId} />
+      </>
+    );
+  }
 
   return (
     <>

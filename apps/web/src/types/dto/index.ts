@@ -10,3 +10,4 @@ export * from "./mission-like";
 export * from "./tracking";
 export * from "./ai";
 export * from "./action-stats";
+export * from "./quiz-stats";
