@@ -40,7 +40,7 @@ interface SurveyMultipleChoiceProviderProps {
   missionResponse?: GetMissionResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
-  answerType?: typeof ActionType.MULTIPLE_CHOICE | typeof ActionType.TAG;
+  answerType?: typeof ActionType.MULTIPLE_CHOICE | typeof ActionType.TAG | typeof ActionType.OX;
   options?: ActionOption[];
   actionNextActionId?: string | null;
   actionNextCompletionId?: string | null;

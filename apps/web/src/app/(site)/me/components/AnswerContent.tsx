@@ -51,6 +51,7 @@ export function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
     case "MULTIPLE_CHOICE":
     case "TAG":
     case "BRANCH":
+    case "OX":
       if (answer.options.length === 0 && !answer.textAnswer) {
         return <span className="text-sm font-semibold text-zinc-400">선택 없음</span>;
       }

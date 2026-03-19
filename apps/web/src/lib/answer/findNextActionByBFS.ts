@@ -24,7 +24,8 @@ export function isValidAnswer(answer: BFSAnswer): boolean {
   switch (type) {
     case ActionType.MULTIPLE_CHOICE:
     case ActionType.TAG:
-    case ActionType.BRANCH: {
+    case ActionType.BRANCH:
+    case ActionType.OX: {
       const hasOptions = answer.options.length > 0;
       const hasTextAnswer = answer.textAnswer != null && answer.textAnswer.trim() !== "";
       return hasOptions || hasTextAnswer;
@@ -105,7 +106,8 @@ export function findNextActionByBFS(
     if (
       answer.action.type === ActionType.MULTIPLE_CHOICE ||
       answer.action.type === ActionType.TAG ||
-      answer.action.type === ActionType.BRANCH
+      answer.action.type === ActionType.BRANCH ||
+      answer.action.type === ActionType.OX
     ) {
       const selectedOptionIds = new Set(answer.options.map(opt => opt.id));
       const selectedOption = action.options.find(opt => selectedOptionIds.has(opt.id));

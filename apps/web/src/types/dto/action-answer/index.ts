@@ -108,6 +108,14 @@ export type ActionAnswerItem =
       selectedOptionIds?: string[];
       nextActionId?: string;
       nextCompletionId?: string;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.OX;
+      isRequired: boolean;
+      selectedOptionIds?: string[];
+      nextActionId?: string;
+      nextCompletionId?: string;
     };
 
 export interface CreateActionAnswerRequest {
