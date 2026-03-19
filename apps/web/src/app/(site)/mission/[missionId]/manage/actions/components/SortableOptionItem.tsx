@@ -86,6 +86,13 @@ export function SortableOptionItem({
         isOpen={isOpen}
         onToggle={onToggle}
         title={`${index + 1}. ${title || "제목 없음"}`}
+        badge={
+          showIsCorrect && isCorrect ? (
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+              정답
+            </span>
+          ) : null
+        }
         headerHeight="h-[70px]"
         leftSlot={
           <EditorSortControls

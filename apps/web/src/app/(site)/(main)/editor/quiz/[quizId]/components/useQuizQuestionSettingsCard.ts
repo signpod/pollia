@@ -12,6 +12,7 @@ import { toast } from "@repo/ui/components";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { mobilePreviewModeAtom } from "../../../missions/[missionId]/atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
   ActionSectionDraftSnapshot,
@@ -31,6 +32,7 @@ import type {
   SectionSaveHandle,
   SectionSaveStateChangeHandler,
 } from "../../../missions/[missionId]/components/editor-save.types";
+import { toggleItemWithPreview } from "../../../missions/[missionId]/components/editorMobilePreview.utils";
 import {
   quizActionDirtyByItemKeyAtom,
   quizActionDraftHydrationVersionAtom,
@@ -114,6 +116,7 @@ export function useQuizQuestionSettingsCard({
   const draftHydrationVersion = useAtomValue(quizActionDraftHydrationVersionAtom);
   const incrementDraftVersion = useSetAtom(quizDraftVersionAtom);
   const setScrollTarget = useSetAtom(quizActionScrollTargetItemKeyAtom);
+  const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
 
   const { data: actionsData, isLoading: isActionsLoading } = useReadActionsDetail(missionId);
 
@@ -350,9 +353,16 @@ export function useQuizQuestionSettingsCard({
 
   const handleToggleItem = useCallback(
     (itemKey: string) => {
-      setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
+      toggleItemWithPreview(
+        itemKey,
+        orderedActionItems,
+        setOpenItemKey,
+        setMobilePreviewMode,
+        item => ({ type: "action", actionId: item.action.id }),
+        openItemKey,
+      );
     },
-    [setOpenItemKey],
+    [orderedActionItems, setMobilePreviewMode, setOpenItemKey, openItemKey],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
