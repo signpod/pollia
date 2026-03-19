@@ -560,10 +560,8 @@ export function useEditorQuizController({
   }, [collectLocalDraftPayload, quizId]);
 
   const handleSave = useCallback(async () => {
-    const result = await runUnifiedSave({ mode: "manual" });
-    if (result === "failed") {
-      await saveDraft();
-    }
+    await saveDraft();
+    await runUnifiedSave({ mode: "manual" });
   }, [runUnifiedSave, saveDraft]);
 
   // --- Section state change callbacks ---
