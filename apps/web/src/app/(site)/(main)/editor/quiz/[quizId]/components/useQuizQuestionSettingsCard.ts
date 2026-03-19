@@ -33,6 +33,7 @@ import type {
   SectionSaveStateChangeHandler,
 } from "../../../missions/[missionId]/components/editor-save.types";
 import { toggleItemWithPreview } from "../../../missions/[missionId]/components/editorMobilePreview.utils";
+import { scrollToFirstFieldError } from "../../../missions/[missionId]/components/editorScrollToItem";
 import {
   quizActionDirtyByItemKeyAtom,
   quizActionDraftHydrationVersionAtom,
@@ -405,25 +406,12 @@ export function useQuizQuestionSettingsCard({
   }, [deleteTarget, deleteAction, missionId]);
 
   const scrollToFirstError = useCallback(() => {
-    const firstErrorItem = orderedActionItems.find(
-      item => (validationIssueCountByItemKey[item.key] ?? 0) > 0,
-    );
-    if (!firstErrorItem) return;
-    formRefs.current[firstErrorItem.key]?.validateAndGetValues({ showErrors: true });
-    setOpenItemKey(firstErrorItem.key);
-    let attempts = 0;
-    const tryScroll = () => {
-      const el = document.querySelector("[data-field-error]");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-      attempts++;
-      if (attempts < 15) {
-        requestAnimationFrame(tryScroll);
-      }
-    };
-    requestAnimationFrame(tryScroll);
+    scrollToFirstFieldError({
+      items: orderedActionItems,
+      validationIssueCountByItemKey,
+      formRefs,
+      setOpenItemKey,
+    });
   }, [orderedActionItems, validationIssueCountByItemKey, setOpenItemKey]);
 
   return {

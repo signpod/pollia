@@ -62,6 +62,7 @@ import {
 } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
 import { toggleItemWithPreview } from "./editorMobilePreview.utils";
+import { scrollToFirstFieldError } from "./editorScrollToItem";
 
 function getDraftItemKey(draftKey: string) {
   return getCompletionDraftItemKey(draftKey);
@@ -985,25 +986,12 @@ export function useCompletionSettingsCard({
   );
 
   const scrollToFirstError = useCallback(() => {
-    const firstErrorItem = completionItems.find(
-      item => (validationIssueCountByItemKey[item.key] ?? 0) > 0,
-    );
-    if (!firstErrorItem) return;
-    formRefs.current[firstErrorItem.key]?.validateAndGetValues({ showErrors: true });
-    setOpenItemKey(firstErrorItem.key);
-    let attempts = 0;
-    const tryScroll = () => {
-      const el = document.querySelector("[data-field-error]");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-      attempts++;
-      if (attempts < 15) {
-        requestAnimationFrame(tryScroll);
-      }
-    };
-    requestAnimationFrame(tryScroll);
+    scrollToFirstFieldError({
+      items: completionItems,
+      validationIssueCountByItemKey,
+      formRefs,
+      setOpenItemKey,
+    });
   }, [completionItems, validationIssueCountByItemKey, setOpenItemKey]);
 
   return {
