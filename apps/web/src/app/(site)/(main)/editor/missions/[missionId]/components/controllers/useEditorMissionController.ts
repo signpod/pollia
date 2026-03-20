@@ -166,10 +166,12 @@ export interface UseEditorMissionControllerResult {
     hasAnyBusySection: boolean;
     hasAnyPendingChanges: boolean;
     hasAnyValidationIssues: boolean;
+    totalValidationIssueCount: number;
   };
   publishState: PublishAvailability;
   actions: {
     onSave: () => Promise<void>;
+    scrollToFirstError: () => void;
   };
   undoRedo: Pick<UseEditorUndoRedoResult, "undo" | "redo" | "canUndo" | "canRedo">;
 }
@@ -271,6 +273,28 @@ export function useEditorMissionController({
     () => Object.values(sectionStates).some(state => state.hasValidationIssues),
     [sectionStates],
   );
+  const totalValidationIssueCount = useMemo(
+    () => Object.values(sectionStates).reduce((sum, s) => sum + s.validationIssueCount, 0),
+    [sectionStates],
+  );
+
+  const scrollToFirstError = useCallback(() => {
+    const sectionOrder: Array<{
+      key: MissionSectionKey;
+      ref: RefObject<SectionSaveHandle | null>;
+    }> = [
+      { key: "basic", ref: basicInfoRef },
+      { key: "reward", ref: rewardRef },
+      { key: "action", ref: actionRef },
+      { key: "completion", ref: completionRef },
+    ];
+    for (const section of sectionOrder) {
+      if (sectionStates[section.key].hasValidationIssues) {
+        section.ref.current?.scrollToFirstError?.();
+        return;
+      }
+    }
+  }, [sectionStates]);
 
   const hasPendingChangesFromRefs = useCallback(
     () =>
@@ -775,10 +799,12 @@ export function useEditorMissionController({
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasAnyValidationIssues,
+      totalValidationIssueCount,
     },
     publishState,
     actions: {
       onSave: handleSave,
+      scrollToFirstError,
     },
     undoRedo: {
       undo,

@@ -236,6 +236,8 @@ export function EditorMissionTabContent({
         onUndo={() => void undoRedo.undo()}
         canRedo={undoRedo.canRedo}
         onRedo={() => void undoRedo.redo()}
+        totalValidationIssueCount={viewState.totalValidationIssueCount}
+        onScrollToFirstError={actions.scrollToFirstError}
       />
     ),
     [
