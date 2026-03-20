@@ -301,7 +301,9 @@ function buildActionDirtyComparable(params: {
           description: showOptionDescription ? option.description?.trim() || null : null,
           imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
           fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
-          ...(isQuizMode && { isCorrect: option.isCorrect ?? false }),
+          ...(isQuizMode && {
+            isCorrect: actionType === ActionType.SHORT_TEXT ? true : (option.isCorrect ?? false),
+          }),
           nextCompletionId: allowCompletionLink ? (option.nextCompletionId ?? null) : null,
           order: index,
         })),
@@ -723,7 +725,10 @@ function ActionFormComponent(
                   ? (o.fileUploadId ?? null)
                   : null
                 : (o.fileUploadId ?? null),
-              ...(isQuizMode && { isCorrect: o.isCorrect ?? false }),
+              ...(isQuizMode && {
+                isCorrect:
+                  selectedActionType === ActionType.SHORT_TEXT ? true : (o.isCorrect ?? false),
+              }),
               order: i,
             };
           }),

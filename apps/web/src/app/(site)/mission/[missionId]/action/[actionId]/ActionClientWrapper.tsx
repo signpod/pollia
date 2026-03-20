@@ -14,7 +14,8 @@ import {
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
-import { setActionNavCookie } from "@/lib/cookie";
+import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
+import { clearShuffleHistory, getShufflePrevious, recordShuffleVisit } from "@/lib/shuffleHistory";
 import { type QuizConfig, quizConfigSchema } from "@/schemas/mission/quizConfigSchema";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import { ActionType, MatchMode, MissionCategory } from "@prisma/client";
@@ -67,8 +68,16 @@ function ActionContent() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
 
+    if (quizConfig?.shuffleQuestions) {
+      const currentCookie = getActionNavCookie(missionId);
+      if (currentCookie === "initial") {
+        clearShuffleHistory(missionId);
+      }
+      recordShuffleVisit(missionId, actionId);
+    }
+
     setActionNavCookie(missionId, actionId);
-  }, [actionId, missionId]);
+  }, [actionId, missionId, quizConfig?.shuffleQuestions]);
 
   const navigateToAction = useCallback(
     (nextActionId: string) => {
@@ -107,6 +116,7 @@ function ActionContent() {
 
   const content = (
     <ActionStepWrapper
+      key={actionId}
       actions={actions}
       currentActionData={currentStep.actionData}
       steps={steps}
@@ -171,11 +181,12 @@ function ActionStepWrapper({
 
       if (actionType === ActionType.SHORT_TEXT || actionType === ActionType.SUBJECTIVE) {
         if (options.length === 0) return null;
-        const userText = ("textAnswer" in answer ? answer.textAnswer : "")?.trim() ?? "";
+        const userText =
+          ("textAnswer" in answer ? answer.textAnswer : "")?.replace(/\s/g, "") ?? "";
         if (!userText) return false;
         const matchMode = currentActionData.matchMode ?? MatchMode.EXACT;
         return options.some(opt => {
-          const correctText = opt.title.trim();
+          const correctText = opt.title.replace(/\s/g, "");
           if (matchMode === MatchMode.CONTAINS) {
             return userText.toLowerCase().includes(correctText.toLowerCase());
           }
@@ -293,6 +304,16 @@ function ActionStepWrapper({
   const handlePrevious = useCallback(() => {
     navigationDirection = "backward";
 
+    if (quiz?.quizConfig.shuffleQuestions) {
+      const prevActionId = getShufflePrevious(missionId);
+      if (prevActionId) {
+        navigateToAction(prevActionId);
+      } else {
+        navigateToMission();
+      }
+      return;
+    }
+
     if (isFirstStep) {
       navigateToMission();
       return;
@@ -313,7 +334,15 @@ function ActionStepWrapper({
         navigateToAction(prevAction.id);
       }
     }
-  }, [isFirstStep, actions, currentActionData, navigateToAction, navigateToMission]);
+  }, [
+    isFirstStep,
+    actions,
+    currentActionData,
+    navigateToAction,
+    navigateToMission,
+    quiz?.quizConfig.shuffleQuestions,
+    missionId,
+  ]);
 
   const currentStep = steps.find(
     (step): step is ExtendedActionStepConfig => step.actionData.id === currentActionData.id,

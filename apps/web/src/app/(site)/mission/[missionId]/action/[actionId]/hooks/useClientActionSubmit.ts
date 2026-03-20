@@ -9,6 +9,7 @@ import { useRecordActionResponse } from "@/hooks/tracking";
 import { useAuth } from "@/hooks/user";
 import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
 import { removeSessionStorage } from "@/lib/sessionStorage";
+import { getShuffleNext, getShuffleVisitedSet } from "@/lib/shuffleHistory";
 import { clearActionSession, getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import type { ActionAnswerItem, ActionDetail, GetMissionResponseResponse } from "@/types/dto";
@@ -104,11 +105,22 @@ function findNextActionByOrder(
 }
 
 function findNextActionShuffle(
+  missionId: string,
   currentActionId: string,
   actions: ActionForProgress[],
   submittedActionIds: Set<string>,
 ): string | null {
-  const candidates = actions.filter(a => a.id !== currentActionId && !submittedActionIds.has(a.id));
+  // history에 다음 항목이 있으면 그걸 사용 (뒤로 갔다가 앞으로 가는 경우)
+  const historyNext = getShuffleNext(missionId);
+  if (historyNext && actions.some(a => a.id === historyNext)) {
+    return historyNext;
+  }
+
+  // history에 기록된 모든 방문 액션도 제외
+  const visited = getShuffleVisitedSet(missionId);
+  const excluded = new Set([...submittedActionIds, ...visited]);
+
+  const candidates = actions.filter(a => a.id !== currentActionId && !excluded.has(a.id));
   if (candidates.length === 0) return null;
   return candidates[Math.floor(Math.random() * candidates.length)]!.id;
 }
@@ -205,7 +217,7 @@ export function useClientActionSubmit({
       } else if (shuffleQuestions) {
         const updatedSubmitted = new Set(submittedActionIds);
         updatedSubmitted.add(answer.actionId);
-        const nextId = findNextActionShuffle(answer.actionId, actions, updatedSubmitted);
+        const nextId = findNextActionShuffle(missionId, answer.actionId, actions, updatedSubmitted);
         if (nextId) {
           navigateToAction(nextId);
         } else {
@@ -386,7 +398,12 @@ export function useClientActionSubmit({
           removeSessionStorage(toastStorageKey);
           navigateToDone(existingAnswer.nextCompletionId);
         } else if (shuffleQuestions) {
-          const nextId = findNextActionShuffle(actionData.id, actions, submittedActionIds);
+          const nextId = findNextActionShuffle(
+            missionId,
+            actionData.id,
+            actions,
+            submittedActionIds,
+          );
           if (nextId) {
             navigateToAction(nextId);
           }

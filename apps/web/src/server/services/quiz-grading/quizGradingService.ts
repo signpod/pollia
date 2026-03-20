@@ -38,11 +38,18 @@ export class QuizGradingService {
       if (!fullAction) continue;
 
       const correctOptions = fullAction.options.filter(opt => opt.isCorrect);
-      if (correctOptions.length === 0) continue;
+
+      // SHORT_TEXT: isCorrect가 설정되지 않은 기존 데이터는 모든 옵션을 정답으로 사용
+      const gradingOptions =
+        action.type === ActionType.SHORT_TEXT && correctOptions.length === 0
+          ? fullAction.options
+          : correctOptions;
+
+      if (gradingOptions.length === 0) continue;
 
       const isCorrect =
         action.type === ActionType.SHORT_TEXT
-          ? this.gradeShortText(answer.textAnswer, correctOptions, fullAction.matchMode)
+          ? this.gradeShortText(answer.textAnswer, gradingOptions, fullAction.matchMode)
           : this.gradeOptionBased(
               answer.options.map(opt => opt.id),
               correctOptions.map(opt => opt.id),
@@ -74,11 +81,11 @@ export class QuizGradingService {
     matchMode: MatchMode | null,
   ): boolean {
     if (!textAnswer) return false;
-    const normalizedAnswer = textAnswer.trim().toLowerCase();
+    const normalizedAnswer = textAnswer.replace(/\s/g, "").toLowerCase();
     if (normalizedAnswer.length === 0) return false;
 
     return correctOptions.some(opt => {
-      const normalizedCorrect = opt.title.trim().toLowerCase();
+      const normalizedCorrect = opt.title.replace(/\s/g, "").toLowerCase();
       if (matchMode === MatchMode.CONTAINS) {
         return normalizedAnswer.includes(normalizedCorrect);
       }

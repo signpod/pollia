@@ -3,6 +3,7 @@
 import { getQuizResult } from "@/actions/quiz/read";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
+import { getShuffleHistory } from "@/lib/shuffleHistory";
 import type { GradedItem } from "@/server/services/quiz-grading/types";
 import type { ActionDetail } from "@/types/dto";
 import type { GetMissionResponseResponse } from "@/types/dto/mission-response";
@@ -12,7 +13,7 @@ import { cn } from "@repo/ui/lib";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2Icon, ChevronDown, XCircleIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 interface QuizScoreSummaryProps {
   missionId: string;
@@ -150,13 +151,25 @@ function QuestionReviewSection({
   const actions = actionsData?.data ?? [];
   const answers = responseData?.data?.answers ?? [];
 
+  const orderedItems = useMemo(() => {
+    const shuffleHistory = getShuffleHistory(missionId);
+    if (shuffleHistory.length === 0) return gradedItems;
+
+    const orderMap = new Map(shuffleHistory.map((id, idx) => [id, idx]));
+    return [...gradedItems].sort((a, b) => {
+      const orderA = orderMap.get(a.actionId) ?? Number.MAX_SAFE_INTEGER;
+      const orderB = orderMap.get(b.actionId) ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    });
+  }, [gradedItems, missionId]);
+
   if (gradedItems.length === 0) return null;
 
   return (
     <section className="flex flex-col gap-4 px-5">
       <Typo.MainTitle size="small">문항별 결과</Typo.MainTitle>
       <div className="flex flex-col gap-3">
-        {gradedItems.map((item, index) => {
+        {orderedItems.map((item, index) => {
           const action = actions.find(a => a.id === item.actionId);
           const answer = answers.find(a => a.actionId === item.actionId);
           return (
@@ -309,7 +322,13 @@ function getUserAnswerText(
 function getCorrectAnswerText(action?: ActionDetail): string | null {
   if (!action) return null;
 
-  const correctOptions = action.options.filter(opt => opt.isCorrect);
+  let correctOptions = action.options.filter(opt => opt.isCorrect);
+  if (
+    correctOptions.length === 0 &&
+    (action.type === ActionType.SHORT_TEXT || action.type === ActionType.SUBJECTIVE)
+  ) {
+    correctOptions = action.options;
+  }
   if (correctOptions.length === 0) return null;
 
   return correctOptions.map(opt => opt.title).join(", ");
