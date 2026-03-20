@@ -14,7 +14,8 @@ import {
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
-import { setActionNavCookie } from "@/lib/cookie";
+import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
+import { clearShuffleHistory, getShufflePrevious, recordShuffleVisit } from "@/lib/shuffleHistory";
 import { type QuizConfig, quizConfigSchema } from "@/schemas/mission/quizConfigSchema";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import { ActionType, MatchMode, MissionCategory } from "@prisma/client";
@@ -67,8 +68,16 @@ function ActionContent() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
 
+    if (quizConfig?.shuffleQuestions) {
+      const currentCookie = getActionNavCookie(missionId);
+      if (currentCookie === "initial") {
+        clearShuffleHistory(missionId);
+      }
+      recordShuffleVisit(missionId, actionId);
+    }
+
     setActionNavCookie(missionId, actionId);
-  }, [actionId, missionId]);
+  }, [actionId, missionId, quizConfig?.shuffleQuestions]);
 
   const navigateToAction = useCallback(
     (nextActionId: string) => {
@@ -295,6 +304,16 @@ function ActionStepWrapper({
   const handlePrevious = useCallback(() => {
     navigationDirection = "backward";
 
+    if (quiz?.quizConfig.shuffleQuestions) {
+      const prevActionId = getShufflePrevious(missionId);
+      if (prevActionId) {
+        navigateToAction(prevActionId);
+      } else {
+        navigateToMission();
+      }
+      return;
+    }
+
     if (isFirstStep) {
       navigateToMission();
       return;
@@ -315,7 +334,15 @@ function ActionStepWrapper({
         navigateToAction(prevAction.id);
       }
     }
-  }, [isFirstStep, actions, currentActionData, navigateToAction, navigateToMission]);
+  }, [
+    isFirstStep,
+    actions,
+    currentActionData,
+    navigateToAction,
+    navigateToMission,
+    quiz?.quizConfig.shuffleQuestions,
+    missionId,
+  ]);
 
   const currentStep = steps.find(
     (step): step is ExtendedActionStepConfig => step.actionData.id === currentActionData.id,
