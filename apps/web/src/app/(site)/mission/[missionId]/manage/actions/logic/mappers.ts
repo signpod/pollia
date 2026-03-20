@@ -3,7 +3,14 @@ import type { ActionType } from "@prisma/client";
 import type { ActionFormValues } from "../components/ActionForm";
 import type { CreateActionInput } from "../hooks";
 
-const OPTION_BASED_TYPES = new Set<ActionType>(["MULTIPLE_CHOICE", "SCALE", "TAG", "BRANCH"]);
+const OPTION_BASED_TYPES = new Set<ActionType>([
+  "MULTIPLE_CHOICE",
+  "SCALE",
+  "TAG",
+  "BRANCH",
+  "OX",
+  "SHORT_TEXT",
+]);
 export const DRAFT_ACTION_ID_PREFIX = "draft:";
 
 export function makeDraftActionId(draftKey: string) {
@@ -71,12 +78,17 @@ export function mapCreateActionInput(params: {
     nextActionId: values.nextActionId,
     nextCompletionId: values.nextCompletionId,
     ...(values.maxSelections !== undefined && { maxSelections: values.maxSelections }),
+    ...(values.score !== undefined && { score: values.score }),
+    ...(values.matchMode !== undefined && { matchMode: values.matchMode }),
+    ...(values.hint !== undefined && { hint: values.hint }),
+    ...(values.explanation !== undefined && { explanation: values.explanation }),
     ...(values.options && {
       options: values.options.map((option, index) => ({
         title: option.title,
         description: option.description,
         imageUrl: option.imageUrl,
         fileUploadId: option.fileUploadId,
+        isCorrect: option.isCorrect,
         nextActionId: option.nextActionId,
         nextCompletionId: option.nextCompletionId,
         order: index,
@@ -100,6 +112,7 @@ export function mapUpdateActionInput(params: {
     description: option.description,
     imageUrl: option.imageUrl,
     fileUploadId: option.fileUploadId,
+    isCorrect: option.isCorrect,
     nextActionId: option.nextActionId,
     nextCompletionId: option.nextCompletionId,
     order: index,
@@ -123,6 +136,10 @@ export function mapUpdateActionInput(params: {
     nextActionId: values.nextActionId,
     nextCompletionId: values.nextCompletionId,
     ...(values.maxSelections !== undefined && { maxSelections: values.maxSelections }),
+    ...(values.score !== undefined && { score: values.score }),
+    ...(values.matchMode !== undefined && { matchMode: values.matchMode }),
+    ...(values.hint !== undefined && { hint: values.hint }),
+    ...(values.explanation !== undefined && { explanation: values.explanation }),
     ...(mappedOptions && { options: mappedOptions }),
     ...(!hasOptions && switchedToNonOptionType && { options: [] as Array<never> }),
   };
@@ -143,11 +160,16 @@ export function mapEditInitialValues(action: ActionDetail): ActionFormValues {
       description: option.description,
       imageUrl: option.imageUrl,
       fileUploadId: option.fileUploadId,
+      isCorrect: option.isCorrect,
       nextActionId: option.nextActionId,
       nextCompletionId: option.nextCompletionId,
       order: option.order,
     })),
     nextActionId: action.nextActionId,
     nextCompletionId: action.nextCompletionId,
+    score: action.score,
+    matchMode: action.matchMode,
+    hint: action.hint,
+    explanation: action.explanation,
   };
 }

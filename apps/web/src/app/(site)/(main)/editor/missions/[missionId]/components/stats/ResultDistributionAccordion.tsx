@@ -26,6 +26,7 @@ export function ResultDistributionAccordion({ missionId }: ResultDistributionAcc
     const maxCount = Math.max(...stats.map(s => s.encounterCount));
 
     return stats.map(item => ({
+      id: item.completionId,
       name: item.completionTitle,
       count: item.encounterCount,
       rate: item.reachRate,
@@ -71,7 +72,7 @@ export function ResultDistributionAccordion({ missionId }: ResultDistributionAcc
           {!isPending && !error && items.length > 0 && (
             <div className="flex flex-col gap-3">
               {items.map((item, index) => (
-                <div key={item.name} className="flex flex-col gap-1">
+                <div key={item.id} className="flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-zinc-700 truncate max-w-[60%]">{item.name}</span>
                     <span className="text-sm tabular-nums text-zinc-500">

@@ -28,6 +28,7 @@ export interface SectionSaveHandle {
   isBusy: () => boolean;
   exportDraftSnapshot: () => unknown | null;
   importDraftSnapshot: (snapshot: unknown) => Promise<void> | void;
+  scrollToFirstError?: () => void;
 }
 
 export interface SectionSaveState {

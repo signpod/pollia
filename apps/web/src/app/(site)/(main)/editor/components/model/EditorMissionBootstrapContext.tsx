@@ -1,10 +1,9 @@
 "use client";
 
-import type { CreateMissionFormData } from "@/app/(site)/(main)/create/schema";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 
 export interface EditorBootstrapDraft {
-  formData: CreateMissionFormData;
+  formData: Record<string, unknown>;
   missionId: string;
 }
 

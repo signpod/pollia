@@ -22,6 +22,7 @@ const createMockAction = (overrides: Partial<Action> = {}): Action => ({
   score: null,
   matchMode: null,
   hint: null,
+  explanation: null,
   ...overrides,
 });
 

@@ -4,6 +4,7 @@ import type { SectionSaveStateChangeHandler } from "./editor-save.types";
 
 export interface CompletionSettingsCardProps {
   missionId: string;
+  isQuizMode?: boolean;
   onSaveStateChange?: SectionSaveStateChangeHandler;
 }
 

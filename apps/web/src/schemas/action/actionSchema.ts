@@ -86,6 +86,9 @@ export const multipleChoiceInputSchema = baseActionSchema
         `최소 ${MULTIPLE_CHOICE_MIN_OPTIONS}개 이상의 항목이 필요합니다.`,
       )
       .max(MULTIPLE_CHOICE_MAX_OPTIONS, `최대 ${MULTIPLE_CHOICE_MAX_OPTIONS}개까지 가능합니다.`),
+    score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
+    hint: z.string().nullable().optional(),
+    explanation: z.string().nullable().optional(),
   })
   .refine(data => data.maxSelections <= data.options.length, {
     message: "최대 선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
@@ -101,7 +104,13 @@ export const scaleInputSchema = baseActionSchema.extend({
 
 export const subjectiveInputSchema = baseActionSchema;
 
-export const shortTextInputSchema = baseActionSchema;
+export const shortTextInputSchema = baseActionSchema.extend({
+  options: z.array(actionOptionSchema).optional(),
+  score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
+  matchMode: z.nativeEnum(MatchMode).nullable().optional(),
+  hint: z.string().nullable().optional(),
+  explanation: z.string().nullable().optional(),
+});
 
 export const eitherOrInputSchema = baseActionSchema;
 
@@ -170,22 +179,17 @@ export const branchInputSchema = baseActionSchema
   })
   .omit({ nextActionId: true, nextCompletionId: true });
 
-export const oxInputSchema = baseActionSchema
-  .extend({
-    maxSelections: z.literal(OX_MAX_SELECTIONS),
-    hasOther: z.literal(OX_HAS_OTHER),
-    options: z
-      .array(actionOptionSchema)
-      .length(OX_OPTIONS_COUNT, `OX 액션은 정확히 ${OX_OPTIONS_COUNT}개의 선택지가 필요합니다.`),
-    score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").optional(),
-    correctOptionId: z.string().nullable().optional(),
-    matchMode: z.nativeEnum(MatchMode).nullable().optional(),
-    hint: z.string().nullable().optional(),
-  })
-  .refine(data => !(data.score != null && !data.correctOptionId), {
-    message: "배점이 있으면 정답을 설정해야 합니다.",
-    path: ["correctOptionId"],
-  });
+export const oxInputSchema = baseActionSchema.extend({
+  maxSelections: z.literal(OX_MAX_SELECTIONS),
+  hasOther: z.literal(OX_HAS_OTHER),
+  options: z
+    .array(actionOptionSchema)
+    .length(OX_OPTIONS_COUNT, `OX 액션은 정확히 ${OX_OPTIONS_COUNT}개의 선택지가 필요합니다.`),
+  score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
+  correctOptionId: z.string().nullable().optional(),
+  hint: z.string().nullable().optional(),
+  explanation: z.string().nullable().optional(),
+});
 
 export const actionUpdateSchema = z
   .object({
@@ -209,6 +213,7 @@ export const actionUpdateSchema = z
     score: z.number().int().min(0, "배점은 0 이상이어야 합니다.").nullable().optional(),
     matchMode: z.nativeEnum(MatchMode).nullable().optional(),
     hint: z.string().nullable().optional(),
+    explanation: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

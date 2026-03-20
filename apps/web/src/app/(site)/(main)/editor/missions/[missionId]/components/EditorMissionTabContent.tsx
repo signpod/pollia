@@ -19,6 +19,7 @@ import {
   actionItemOrderKeysAtom,
   actionOpenItemKeyAtom,
   actionTypeByItemKeyAtom,
+  removedActionIdsAtom,
 } from "../atoms/editorActionAtoms";
 import {
   completionDirtyByItemKeyAtom,
@@ -69,6 +70,7 @@ export function EditorMissionTabContent({
   const actionTypeByItemKey = useAtomValue(actionTypeByItemKeyAtom);
   const actionFormSnapshotByItemKey = useAtomValue(actionFormSnapshotByItemKeyAtom);
   const actionItemOrderKeys = useAtomValue(actionItemOrderKeysAtom);
+  const removedActionIds = useAtomValue(removedActionIdsAtom);
   const completionDrafts = useAtomValue(completionDraftsAtom);
   const completionOpenItemKey = useAtomValue(completionOpenItemKeyAtom);
   const removedCompletionIds = useAtomValue(removedCompletionIdsAtom);
@@ -82,7 +84,7 @@ export function EditorMissionTabContent({
     staleTime: 5 * 60 * 1000,
   });
 
-  const { refs, sectionBindings, viewState, actions } = useEditorMissionController({
+  const { refs, sectionBindings, viewState, actions, undoRedo } = useEditorMissionController({
     missionId,
     mission,
     currentTab,
@@ -125,6 +127,7 @@ export function EditorMissionTabContent({
     () => ({
       draftItems: actionDraftItems,
       openItemKey: actionOpenItemKey,
+      removedExistingIds: [...removedActionIds],
       dirtyByItemKey: actionDirtyByItemKey,
       actionTypeByItemKey,
       formSnapshotByItemKey: actionFormSnapshotByItemKey,
@@ -133,6 +136,7 @@ export function EditorMissionTabContent({
     [
       actionDraftItems,
       actionOpenItemKey,
+      removedActionIds,
       actionDirtyByItemKey,
       actionTypeByItemKey,
       actionFormSnapshotByItemKey,
@@ -148,6 +152,7 @@ export function EditorMissionTabContent({
     actionDirtyByItemKey,
     actionFormSnapshotByItemKey,
     actionItemOrderKeys,
+    removedActionIds,
     sectionBindings.onActionWorkingSetChange,
   ]);
 
@@ -232,10 +237,17 @@ export function EditorMissionTabContent({
         onSave={() => {
           void actions.onSave().then(() => bumpPreviewRefresh(v => v + 1));
         }}
+        canUndo={undoRedo.canUndo}
+        onUndo={() => void undoRedo.undo()}
+        canRedo={undoRedo.canRedo}
+        onRedo={() => void undoRedo.redo()}
+        totalValidationIssueCount={viewState.totalValidationIssueCount}
+        onScrollToFirstError={actions.scrollToFirstError}
       />
     ),
     [
       actions,
+      undoRedo,
       viewState.hasAnyBusySection,
       viewState.hasAnyPendingChanges,
       viewState.hasAnyValidationIssues,

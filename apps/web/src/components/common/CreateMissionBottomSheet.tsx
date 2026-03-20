@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
+import { ButtonV2 } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,11 @@ export function CreateMissionBottomSheet({
     [router, onClose],
   );
 
+  const handleQuizSelect = useCallback(() => {
+    onClose();
+    router.push(ROUTES.EDITOR_QUIZ_CREATE);
+  }, [router, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -47,22 +53,39 @@ export function CreateMissionBottomSheet({
             transition={{ duration: 0.25, ease: [0.33, 1, 0.68, 1] }}
           >
             <div className={cn("flex flex-col gap-1 p-4", className)}>
-              <button
-                type="button"
+              <ButtonV2
+                variant="tertiary"
+                size="large"
                 onClick={() => handleSelect("RESEARCH")}
-                className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
+                className="justify-start rounded-xl"
               >
-                <span className="text-lg">📋</span>
-                <span>설문조사/리서치</span>
-              </button>
-              <button
-                type="button"
+                <span className="flex items-center gap-3">
+                  <span className="text-lg">📋</span>
+                  설문조사/리서치
+                </span>
+              </ButtonV2>
+              <ButtonV2
+                variant="tertiary"
+                size="large"
                 onClick={() => handleSelect("TEST")}
-                className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
+                className="justify-start rounded-xl"
               >
-                <span className="text-lg">🧠</span>
-                <span>심리/유형 테스트</span>
-              </button>
+                <span className="flex items-center gap-3">
+                  <span className="text-lg">🧠</span>
+                  심리/유형 테스트
+                </span>
+              </ButtonV2>
+              <ButtonV2
+                variant="tertiary"
+                size="large"
+                onClick={handleQuizSelect}
+                className="justify-start rounded-xl"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-lg">🎮</span>
+                  퀴즈
+                </span>
+              </ButtonV2>
             </div>
           </motion.div>
         </>

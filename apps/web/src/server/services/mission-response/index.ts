@@ -229,7 +229,8 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (!mission.isActive) {
+    const isOwner = normalizedActor.userId === mission.creatorId;
+    if (!mission.isActive && !isOwner) {
       const error = new Error("종료된 미션입니다.");
       error.cause = 400;
       throw error;

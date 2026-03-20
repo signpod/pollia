@@ -8,7 +8,7 @@ import { toSurveyCardData } from "./utils";
 export const dynamic = "force-dynamic";
 
 export default async function MainPage() {
-  const [testMissionsRaw, researchMissionsRaw, banners] = await Promise.all([
+  const [testMissionsRaw, researchMissionsRaw, quizMissionsRaw, banners] = await Promise.all([
     missionService.getAllMissions({
       limit: 6,
       type: MissionType.GENERAL,
@@ -21,11 +21,18 @@ export default async function MainPage() {
       category: MissionCategory.RESEARCH,
       isActive: true,
     }),
+    missionService.getAllMissions({
+      limit: 6,
+      type: MissionType.GENERAL,
+      category: MissionCategory.QUIZ,
+      isActive: true,
+    }),
     bannerService.listBanners(),
   ]);
 
   const testMissions = testMissionsRaw.map(toSurveyCardData);
   const researchMissions = researchMissionsRaw.map(toSurveyCardData);
+  const quizMissions = quizMissionsRaw.map(toSurveyCardData);
 
   const bannerSlides = banners.map(b => ({
     id: b.id,
@@ -44,6 +51,12 @@ export default async function MainPage() {
           description="지금 가장 핫한 심리/유형 테스트"
           missions={testMissions}
           viewAllHref={testMissions.length >= 6 ? "/curation/TEST" : undefined}
+        />
+        <CurationSection
+          title="퀴즈 & 게임"
+          description="재미있는 퀴즈에 도전해보세요"
+          missions={quizMissions}
+          viewAllHref={quizMissions.length >= 6 ? "/curation/QUIZ" : undefined}
         />
         <CurationSection
           title="설문 & 리서치"

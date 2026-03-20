@@ -12,7 +12,8 @@ import { toast } from "@repo/ui/components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { cleanupDeletedCompletionRefsAtom } from "../atoms/editorActionAtoms";
 import {
   addCompletionDraftAtom,
@@ -52,7 +53,9 @@ import type {
 import {
   areCompletionSnapshotsEqual,
   buildPatchedCompletionForCache,
+  computeScoreRatiosFromThresholds,
   createDraftKey,
+  deriveThresholdsFromCompletions,
   getExistingItemKey,
   isCompletionChanged,
   isMissingCompletionError,
@@ -60,6 +63,7 @@ import {
 } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
 import { toggleItemWithPreview } from "./editorMobilePreview.utils";
+import { scrollToFirstFieldError } from "./editorScrollToItem";
 
 function getDraftItemKey(draftKey: string) {
   return getCompletionDraftItemKey(draftKey);
@@ -79,6 +83,13 @@ export interface UseCompletionSettingsCardReturn {
     existingFormVersionById: Record<string, number>;
     draftHydrationVersion: number;
   };
+  quizState: {
+    isQuizMode: boolean;
+    thresholds: number[];
+    scoreRatios: Array<{ minScoreRatio: number; maxScoreRatio: number }>;
+    setThresholds: (thresholds: number[]) => void;
+    updateThreshold: (index: number, value: number) => void;
+  };
   formRefs: React.MutableRefObject<Record<string, CompletionFormHandle | null>>;
   handlers: {
     handleAddDraft: () => void;
@@ -90,12 +101,15 @@ export interface UseCompletionSettingsCardReturn {
     handleItemRawSnapshotChange: (itemKey: string, snapshot: CompletionFormRawSnapshot) => void;
     setCompletionDraftTitle: (draftKey: string, title: string) => void;
     registerCompletionDraftForm: (draftKey: string, instance: CompletionFormHandle | null) => void;
+    handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
+  scrollToFirstError: () => void;
 }
 
 export function useCompletionSettingsCard({
   missionId,
+  isQuizMode = false,
   onSaveStateChange,
 }: Omit<CompletionSettingsCardProps, "onWorkingSetChange">): UseCompletionSettingsCardReturn {
   const queryClient = useQueryClient();
@@ -161,6 +175,118 @@ export function useCompletionSettingsCard({
     ],
     [visibleExistingCompletions, completionDrafts],
   );
+
+  const [thresholds, setThresholds] = useState<number[]>([]);
+  const thresholdsInitializedRef = useRef(false);
+  const initialThresholdsRef = useRef<number[] | null>(null);
+  const autoCreatedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isQuizMode || autoCreatedRef.current) return;
+    if (isLoading) return;
+    if (existingCompletions.length > 0 || completionDrafts.length > 0) {
+      autoCreatedRef.current = true;
+      return;
+    }
+
+    autoCreatedRef.current = true;
+
+    for (let i = 1; i <= 4; i++) {
+      const draftKey = createDraftKey();
+      dispatchAddDraft({ draftKey, title: `결과 ${i}` });
+    }
+
+    const defaultThresholds = [25, 50, 75];
+    setThresholds(defaultThresholds);
+    initialThresholdsRef.current = defaultThresholds;
+    thresholdsInitializedRef.current = true;
+  }, [
+    isQuizMode,
+    isLoading,
+    existingCompletions.length,
+    completionDrafts.length,
+    dispatchAddDraft,
+  ]);
+
+  useEffect(() => {
+    if (!isQuizMode || thresholdsInitializedRef.current) return;
+    if (isLoading) return;
+
+    const completionCount = completionItems.length;
+    if (completionCount <= 1) {
+      thresholdsInitializedRef.current = true;
+      return;
+    }
+
+    const existingRatios = completionItems.map(item =>
+      item.kind === "existing"
+        ? {
+            minScoreRatio: item.completion.minScoreRatio,
+            maxScoreRatio: item.completion.maxScoreRatio,
+          }
+        : { minScoreRatio: null, maxScoreRatio: null },
+    );
+    const derived = deriveThresholdsFromCompletions(existingRatios);
+    setThresholds(derived);
+    initialThresholdsRef.current = derived;
+    thresholdsInitializedRef.current = true;
+  }, [isQuizMode, isLoading, completionItems]);
+
+  useEffect(() => {
+    if (!isQuizMode) return;
+    const expectedCount = Math.max(0, completionItems.length - 1);
+    setThresholds(prev => {
+      if (prev.length === expectedCount) return prev;
+      if (expectedCount === 0) return [];
+
+      if (prev.length < expectedCount) {
+        const lastThreshold = prev.length > 0 ? (prev[prev.length - 1] ?? 0) : 0;
+        const remaining = 100 - lastThreshold;
+        const gaps = expectedCount - prev.length + 1;
+        const step = Math.max(1, Math.floor(remaining / gaps));
+        const next = [...prev];
+        for (let i = prev.length; i < expectedCount; i++) {
+          next.push(Math.min(99, (next[i - 1] ?? 0) + step));
+        }
+        return next;
+      }
+
+      return prev.slice(0, expectedCount);
+    });
+  }, [isQuizMode, completionItems.length]);
+
+  useEffect(() => {
+    if (!isQuizMode || !thresholdsInitializedRef.current) return;
+    if (completionDrafts.length > 0 || removedExistingIds.size > 0) return;
+    if (!initialThresholdsRef.current) return;
+
+    const expectedCount = Math.max(0, completionItems.length - 1);
+    if (
+      thresholds.length === expectedCount &&
+      initialThresholdsRef.current.length !== expectedCount
+    ) {
+      initialThresholdsRef.current = [...thresholds];
+    }
+  }, [
+    isQuizMode,
+    completionItems.length,
+    completionDrafts.length,
+    removedExistingIds.size,
+    thresholds,
+  ]);
+
+  const scoreRatios = useMemo(
+    () => (isQuizMode ? computeScoreRatiosFromThresholds(thresholds, completionItems.length) : []),
+    [isQuizMode, thresholds, completionItems.length],
+  );
+
+  const updateThreshold = useCallback((index: number, value: number) => {
+    setThresholds(prev => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  }, []);
 
   const getCompletionDraftSnapshot = useCallback((): CompletionSectionDraftSnapshot => {
     const snapshotByKey: Record<string, CompletionFormRawSnapshot> = {};
@@ -230,15 +356,31 @@ export function useCompletionSettingsCard({
     setValidationIssueCountByItemKey,
   ]);
 
+  const hasThresholdChanges = useMemo(() => {
+    if (!isQuizMode || !initialThresholdsRef.current) return false;
+    const initial = initialThresholdsRef.current;
+    if (thresholds.length !== initial.length) return true;
+    return thresholds.some((v, i) => v !== initial[i]);
+  }, [isQuizMode, thresholds]);
+
   const hasPendingChanges = useMemo(() => {
     if (completionDrafts.length > 0 || removedExistingIds.size > 0) {
+      return true;
+    }
+    if (hasThresholdChanges) {
       return true;
     }
 
     return visibleExistingCompletions.some(
       completion => dirtyByItemKey[getExistingItemKey(completion.id)],
     );
-  }, [completionDrafts.length, removedExistingIds, visibleExistingCompletions, dirtyByItemKey]);
+  }, [
+    completionDrafts.length,
+    removedExistingIds,
+    hasThresholdChanges,
+    visibleExistingCompletions,
+    dirtyByItemKey,
+  ]);
 
   const validationIssueCount = useMemo(
     () =>
@@ -250,21 +392,13 @@ export function useCompletionSettingsCard({
   );
   const hasValidationIssues = validationIssueCount > 0;
 
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy: isSaving || isLoading,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [
+  const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
     hasPendingChanges,
+    isBusy: isSaving || isLoading,
     hasValidationIssues,
-    isLoading,
-    isSaving,
-    onSaveStateChange,
     validationIssueCount,
-  ]);
+    onSaveStateChange,
+  });
 
   const handleItemDirtyChange = useCallback(
     (itemKey: string, isDirty: boolean) => {
@@ -322,6 +456,27 @@ export function useCompletionSettingsCard({
     setOpenItemKey(itemKey);
     setScrollTarget(itemKey);
   };
+
+  const handleDuplicateItem = useCallback(
+    (itemKey: string) => {
+      if (isSaving) return;
+
+      const snapshot = formRefs.current[itemKey]?.getRawSnapshot();
+      if (!snapshot) return;
+
+      const draftKey = createDraftKey();
+      const newItemKey = getDraftItemKey(draftKey);
+
+      dispatchAddDraft({ draftKey, title: `${snapshot.title} (복제)` });
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [newItemKey]: { ...snapshot, title: `${snapshot.title} (복제)` },
+      }));
+      setOpenItemKey(newItemKey);
+      setScrollTarget(newItemKey);
+    },
+    [isSaving, dispatchAddDraft, setDraftFormSnapshotByItemKey, setOpenItemKey, setScrollTarget],
+  );
 
   const handleToggleItem = useCallback(
     (itemKey: string) => {
@@ -386,13 +541,6 @@ export function useCompletionSettingsCard({
 
   const handleRemoveExisting = useCallback(
     (completionId: string) => {
-      const confirmed = window.confirm(
-        "결과 화면을 제거하면 저장 시 실제 삭제됩니다.\n액션에서 연결된 완료 화면 설정은 비워질 수 있습니다.\n계속하시겠습니까?",
-      );
-      if (!confirmed) {
-        return;
-      }
-
       dispatchMarkRemoved(completionId);
       setOpenItemKey(prev => (prev === getExistingItemKey(completionId) ? null : prev));
 
@@ -526,6 +674,25 @@ export function useCompletionSettingsCard({
       }
 
       valuesByItemKey.set(item.key, values);
+    }
+
+    if (isQuizMode) {
+      const currentScoreRatios = computeScoreRatiosFromThresholds(thresholds, listSnapshot.length);
+      for (let i = 0; i < listSnapshot.length; i++) {
+        const item = listSnapshot[i];
+        if (!item) continue;
+        const values = valuesByItemKey.get(item.key);
+        const ratio = currentScoreRatios[i];
+        if (values && ratio) {
+          values.minScoreRatio = ratio.minScoreRatio;
+          values.maxScoreRatio = ratio.maxScoreRatio;
+        }
+      }
+    }
+
+    for (const item of listSnapshot) {
+      const values = valuesByItemKey.get(item.key);
+      if (!values) continue;
       if (item.kind === "existing") {
         if (isCompletionChanged(item.completion, values)) {
           changedExisting.push(item.completion);
@@ -574,6 +741,8 @@ export function useCompletionSettingsCard({
             imageUrl: values.imageUrl ?? null,
             imageFileUploadId: values.imageFileUploadId ?? null,
             links: values.links,
+            minScoreRatio: values.minScoreRatio,
+            maxScoreRatio: values.maxScoreRatio,
           });
           didMutateServer = true;
           if (updated?.data) {
@@ -598,7 +767,8 @@ export function useCompletionSettingsCard({
         }
       }
 
-      for (const draft of draftsToCreate) {
+      for (let _di = 0; _di < draftsToCreate.length; _di++) {
+        const draft = draftsToCreate[_di]!;
         const itemKey = getDraftItemKey(draft.key);
         if (settledItemKeys.has(itemKey)) {
           continue;
@@ -617,6 +787,8 @@ export function useCompletionSettingsCard({
             imageUrl: values.imageUrl ?? undefined,
             imageFileUploadId: values.imageFileUploadId ?? undefined,
             links: values.links,
+            minScoreRatio: values.minScoreRatio,
+            maxScoreRatio: values.maxScoreRatio,
           });
           didMutateServer = true;
           if (created?.data) {
@@ -695,6 +867,10 @@ export function useCompletionSettingsCard({
         successfulExistingIds,
       });
 
+      if (isQuizMode) {
+        initialThresholdsRef.current = [...thresholds];
+      }
+
       for (const draftKey of successfulDraftKeys) {
         registerCompletionDraftForm(draftKey, null);
       }
@@ -751,8 +927,8 @@ export function useCompletionSettingsCard({
   const saveHandle = useMemo<SectionSaveHandle>(
     () => ({
       save: executeSave,
-      hasPendingChanges: () => hasPendingChanges,
-      isBusy: () => isSaving || isLoading,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getIsBusy,
       exportDraftSnapshot: (): CompletionSectionDraftSnapshot => {
         return getCompletionDraftSnapshot();
       },
@@ -811,9 +987,8 @@ export function useCompletionSettingsCard({
       dispatchClear,
       executeSave,
       getCompletionDraftSnapshot,
-      hasPendingChanges,
-      isLoading,
-      isSaving,
+      getHasPendingChanges,
+      getIsBusy,
       setDirtyByItemKey,
       setDraftFormSnapshotByItemKey,
       setDraftHydrationVersion,
@@ -821,6 +996,15 @@ export function useCompletionSettingsCard({
       setRemovedExistingIds,
     ],
   );
+
+  const scrollToFirstError = useCallback(() => {
+    scrollToFirstFieldError({
+      items: completionItems,
+      validationIssueCountByItemKey,
+      formRefs,
+      setOpenItemKey,
+    });
+  }, [completionItems, validationIssueCountByItemKey, setOpenItemKey]);
 
   return {
     viewState: {
@@ -836,6 +1020,13 @@ export function useCompletionSettingsCard({
       existingFormVersionById,
       draftHydrationVersion,
     },
+    quizState: {
+      isQuizMode,
+      thresholds,
+      scoreRatios,
+      setThresholds,
+      updateThreshold,
+    },
     formRefs,
     handlers: {
       handleAddDraft,
@@ -847,7 +1038,9 @@ export function useCompletionSettingsCard({
       handleItemRawSnapshotChange,
       setCompletionDraftTitle,
       registerCompletionDraftForm,
+      handleDuplicateItem,
     },
     saveHandle,
+    scrollToFirstError,
   };
 }

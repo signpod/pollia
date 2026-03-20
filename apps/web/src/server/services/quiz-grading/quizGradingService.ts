@@ -6,6 +6,7 @@ import {
   type ActionRepository,
   actionRepository,
 } from "@/server/repositories/action/actionRepository";
+import { ActionType, MatchMode } from "@prisma/client";
 import type { GradeResult, GradedItem } from "./types";
 
 export class QuizGradingService {
@@ -20,21 +21,39 @@ export class QuizGradingService {
   }
 
   async gradeResponse(responseId: string, missionId: string): Promise<GradeResult> {
-    const [answers, perfectScore] = await Promise.all([
+    const [answers, actionsWithOptions, perfectScore] = await Promise.all([
       this.answerRepo.findByResponseId(responseId),
+      this.actionRepo.findDetailsByMissionId(missionId),
       this.calculatePerfectScore(missionId),
     ]);
 
+    const actionMap = new Map(actionsWithOptions.map(a => [a.id, a]));
     const gradedItems: GradedItem[] = [];
 
     for (const answer of answers) {
       const { action } = answer;
-      if (action.score == null || action.correctOptionId == null) {
-        continue;
-      }
+      if (action.score == null) continue;
 
-      const selectedOptionIds = new Set(answer.options.map(opt => opt.id));
-      const isCorrect = selectedOptionIds.has(action.correctOptionId);
+      const fullAction = actionMap.get(action.id);
+      if (!fullAction) continue;
+
+      const correctOptions = fullAction.options.filter(opt => opt.isCorrect);
+
+      // SHORT_TEXT: isCorrect가 설정되지 않은 기존 데이터는 모든 옵션을 정답으로 사용
+      const gradingOptions =
+        action.type === ActionType.SHORT_TEXT && correctOptions.length === 0
+          ? fullAction.options
+          : correctOptions;
+
+      if (gradingOptions.length === 0) continue;
+
+      const isCorrect =
+        action.type === ActionType.SHORT_TEXT
+          ? this.gradeShortText(answer.textAnswer, gradingOptions, fullAction.matchMode)
+          : this.gradeOptionBased(
+              answer.options.map(opt => opt.id),
+              correctOptions.map(opt => opt.id),
+            );
 
       gradedItems.push({
         actionId: action.id,
@@ -50,6 +69,30 @@ export class QuizGradingService {
     return { totalScore, perfectScore, scoreRatio, gradedItems };
   }
 
+  private gradeOptionBased(selectedIds: string[], correctIds: string[]): boolean {
+    if (selectedIds.length !== correctIds.length) return false;
+    const selectedSet = new Set(selectedIds);
+    return correctIds.every(id => selectedSet.has(id));
+  }
+
+  private gradeShortText(
+    textAnswer: string | null,
+    correctOptions: Array<{ title: string }>,
+    matchMode: MatchMode | null,
+  ): boolean {
+    if (!textAnswer) return false;
+    const normalizedAnswer = textAnswer.replace(/\s/g, "").toLowerCase();
+    if (normalizedAnswer.length === 0) return false;
+
+    return correctOptions.some(opt => {
+      const normalizedCorrect = opt.title.replace(/\s/g, "").toLowerCase();
+      if (matchMode === MatchMode.CONTAINS) {
+        return normalizedAnswer.includes(normalizedCorrect);
+      }
+      return normalizedAnswer === normalizedCorrect;
+    });
+  }
+
   resolveQuizCompletionId(
     completions: Array<{
       id: string;
@@ -58,7 +101,8 @@ export class QuizGradingService {
     }>,
     scoreRatio: number,
   ): string | null {
-    const sorted = [...completions].sort((a, b) => (a.minScoreRatio ?? 0) - (b.minScoreRatio ?? 0));
+    const withRange = completions.filter(c => c.minScoreRatio != null || c.maxScoreRatio != null);
+    const sorted = [...withRange].sort((a, b) => (a.minScoreRatio ?? 0) - (b.minScoreRatio ?? 0));
 
     const matched = sorted.find(c => {
       const min = c.minScoreRatio ?? 0;
@@ -66,7 +110,10 @@ export class QuizGradingService {
       return scoreRatio >= min && scoreRatio <= max;
     });
 
-    return matched?.id ?? null;
+    if (matched) return matched.id;
+
+    const fallback = completions.find(c => c.minScoreRatio == null && c.maxScoreRatio == null);
+    return fallback?.id ?? null;
   }
 }
 

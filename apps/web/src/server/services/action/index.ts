@@ -147,6 +147,7 @@ export class ActionService {
         description: opt.description ?? undefined,
         imageUrl: opt.imageUrl ?? undefined,
         order: opt.order,
+        isCorrect: opt.isCorrect ?? false,
         imageFileUploadId: opt.imageFileUploadId ?? undefined,
         nextActionId: opt.nextActionId ?? null,
         nextCompletionId: opt.nextCompletionId ?? null,
@@ -257,9 +258,21 @@ export class ActionService {
     userId: string,
     isAdmin = false,
   ): Promise<ActionCreatedResult> {
+    if (input.options && input.options.length > 0) {
+      return this.createActionWithOptions(
+        input as CreateShortTextInput & { options: NonNullable<CreateShortTextInput["options"]> },
+        shortTextInputSchema as z.ZodType<
+          CreateShortTextInput & { options: NonNullable<CreateShortTextInput["options"]> }
+        >,
+        ActionType.SHORT_TEXT,
+        userId,
+        undefined,
+        isAdmin,
+      );
+    }
     return this.createSimpleAction(
       input,
-      shortTextInputSchema,
+      shortTextInputSchema as z.ZodType<CreateShortTextInput>,
       ActionType.SHORT_TEXT,
       userId,
       undefined,
@@ -573,6 +586,10 @@ export class ActionService {
       hasOther: original.hasOther,
       nextActionId: null,
       nextCompletionId: null,
+      score: original.score,
+      matchMode: original.matchMode,
+      hint: original.hint,
+      explanation: original.explanation,
     };
 
     const createdAction =
@@ -584,6 +601,7 @@ export class ActionService {
               description: opt.description ?? undefined,
               imageUrl: opt.imageUrl ?? undefined,
               order: index,
+              isCorrect: opt.isCorrect,
               nextActionId: null,
               nextCompletionId: null,
             })),
@@ -909,7 +927,10 @@ export class ActionService {
 
       for (const action of input.actionsToCreate) {
         const { values, actionType, tempId } = action;
-        const hasOptions = this.isOptionBasedActionType(actionType) && values.options;
+        const hasOptions =
+          (this.isOptionBasedActionType(actionType) || actionType === ActionType.SHORT_TEXT) &&
+          values.options &&
+          values.options.length > 0;
 
         const actionData = {
           missionId: input.missionId,
@@ -924,6 +945,10 @@ export class ActionService {
           order: 0,
           nextActionId: null,
           nextCompletionId: null,
+          score: values.score ?? null,
+          matchMode: values.matchMode ?? null,
+          hint: values.hint ?? null,
+          explanation: values.explanation ?? null,
         };
 
         let created: Action;
@@ -935,6 +960,7 @@ export class ActionService {
               description: opt.description ?? null,
               imageUrl: opt.imageUrl ?? null,
               order: opt.order,
+              isCorrect: opt.isCorrect ?? false,
               fileUploadId: opt.fileUploadId ?? null,
               nextActionId: null,
               nextCompletionId: null,
@@ -1000,6 +1026,7 @@ export class ActionService {
             description: opt.description ?? null,
             imageUrl: opt.imageUrl ?? null,
             order: opt.order,
+            isCorrect: opt.isCorrect ?? false,
             fileUploadId: opt.fileUploadId ?? null,
             nextActionId: resolveActionId(opt.nextActionId) ?? null,
             nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,
@@ -1019,7 +1046,10 @@ export class ActionService {
 
       for (const action of input.actionsToUpdate) {
         const { values, actionType } = action;
-        const hasOptions = this.isOptionBasedActionType(actionType) && values.options;
+        const hasOptions =
+          (this.isOptionBasedActionType(actionType) || actionType === ActionType.SHORT_TEXT) &&
+          values.options &&
+          values.options.length > 0;
 
         const updateData = {
           title: values.title,
@@ -1032,6 +1062,10 @@ export class ActionService {
           type: actionType,
           nextActionId: resolveActionId(values.nextActionId),
           nextCompletionId: resolveCompletionId(values.nextCompletionId),
+          score: values.score ?? null,
+          matchMode: values.matchMode ?? null,
+          hint: values.hint ?? null,
+          explanation: values.explanation ?? null,
         };
 
         if (hasOptions && values.options) {
@@ -1041,6 +1075,7 @@ export class ActionService {
             description: opt.description ?? null,
             imageUrl: opt.imageUrl ?? null,
             order: opt.order,
+            isCorrect: opt.isCorrect ?? false,
             fileUploadId: opt.fileUploadId ?? null,
             nextActionId: resolveActionId(opt.nextActionId) ?? null,
             nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,

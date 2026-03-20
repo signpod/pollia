@@ -207,6 +207,7 @@ export interface UseActionProgressParams {
   actions: ActionForProgress[];
   submittedAnswers?: SubmittedAnswerForProgress[];
   entryActionId?: string | null;
+  shuffleQuestions?: boolean;
 }
 
 export function useActionProgress({
@@ -214,10 +215,19 @@ export function useActionProgress({
   actions,
   submittedAnswers,
   entryActionId,
+  shuffleQuestions,
 }: UseActionProgressParams): ProgressInfo {
   return useMemo(() => {
+    if (shuffleQuestions) {
+      const submittedCount = submittedAnswers?.length ?? 0;
+      const isCurrentSubmitted = submittedAnswers?.some(a => a.actionId === actionId) ?? false;
+      return {
+        currentOrder: isCurrentSubmitted ? submittedCount : submittedCount + 1,
+        totalCount: actions.length,
+      };
+    }
     return calculateProgressInfo(actionId, actions, submittedAnswers, entryActionId);
-  }, [actionId, actions, submittedAnswers, entryActionId]);
+  }, [actionId, actions, submittedAnswers, entryActionId, shuffleQuestions]);
 }
 
 export type UseActionProgressReturn = ReturnType<typeof useActionProgress>;

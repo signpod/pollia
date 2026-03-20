@@ -79,6 +79,8 @@ export interface CompletionFormValues {
   imageUrl?: string | null;
   imageFileUploadId?: string | null;
   links?: CompletionLinkInput[];
+  minScoreRatio?: number | null;
+  maxScoreRatio?: number | null;
 }
 
 export interface CompletionFormRawSnapshot {
@@ -87,6 +89,8 @@ export interface CompletionFormRawSnapshot {
   imageUrl: string | null;
   imageFileUploadId: string | null;
   links: CompletionLinkInput[];
+  minScoreRatio: number | null;
+  maxScoreRatio: number | null;
 }
 
 export interface CompletionFormHandle {
@@ -132,6 +136,8 @@ function buildCompletionDirtyComparable(values: CompletionFormValues) {
     imageUrl: values.imageUrl ?? null,
     imageFileUploadId: values.imageFileUploadId ?? null,
     links: values.links ?? [],
+    minScoreRatio: values.minScoreRatio ?? null,
+    maxScoreRatio: values.maxScoreRatio ?? null,
   };
 }
 
@@ -158,6 +164,12 @@ function CompletionFormComponent(
     initialValues?.imageFileUploadId ?? null,
   );
   const [links, setLinks] = useState<CompletionLinkInput[]>(initialValues?.links ?? []);
+  const [minScoreRatio, setMinScoreRatio] = useState<number | null>(
+    initialValues?.minScoreRatio ?? null,
+  );
+  const [maxScoreRatio, setMaxScoreRatio] = useState<number | null>(
+    initialValues?.maxScoreRatio ?? null,
+  );
   const [linkKeys, setLinkKeys] = useState<string[]>(() =>
     (initialValues?.links ?? []).map((_, i) => `lk-${Date.now()}-${i}`),
   );
@@ -198,9 +210,11 @@ function CompletionFormComponent(
           imageUrl: imageUrl ?? null,
           imageFileUploadId: imageFileUploadId ?? null,
           links,
+          minScoreRatio,
+          maxScoreRatio,
         }),
       ),
-    [title, description, imageUrl, imageFileUploadId, links],
+    [title, description, imageUrl, imageFileUploadId, links, minScoreRatio, maxScoreRatio],
   );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
   const dirtyBaselineComparableString = useMemo(() => {
@@ -284,11 +298,7 @@ function CompletionFormComponent(
   );
 
   useEffect(() => {
-    if (!hasValidationStarted) {
-      return;
-    }
-
-    runValidation();
+    runValidation({ showErrors: hasValidationStarted });
   }, [hasValidationStarted, runValidation]);
 
   const buildValidatedValues = useCallback(
@@ -304,9 +314,20 @@ function CompletionFormComponent(
         imageUrl,
         imageFileUploadId,
         links: links.length > 0 ? links.map((link, i) => ({ ...link, order: i })) : undefined,
+        minScoreRatio,
+        maxScoreRatio,
       };
     },
-    [runValidation, title, description, imageUrl, imageFileUploadId, links],
+    [
+      runValidation,
+      title,
+      description,
+      imageUrl,
+      imageFileUploadId,
+      links,
+      minScoreRatio,
+      maxScoreRatio,
+    ],
   );
 
   const getRawSnapshot = useCallback(
@@ -316,8 +337,10 @@ function CompletionFormComponent(
       imageUrl: imageUrl ?? null,
       imageFileUploadId: imageFileUploadId ?? null,
       links,
+      minScoreRatio,
+      maxScoreRatio,
     }),
-    [description, imageFileUploadId, imageUrl, links, title],
+    [description, imageFileUploadId, imageUrl, links, title, minScoreRatio, maxScoreRatio],
   );
 
   useEffect(() => {
@@ -337,6 +360,8 @@ function CompletionFormComponent(
     setLinks(nextLinks);
     linkKeyCounterRef.current += nextLinks.length;
     setLinkKeys(nextLinks.map((_, i) => `lk-${Date.now()}-${linkKeyCounterRef.current + i}`));
+    setMinScoreRatio(snapshot.minScoreRatio ?? null);
+    setMaxScoreRatio(snapshot.maxScoreRatio ?? null);
     setOpenLinkIndex(null);
     setErrors({});
   }, []);
@@ -380,17 +405,22 @@ function CompletionFormComponent(
     <div className="flex flex-col gap-5 p-4" onBlurCapture={handleBlurCapture}>
       {!hideTitle && <Typo.SubTitle>결과 화면 편집</Typo.SubTitle>}
 
-      <Input
-        label="제목"
-        required
-        placeholder="결과 화면 제목을 입력해주세요"
-        maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
-        value={title}
-        onChange={e => handleTitleChange(e.target.value)}
-        errorMessage={errors.title}
-      />
+      <div data-field-error={errors.title ? "title" : undefined}>
+        <Input
+          label="제목"
+          required
+          placeholder="결과 화면 제목을 입력해주세요"
+          maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
+          value={title}
+          onChange={e => handleTitleChange(e.target.value)}
+          errorMessage={errors.title}
+        />
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div
+        className="flex flex-col gap-2"
+        data-field-error={errors.description ? "description" : undefined}
+      >
         <div className="flex items-center justify-between">
           <LabelText required>설명</LabelText>
           <Typo.Body
@@ -439,7 +469,14 @@ function CompletionFormComponent(
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div
+        className="flex flex-col gap-3"
+        data-field-error={
+          links.some((_, i) => errors[`link_${i}_name`] || errors[`link_${i}_url`])
+            ? "links"
+            : undefined
+        }
+      >
         <div className="flex items-center justify-between">
           <Typo.Body size="medium" className="font-semibold text-zinc-800">
             링크 ({links.length}/{MISSION_COMPLETION_LINKS_MAX_COUNT})

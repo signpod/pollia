@@ -7,6 +7,7 @@ import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useTrackMissionView } from "@/hooks/mission-view";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
+import { useAuth } from "@/hooks/user";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { Mission } from "@prisma/client";
 import {
@@ -80,6 +81,8 @@ export function MissionPageWrapper({
   } = mission;
 
   useTrackMissionView(missionId);
+  const { user } = useAuth();
+  const isOwner = !!user?.id && user.id === mission.creatorId;
 
   useEffect(() => {
     const existingValue = getActionNavCookie(missionId);
@@ -204,7 +207,7 @@ export function MissionPageWrapper({
             likesCount={mission.likesCount}
             bottomButton={
               <BottomButton
-                isActive={isActive ?? false}
+                isActive={isOwner || (isActive ?? false)}
                 firstActionId={firstActionId ?? ""}
                 deadline={deadline ?? undefined}
                 showResumeModal={showResumeModal}

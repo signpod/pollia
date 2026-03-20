@@ -34,6 +34,7 @@ export function ShortText({ actionData }: ActionStepContentProps) {
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isRequired={actionData.isRequired}
+      hint={actionData.hint ?? undefined}
     >
       <Input
         placeholder={ACTION_PLACEHOLDER}

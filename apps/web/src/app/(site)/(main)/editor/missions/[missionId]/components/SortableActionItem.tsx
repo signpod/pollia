@@ -8,7 +8,6 @@ import {
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { mapEditInitialValues } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
-import type { ActionDetail } from "@/types/dto";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ActionType } from "@prisma/client";
@@ -16,7 +15,7 @@ import { useAtomValue } from "jotai";
 import { selectAtom } from "jotai/utils";
 import { memo, useCallback, useMemo } from "react";
 import { EditorAccordion } from "../../../components/view/EditorAccordion";
-import { EditorDeleteSlot } from "../../../components/view/EditorDeleteSlot";
+import { EditorItemMenuSlot } from "../../../components/view/EditorItemMenuSlot";
 import { EditorSortControls } from "../../../components/view/EditorSortControls";
 import { actionFormSnapshotByItemKeyAtom } from "../atoms/editorActionAtoms";
 import type { ActionListItem } from "./actionSettingsCard.types";
@@ -40,12 +39,13 @@ interface SortableActionItemProps {
   onFormRef: (itemKey: string, instance: ActionFormHandle | null) => void;
   onToggle: (itemKey: string) => void;
   onRemoveDraft: (draftKey: string) => void;
-  onDeleteExisting?: (action: ActionDetail) => void;
+  onRemoveExisting?: (actionId: string) => void;
   onActionTypeChange: (itemKey: string, type: ActionType) => void;
   onDirtyChange: (itemKey: string, isDirty: boolean) => void;
   onValidationStateChange: (itemKey: string, issueCount: number) => void;
   onRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
   onMoveItem: (itemKey: string, direction: "up" | "down") => void;
+  onDuplicateItem: (itemKey: string) => void;
   isFirst: boolean;
   isLast: boolean;
   onCreateLinkedAction?: () => string;
@@ -69,12 +69,13 @@ export const SortableActionItem = memo(function SortableActionItem({
   onFormRef,
   onToggle,
   onRemoveDraft,
-  onDeleteExisting,
+  onRemoveExisting,
   onActionTypeChange,
   onDirtyChange,
   onValidationStateChange,
   onRawSnapshotChange,
   onMoveItem,
+  onDuplicateItem,
   isFirst,
   isLast,
   onCreateLinkedAction,
@@ -113,11 +114,11 @@ export const SortableActionItem = memo(function SortableActionItem({
 
   const handleDelete = useCallback(() => {
     if (existingAction) {
-      onDeleteExisting?.(existingAction);
-    } else {
-      onRemoveDraft(itemKey);
+      onRemoveExisting?.(existingAction.id);
+    } else if (item.kind === "draft") {
+      onRemoveDraft(item.draft.key);
     }
-  }, [existingAction, itemKey, onRemoveDraft, onDeleteExisting]);
+  }, [existingAction, item, onRemoveDraft, onRemoveExisting]);
 
   const handleFormRefCb = useCallback(
     (instance: ActionFormHandle | null) => onFormRef(itemKey, instance),
@@ -142,6 +143,7 @@ export const SortableActionItem = memo(function SortableActionItem({
   );
   const handleMoveUp = useCallback(() => onMoveItem(itemKey, "up"), [itemKey, onMoveItem]);
   const handleMoveDown = useCallback(() => onMoveItem(itemKey, "down"), [itemKey, onMoveItem]);
+  const handleDuplicate = useCallback(() => onDuplicateItem(itemKey), [itemKey, onDuplicateItem]);
 
   return (
     <div ref={setNodeRef} style={style} data-editor-item-key={item.key} className="scroll-mt-28">
@@ -172,10 +174,11 @@ export const SortableActionItem = memo(function SortableActionItem({
           />
         }
         rightSlot={
-          <EditorDeleteSlot
+          <EditorItemMenuSlot
             onDelete={handleDelete}
-            disabled={item.kind !== "draft" && isBusy}
-            ariaLabel="질문 삭제"
+            onDuplicate={handleDuplicate}
+            deleteDisabled={item.kind !== "draft" && isBusy}
+            duplicateDisabled={isBusy}
           />
         }
       >

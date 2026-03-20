@@ -55,6 +55,10 @@ export const ROUTES = {
   EDITOR_MISSION: (missionId: string) => `/editor/missions/${missionId}`,
   EDITOR_MISSION_STATS: (missionId: string) => `/editor/missions/${missionId}/stats`,
   EDITOR_MISSION_PREVIEW: (missionId: string) => `/editor/missions/${missionId}/preview`,
+
+  // 퀴즈 에디터 관련
+  EDITOR_QUIZ_CREATE: "/editor/quiz/create",
+  EDITOR_QUIZ_MISSION: (missionId: string) => `/editor/quiz/${missionId}`,
 } as const;
 
 export type Routes = typeof ROUTES;

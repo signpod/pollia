@@ -15,7 +15,9 @@ import {
 import { completionScrollTargetItemKeyAtom } from "../atoms/editorCompletionAtoms";
 import type { CompletionFormHandle } from "./CompletionForm";
 import { CompletionItem } from "./CompletionItem";
+import { ThresholdEditor } from "./ThresholdEditor";
 import type { CompletionSettingsCardProps } from "./completionSettingsCard.types";
+import { formatScoreRange } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle } from "./editor-save.types";
 import { useCompletionSettingsCard } from "./useCompletionSettingsCard";
 
@@ -25,9 +27,13 @@ function CompletionSettingsCardComponent(
   props: CompletionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
-  const { viewState, listState, formRefs, handlers, saveHandle } = useCompletionSettingsCard(props);
+  const { viewState, listState, quizState, formRefs, handlers, saveHandle, scrollToFirstError } =
+    useCompletionSettingsCard(props);
 
-  useImperativeHandle(ref, () => saveHandle, [saveHandle]);
+  useImperativeHandle(ref, () => ({ ...saveHandle, scrollToFirstError }), [
+    saveHandle,
+    scrollToFirstError,
+  ]);
 
   const { isSaving, isLoading, hasValidationIssues, validationIssueCount } = viewState;
 
@@ -44,6 +50,7 @@ function CompletionSettingsCardComponent(
     handleItemRawSnapshotChange,
     setCompletionDraftTitle,
     registerCompletionDraftForm,
+    handleDuplicateItem,
   } = handlers;
 
   const handleFormRef = useCallback(
@@ -129,6 +136,14 @@ function CompletionSettingsCardComponent(
       </div>
 
       <div ref={listContainerRef} className="flex flex-col gap-4 px-5 py-5">
+        {quizState.isQuizMode && completionItems.length >= 2 && (
+          <ThresholdEditor
+            thresholds={quizState.thresholds}
+            scoreRatios={quizState.scoreRatios}
+            onUpdateThreshold={quizState.updateThreshold}
+          />
+        )}
+
         {isLoading ? (
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-10 text-center">
             <Typo.Body size="medium" className="text-zinc-500">
@@ -150,6 +165,14 @@ function CompletionSettingsCardComponent(
                   ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}:${draftHydrationVersion}`
                   : `${item.key}:${draftHydrationVersion}`;
 
+              const scoreRange =
+                quizState.isQuizMode && quizState.scoreRatios[index]
+                  ? formatScoreRange(
+                      quizState.scoreRatios[index].minScoreRatio,
+                      quizState.scoreRatios[index].maxScoreRatio,
+                    )
+                  : undefined;
+
               return (
                 <CompletionItem
                   key={item.key}
@@ -160,6 +183,7 @@ function CompletionSettingsCardComponent(
                   isSaving={isSaving}
                   missionId={props.missionId}
                   formKey={formKey}
+                  scoreRangeLabel={scoreRange}
                   onFormRef={handleFormRef}
                   onRegisterDraftForm={registerCompletionDraftForm}
                   onToggle={handleToggleItem}
@@ -169,6 +193,7 @@ function CompletionSettingsCardComponent(
                   onValidationStateChange={handleItemValidationChange}
                   onRawSnapshotChange={handleItemRawSnapshotChange}
                   onDraftTitleChange={setCompletionDraftTitle}
+                  onDuplicateItem={handleDuplicateItem}
                 />
               );
             })}

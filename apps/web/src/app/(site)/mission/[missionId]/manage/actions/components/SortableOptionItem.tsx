@@ -5,7 +5,7 @@ import { EditorDeleteSlot } from "@/app/(site)/(main)/editor/components/view/Edi
 import { EditorSortControls } from "@/app/(site)/(main)/editor/components/view/EditorSortControls";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ImageSelector, Input, Textarea, Typo } from "@repo/ui/components";
+import { ImageSelector, Input, LabelText, Textarea, Toggle, Typo } from "@repo/ui/components";
 import type { ReactNode } from "react";
 
 interface SortableOptionItemProps {
@@ -20,6 +20,9 @@ interface SortableOptionItemProps {
   showDescription: boolean;
   showImage: boolean;
   showDelete: boolean;
+  showIsCorrect?: boolean;
+  isCorrect?: boolean;
+  isCorrectDisabled?: boolean;
   disabled: boolean;
   isImageUploading: boolean;
   titleMaxLength: number;
@@ -27,6 +30,7 @@ interface SortableOptionItemProps {
   onToggle: () => void;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
+  onIsCorrectChange?: (checked: boolean) => void;
   onImageSelect: (file: File) => void;
   onImageDelete: () => void;
   onDelete: () => void;
@@ -47,6 +51,9 @@ export function SortableOptionItem({
   showDescription,
   showImage,
   showDelete,
+  showIsCorrect,
+  isCorrect,
+  isCorrectDisabled,
   disabled,
   isImageUploading,
   titleMaxLength,
@@ -54,6 +61,7 @@ export function SortableOptionItem({
   onToggle,
   onTitleChange,
   onDescriptionChange,
+  onIsCorrectChange,
   onImageSelect,
   onImageDelete,
   onDelete,
@@ -78,6 +86,13 @@ export function SortableOptionItem({
         isOpen={isOpen}
         onToggle={onToggle}
         title={`${index + 1}. ${title || "제목 없음"}`}
+        badge={
+          showIsCorrect && isCorrect ? (
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+              정답
+            </span>
+          ) : null
+        }
         headerHeight="h-[70px]"
         leftSlot={
           <EditorSortControls
@@ -115,6 +130,17 @@ export function SortableOptionItem({
               value={description ?? ""}
               onChange={e => onDescriptionChange(e.target.value)}
             />
+          )}
+
+          {showIsCorrect && (
+            <div className="flex items-center justify-between">
+              <LabelText required={false}>정답</LabelText>
+              <Toggle
+                checked={isCorrect ?? false}
+                onCheckedChange={val => onIsCorrectChange?.(val)}
+                disabled={isCorrectDisabled}
+              />
+            </div>
           )}
 
           {showImage && (

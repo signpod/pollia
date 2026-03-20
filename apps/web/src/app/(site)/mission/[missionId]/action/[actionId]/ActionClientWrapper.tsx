@@ -1,5 +1,6 @@
 "use client";
 
+import { submitAnswerOnly } from "@/actions/action-answer";
 import { createActionSteps } from "@/components/common/templates/action";
 import { ActionProvider } from "@/components/common/templates/action/common/ActionContext";
 import type { ExtendedActionStepConfig } from "@/constants/action";
@@ -13,12 +14,18 @@ import {
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
-import { setActionNavCookie } from "@/lib/cookie";
+import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
+import { clearShuffleHistory, getShufflePrevious, recordShuffleVisit } from "@/lib/shuffleHistory";
+import { type QuizConfig, quizConfigSchema } from "@/schemas/mission/quizConfigSchema";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
+import { ActionType, MatchMode, MissionCategory } from "@prisma/client";
+import { useModal } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
+import { type QuizFeedbackConfig, QuizFeedbackModal } from "./quiz/QuizFeedbackModal";
+import { QuizProvider, useQuizContext } from "./quiz/QuizProvider";
 
 let navigationDirection: "forward" | "backward" = "forward";
 
@@ -34,6 +41,15 @@ export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProp
   );
 }
 
+function parseQuizConfig(mission: {
+  category: MissionCategory;
+  quizConfig?: unknown;
+}): QuizConfig | null {
+  if (mission.category !== MissionCategory.QUIZ) return null;
+  const result = quizConfigSchema.safeParse(mission.quizConfig ?? {});
+  return result.success ? result.data : null;
+}
+
 function ActionContent() {
   const { missionId, actionId } = useParams<{
     missionId: string;
@@ -44,11 +60,24 @@ function ActionContent() {
   const { data: missionData } = useReadMission(missionId);
   const actions = actionsData?.data ?? [];
 
+  const quizConfig = useMemo(
+    () => (missionData?.data ? parseQuizConfig(missionData.data) : null),
+    [missionData?.data],
+  );
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
 
+    if (quizConfig?.shuffleQuestions) {
+      const currentCookie = getActionNavCookie(missionId);
+      if (currentCookie === "initial") {
+        clearShuffleHistory(missionId);
+      }
+      recordShuffleVisit(missionId, actionId);
+    }
+
     setActionNavCookie(missionId, actionId);
-  }, [actionId, missionId]);
+  }, [actionId, missionId, quizConfig?.shuffleQuestions]);
 
   const navigateToAction = useCallback(
     (nextActionId: string) => {
@@ -85,8 +114,9 @@ function ActionContent() {
     return null;
   }
 
-  return (
+  const content = (
     <ActionStepWrapper
+      key={actionId}
       actions={actions}
       currentActionData={currentStep.actionData}
       steps={steps}
@@ -97,6 +127,12 @@ function ActionContent() {
       navigateToMission={navigateToMission}
     />
   );
+
+  if (quizConfig) {
+    return <QuizProvider quizConfig={quizConfig}>{content}</QuizProvider>;
+  }
+
+  return content;
 }
 
 interface ActionStepWrapperProps {
@@ -122,8 +158,110 @@ function ActionStepWrapper({
 }: ActionStepWrapperProps) {
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const [canGoNext, setCanGoNext] = useState(false);
+  const [quizFeedback, setQuizFeedback] = useState<QuizFeedbackConfig | null>(null);
+  const quiz = useQuizContext();
+  const { showModal } = useModal();
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
+
+  const isInstantQuiz = quiz?.quizConfig.gradingMode === "instant";
+
+  const checkAnswer = useCallback(
+    (answer: ActionAnswerItem): boolean | null => {
+      const options = currentActionData.options ?? [];
+      const actionType = currentActionData.type;
+
+      if (actionType === ActionType.OX || actionType === ActionType.MULTIPLE_CHOICE) {
+        const correctOpt = options.find(opt => opt.isCorrect);
+        if (!correctOpt) return null;
+        const selectedId =
+          "selectedOptionIds" in answer ? answer.selectedOptionIds?.[0] : undefined;
+        return selectedId === correctOpt.id;
+      }
+
+      if (actionType === ActionType.SHORT_TEXT || actionType === ActionType.SUBJECTIVE) {
+        if (options.length === 0) return null;
+        const userText =
+          ("textAnswer" in answer ? answer.textAnswer : "")?.replace(/\s/g, "") ?? "";
+        if (!userText) return false;
+        const matchMode = currentActionData.matchMode ?? MatchMode.EXACT;
+        return options.some(opt => {
+          const correctText = opt.title.replace(/\s/g, "");
+          if (matchMode === MatchMode.CONTAINS) {
+            return userText.toLowerCase().includes(correctText.toLowerCase());
+          }
+          return userText.toLowerCase() === correctText.toLowerCase();
+        });
+      }
+
+      return null;
+    },
+    [currentActionData],
+  );
+
+  const getCorrectAnswerText = useCallback((): string | null => {
+    const options = currentActionData.options ?? [];
+    const actionType = currentActionData.type;
+
+    if (actionType === ActionType.OX || actionType === ActionType.MULTIPLE_CHOICE) {
+      const correct = options.filter(opt => opt.isCorrect);
+      return correct.length > 0 ? correct.map(opt => opt.title).join(", ") : null;
+    }
+
+    if (actionType === ActionType.SHORT_TEXT || actionType === ActionType.SUBJECTIVE) {
+      const correct = options.filter(opt => opt.isCorrect);
+      return correct.length > 0 ? correct.map(opt => opt.title).join(", ") : null;
+    }
+
+    return null;
+  }, [currentActionData]);
+
+  const showQuizFeedbackModal = useCallback(
+    (isCorrect: boolean, onNext: () => void, isLastStep = false) => {
+      setQuizFeedback({
+        isCorrect,
+        correctAnswer:
+          !isCorrect && quiz?.quizConfig.showCorrectOnWrong ? getCorrectAnswerText() : null,
+        explanation: quiz?.quizConfig.showExplanation ? currentActionData.explanation : null,
+        confirmText: isLastStep ? "제출하기" : "다음",
+        onConfirm: onNext,
+      });
+    },
+    [
+      quiz?.quizConfig.showCorrectOnWrong,
+      quiz?.quizConfig.showExplanation,
+      currentActionData.explanation,
+      getCorrectAnswerText,
+    ],
+  );
+
+  const quizNavigateToAction = useCallback(
+    (nextActionId: string) => {
+      if (isInstantQuiz && currentAnswer) {
+        const result = checkAnswer(currentAnswer);
+        if (result !== null) {
+          showQuizFeedbackModal(result, () => navigateToAction(nextActionId));
+          return;
+        }
+      }
+      navigateToAction(nextActionId);
+    },
+    [isInstantQuiz, currentAnswer, checkAnswer, showQuizFeedbackModal, navigateToAction],
+  );
+
+  const quizNavigateToDone = useCallback(
+    (completionId?: string) => {
+      if (isInstantQuiz && currentAnswer) {
+        const result = checkAnswer(currentAnswer);
+        if (result !== null) {
+          showQuizFeedbackModal(result, () => navigateToDone(completionId));
+          return;
+        }
+      }
+      navigateToDone(completionId);
+    },
+    [isInstantQuiz, currentAnswer, checkAnswer, showQuizFeedbackModal, navigateToDone],
+  );
 
   const submittedAnswers: SubmittedAnswerForProgress[] | undefined = useMemo(() => {
     if (missionResponse?.data?.completedAt) return undefined;
@@ -138,6 +276,7 @@ function ActionStepWrapper({
     actions,
     submittedAnswers,
     entryActionId,
+    shuffleQuestions: quiz?.quizConfig.shuffleQuestions,
   } satisfies UseActionProgressParams);
 
   const isFirstStep = currentActionData.id === (entryActionId ?? actions[0]?.id);
@@ -148,9 +287,10 @@ function ActionStepWrapper({
     actions,
     progressInfo,
     currentAnswer,
-    navigateToAction,
-    navigateToDone,
+    navigateToAction: isInstantQuiz ? quizNavigateToAction : navigateToAction,
+    navigateToDone: isInstantQuiz ? quizNavigateToDone : navigateToDone,
     navigateToMission,
+    shuffleQuestions: quiz?.quizConfig.shuffleQuestions,
   });
 
   const updateCanGoNext = useCallback((value: boolean) => {
@@ -163,6 +303,16 @@ function ActionStepWrapper({
 
   const handlePrevious = useCallback(() => {
     navigationDirection = "backward";
+
+    if (quiz?.quizConfig.shuffleQuestions) {
+      const prevActionId = getShufflePrevious(missionId);
+      if (prevActionId) {
+        navigateToAction(prevActionId);
+      } else {
+        navigateToMission();
+      }
+      return;
+    }
 
     if (isFirstStep) {
       navigateToMission();
@@ -184,7 +334,15 @@ function ActionStepWrapper({
         navigateToAction(prevAction.id);
       }
     }
-  }, [isFirstStep, actions, currentActionData, navigateToAction, navigateToMission]);
+  }, [
+    isFirstStep,
+    actions,
+    currentActionData,
+    navigateToAction,
+    navigateToMission,
+    quiz?.quizConfig.shuffleQuestions,
+    missionId,
+  ]);
 
   const currentStep = steps.find(
     (step): step is ExtendedActionStepConfig => step.actionData.id === currentActionData.id,
@@ -201,7 +359,43 @@ function ActionStepWrapper({
       isFirstAction: isFirstStep,
       onPrevious: handlePrevious,
       onNext: () => {
-        navigationDirection = "forward";
+        if (!isInstantQuiz) {
+          navigationDirection = "forward";
+        }
+        if (isInstantQuiz && isActualLastStep && currentAnswer) {
+          const result = checkAnswer(currentAnswer);
+          if (result !== null) {
+            const responseId = missionResponse?.data?.id;
+            showQuizFeedbackModal(
+              result,
+              () => {
+                queueMicrotask(() => {
+                  showModal({
+                    title: "완료할까요?",
+                    description: "완료 후에는 답변을 수정할 수 없어요",
+                    confirmText: "완료",
+                    cancelText: "취소",
+                    showCancelButton: true,
+                    onConfirm: async () => {
+                      if (!responseId) return;
+                      const submitResult = await submitAnswerOnly({
+                        missionId,
+                        responseId,
+                        answer: currentAnswer,
+                        isLastAction: true,
+                      });
+                      if (submitResult.success) {
+                        navigateToDone(submitResult.selectedCompletionId);
+                      }
+                    },
+                  });
+                });
+              },
+              true,
+            );
+            return;
+          }
+        }
         return submit();
       },
       onPrefetchNext: () => {}, // 클라이언트 네비게이션이므로 prefetch 불필요
@@ -213,6 +407,7 @@ function ActionStepWrapper({
       missionResponse:
         missionResponse?.data && !missionResponse.data.completedAt ? missionResponse : undefined,
       animationName,
+      shuffleChoices: quiz?.quizConfig.shuffleChoices,
     }),
     [
       progressInfo.currentOrder,
@@ -227,6 +422,10 @@ function ActionStepWrapper({
       handleAnswerChange,
       missionResponse,
       animationName,
+      isInstantQuiz,
+      currentAnswer,
+      checkAnswer,
+      showQuizFeedbackModal,
     ],
   );
 
@@ -238,6 +437,7 @@ function ActionStepWrapper({
   return (
     <ActionProvider value={contextValue}>
       <ContentComponent actionData={currentActionData} />
+      <QuizFeedbackModal config={quizFeedback} onClose={() => setQuizFeedback(null)} />
     </ActionProvider>
   );
 }

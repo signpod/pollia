@@ -4,6 +4,8 @@ import { getMission } from "@/actions/mission/read";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { getQueryClient } from "@/lib/getQueryClient";
+import { quizConfigSchema } from "@/schemas/mission/quizConfigSchema";
+import { MissionCategory } from "@prisma/client";
 import { dehydrate } from "@tanstack/react-query";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -23,10 +25,15 @@ function validateActionNavigation(
   actionId: string,
   actions: ActionWithOptions[],
   entryActionId?: string | null,
+  shuffleQuestions?: boolean,
 ): boolean {
   if (!cookieValue) return false;
 
   const actionIds = actions.map(a => a.id);
+
+  if (shuffleQuestions) {
+    return actionIds.includes(actionId);
+  }
 
   if (cookieValue === "initial") {
     const validEntryId = entryActionId ?? actionIds[0];
@@ -98,11 +105,16 @@ export default async function ActionPage({
   const cookieStore = await cookies();
   const navCookie = cookieStore.get(`${ACTION_NAV_COOKIE_PREFIX}${missionId}`);
 
+  const shuffleQuestions =
+    missionData.data.category === MissionCategory.QUIZ &&
+    quizConfigSchema.safeParse(missionData.data.quizConfig ?? {}).data?.shuffleQuestions === true;
+
   const isValidNavigation = validateActionNavigation(
     navCookie?.value,
     actionId,
     actionsResponse.data,
     missionData.data.entryActionId,
+    shuffleQuestions,
   );
 
   if (!isValidNavigation) {
