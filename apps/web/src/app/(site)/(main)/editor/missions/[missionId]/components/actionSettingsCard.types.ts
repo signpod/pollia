@@ -30,6 +30,7 @@ export type ActionListItem = ExistingListItem | DraftListItem;
 export interface ActionSectionDraftSnapshot {
   draftItems: DraftActionItem[];
   openItemKey: string | null;
+  removedExistingIds: string[];
   dirtyByItemKey: Record<string, boolean>;
   actionTypeByItemKey: Record<string, ActionType>;
   formSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;

@@ -313,10 +313,10 @@ function buildActionDirtyComparable(params: {
         nextCompletionId: allowCompletionLink ? (values.nextCompletionId ?? null) : null,
       }),
       ...(isQuizMode && {
-        score: values.score ?? null,
+        score: values.score ?? 10,
         matchMode: values.matchMode ?? null,
-        hint: values.hint?.trim() ?? null,
-        explanation: values.explanation?.trim() ?? null,
+        hint: values.hint?.trim() || null,
+        explanation: values.explanation?.trim() || null,
       }),
     },
   };

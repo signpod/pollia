@@ -76,7 +76,9 @@ export function useEditorUndoRedo({
       }
       syncCanFlags();
     } finally {
-      isUndoRedoInProgressRef.current = false;
+      setTimeout(() => {
+        isUndoRedoInProgressRef.current = false;
+      }, 0);
     }
   }, [applySnapshot, enabled, syncCanFlags]);
 
@@ -92,7 +94,9 @@ export function useEditorUndoRedo({
       }
       syncCanFlags();
     } finally {
-      isUndoRedoInProgressRef.current = false;
+      setTimeout(() => {
+        isUndoRedoInProgressRef.current = false;
+      }, 0);
     }
   }, [applySnapshot, enabled, syncCanFlags]);
 

@@ -1,3 +1,4 @@
+import { deleteAction as deleteActionServerAction } from "@/actions/action/delete";
 import { applyMissionActionSectionDraft } from "@/actions/mission/apply-draft";
 import type {
   ActionFormHandle,
@@ -55,6 +56,9 @@ export interface UseActionSaveFlowBaseParams {
   messages: ActionSaveFlowMessages;
   getQueryKeysToInvalidate: (missionId: string) => QueryKey[];
   onAfterApply?: (result: SaveActionSectionResult) => void;
+  removedActionIds: Set<string>;
+  dispatchResetAfterSave: (successfulRemovedIds: Set<string>) => void;
+  setRemovedActionIds: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 }
 
 export interface UseActionSaveFlowBaseReturn {
@@ -75,6 +79,9 @@ export function useActionSaveFlowBase({
   messages,
   getQueryKeysToInvalidate,
   onAfterApply,
+  removedActionIds,
+  dispatchResetAfterSave,
+  setRemovedActionIds,
 }: UseActionSaveFlowBaseParams): UseActionSaveFlowBaseReturn {
   const {
     setIsApplying,
@@ -87,8 +94,22 @@ export function useActionSaveFlowBase({
     setValidationIssueCountByItemKey,
   } = atomSetters;
 
-  const latestRef = useRef({ missionId, formRefs, orderedActionItems, isActionsLoading, isBusy });
-  latestRef.current = { missionId, formRefs, orderedActionItems, isActionsLoading, isBusy };
+  const latestRef = useRef({
+    missionId,
+    formRefs,
+    orderedActionItems,
+    isActionsLoading,
+    isBusy,
+    removedActionIds,
+  });
+  latestRef.current = {
+    missionId,
+    formRefs,
+    orderedActionItems,
+    isActionsLoading,
+    isBusy,
+    removedActionIds,
+  };
 
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
@@ -96,6 +117,8 @@ export function useActionSaveFlowBase({
   onAfterApplyRef.current = onAfterApply;
   const getQueryKeysRef = useRef(getQueryKeysToInvalidate);
   getQueryKeysRef.current = getQueryKeysToInvalidate;
+  const dispatchResetAfterSaveRef = useRef(dispatchResetAfterSave);
+  dispatchResetAfterSaveRef.current = dispatchResetAfterSave;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: latestRef/messagesRef/onAfterApplyRef/getQueryKeysRef로 최신 값 참조. atom setter들은 안정 참조
   const executeSave = useCallback(
@@ -104,8 +127,14 @@ export function useActionSaveFlowBase({
       showValidationUi = true,
       trigger = "manual",
     }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
-      const { missionId, formRefs, orderedActionItems, isActionsLoading, isBusy } =
-        latestRef.current;
+      const {
+        missionId,
+        formRefs,
+        orderedActionItems,
+        isActionsLoading,
+        isBusy,
+        removedActionIds,
+      } = latestRef.current;
       const msgs = messagesRef.current;
 
       if (isActionsLoading || isBusy) {
@@ -113,6 +142,7 @@ export function useActionSaveFlowBase({
       }
 
       const strictMode = trigger === "publish";
+      const removedSnapshot = new Set(removedActionIds);
 
       for (const item of orderedActionItems) {
         const formRef = formRefs.current[item.key];
@@ -137,6 +167,33 @@ export function useActionSaveFlowBase({
 
       setIsApplying(true);
       try {
+        let totalSavedCount = 0;
+        const successfulRemovedIds = new Set<string>();
+
+        for (const actionId of removedSnapshot) {
+          try {
+            await deleteActionServerAction(actionId);
+            successfulRemovedIds.add(actionId);
+            totalSavedCount += 1;
+          } catch (error) {
+            const isMissing =
+              error instanceof Error &&
+              (error.message.includes("찾을 수 없습니다") || (error.cause as number) === 404);
+            if (isMissing) {
+              successfulRemovedIds.add(actionId);
+              totalSavedCount += 1;
+              continue;
+            }
+            if (strictMode) {
+              return { status: "failed", message: "질문 삭제 중 오류가 발생했습니다." };
+            }
+          }
+        }
+
+        if (successfulRemovedIds.size > 0) {
+          dispatchResetAfterSaveRef.current(successfulRemovedIds);
+        }
+
         const response = await applyMissionActionSectionDraft(missionId);
         const result = response.data;
 
@@ -179,12 +236,14 @@ export function useActionSaveFlowBase({
           });
         }
 
-        const savedCount = result.createdActionIds.length + result.updatedActionIds.length;
-        if (!silent && savedCount > 0) {
+        totalSavedCount += result.createdActionIds.length + result.updatedActionIds.length;
+        if (!silent && totalSavedCount > 0) {
           toast({ message: msgs.SAVE_SUCCESS });
         }
 
-        return savedCount > 0 ? { status: "saved", savedCount } : { status: "no_changes" };
+        return totalSavedCount > 0
+          ? { status: "saved", savedCount: totalSavedCount }
+          : { status: "no_changes" };
       } catch (error) {
         const message = error instanceof Error ? error.message : msgs.SAVE_FAILED;
         if (!silent) {
@@ -209,6 +268,11 @@ export function useActionSaveFlowBase({
     atomSetters.setOpenItemKey(null);
     atomSetters.setDirtyByItemKey(next.dirtyByItemKey);
     atomSetters.setActionTypeByItemKey(next.actionTypeByItemKey);
+
+    const nextRemovedIds = Array.isArray(next.removedExistingIds)
+      ? next.removedExistingIds.filter((id): id is string => typeof id === "string")
+      : [];
+    setRemovedActionIds(new Set(nextRemovedIds));
 
     const sanitizedSnapshots = Object.fromEntries(
       Object.entries(next.formSnapshotByItemKey).map(([key, snap]) => [

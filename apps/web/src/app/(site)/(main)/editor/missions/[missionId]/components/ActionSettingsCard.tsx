@@ -34,7 +34,6 @@ import {
   useRef,
 } from "react";
 import { actionScrollTargetItemKeyAtom } from "../atoms/editorActionAtoms";
-import { ActionDeleteConfirmDialog } from "./ActionDeleteConfirmDialog";
 import { FlowOverviewDialog } from "./FlowOverviewDialog";
 import { SortableActionItem } from "./SortableActionItem";
 import type { ActionSettingsCardProps } from "./actionSettingsCard.types";
@@ -56,15 +55,18 @@ function ActionSettingsCardComponent(
     listState,
     derived,
     formRefs,
-    deleteDialog,
     flowDialog,
     handlers,
     saveHandle,
+    scrollToFirstError,
   } = useActionSettingsCard(props);
 
   const { createLinkedAction, createLinkedCompletion } = useCreateLinkedItem();
 
-  useImperativeHandle(ref, () => saveHandle, [saveHandle]);
+  useImperativeHandle(ref, () => ({ ...saveHandle, scrollToFirstError }), [
+    saveHandle,
+    scrollToFirstError,
+  ]);
 
   const {
     isBusy,
@@ -94,6 +96,7 @@ function ActionSettingsCardComponent(
   const {
     handleAddDraft,
     handleRemoveDraft,
+    handleRemoveExisting,
     handleToggleItem,
     handleActionTypeChange,
     handleDragEnd,
@@ -287,7 +290,7 @@ function ActionSettingsCardComponent(
                       onFormRef={handleFormRef}
                       onToggle={handleToggleItem}
                       onRemoveDraft={handleRemoveDraft}
-                      onDeleteExisting={item.kind === "existing" ? deleteDialog.onOpen : undefined}
+                      onRemoveExisting={item.kind === "existing" ? handleRemoveExisting : undefined}
                       onActionTypeChange={handleActionTypeChange}
                       onDirtyChange={handleItemDirtyChange}
                       onValidationStateChange={handleItemValidationChange}
@@ -325,13 +328,6 @@ function ActionSettingsCardComponent(
         analysis={flowAnalysis}
         isLoading={isFlowLoading}
         errorMessage={viewState.flowErrorMessage}
-      />
-
-      <ActionDeleteConfirmDialog
-        target={deleteDialog.target}
-        isPending={deleteDialog.isPending}
-        onClose={deleteDialog.onClose}
-        onConfirm={deleteDialog.onConfirm}
       />
     </div>
   );

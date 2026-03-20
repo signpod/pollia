@@ -14,18 +14,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@repo/ui/components";
 import { useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
-import {
-  type ForwardedRef,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-} from "react";
+import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
-import { countValidationIssues } from "../../../utils/countValidationIssues";
+import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
+import { useFormEagerValidation } from "../../../hooks/useFormEagerValidation";
+import { useFormScrollToFirstError } from "../../../hooks/useFormScrollToFirstError";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import type {
   SectionSaveHandle,
@@ -130,28 +126,27 @@ function ContentBasicInfoCardComponent(
     form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
   };
 
-  const hasPendingChanges = form.formState.isDirty;
-  const isBusy = form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy;
-  const validationIssueCount = useMemo(
-    () => countValidationIssues(form.formState.errors),
-    [form.formState.errors],
+  const { validationIssueCount, hasValidationIssues } = useFormEagerValidation(
+    form,
+    createMissionFormSchema,
   );
-  const hasValidationIssues = validationIssueCount > 0;
+
+  const { hasPendingChanges, markClean } = useFormDirtySnapshot(form);
+
+  const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
+    hasPendingChanges,
+    isBusy: form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy,
+    hasValidationIssues,
+    validationIssueCount,
+    onSaveStateChange,
+  });
+
   const watchedImageUrl = form.watch("imageUrl");
   const watchedBrandLogoUrl = form.watch("brandLogoUrl");
   const watchedUseAiCompletion = useWatch({
     control: form.control,
     name: "useAiCompletion",
   });
-
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
 
   const incrementDraftVersion = useSetAtom(editorDraftVersionAtom);
 
@@ -188,7 +183,7 @@ function ContentBasicInfoCardComponent(
         return { status: "failed", message: "이미지 업로드가 완료된 뒤 저장해주세요." };
       }
 
-      if (!form.formState.isDirty) {
+      if (!getHasPendingChanges()) {
         return { status: "no_changes" };
       }
 
@@ -222,6 +217,7 @@ function ContentBasicInfoCardComponent(
         thumbnailImageUpload.deleteMarkedInitial();
         brandLogoImageUpload.deleteMarkedInitial();
         form.reset(values);
+        markClean();
 
         if (!silent) {
           toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다.` });
@@ -245,18 +241,18 @@ function ContentBasicInfoCardComponent(
         return { status: "failed", message };
       }
     },
-    [brandLogoImageUpload, form, mission.id, thumbnailImageUpload],
+    [brandLogoImageUpload, form, getHasPendingChanges, markClean, mission.id, thumbnailImageUpload],
   );
+
+  const scrollToFirstError = useFormScrollToFirstError(form);
 
   useImperativeHandle(
     ref,
     () => ({
       save,
-      hasPendingChanges: () => form.formState.isDirty,
-      isBusy: () =>
-        form.formState.isSubmitting ||
-        thumbnailImageUpload.isUploading ||
-        brandLogoImageUpload.isUploading,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getIsBusy,
+      scrollToFirstError,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -307,15 +303,7 @@ function ContentBasicInfoCardComponent(
         form.reset(nextValues, { keepDefaultValues: true });
       },
     }),
-    [
-      brandLogoImageUpload.isUploading,
-      form.formState.isDirty,
-      form.formState.isSubmitting,
-      form,
-      mission,
-      save,
-      thumbnailImageUpload.isUploading,
-    ],
+    [form, mission, save, getHasPendingChanges, getIsBusy, scrollToFirstError],
   );
 
   const imageUploaders = (

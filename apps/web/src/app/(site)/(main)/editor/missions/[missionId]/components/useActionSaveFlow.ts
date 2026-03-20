@@ -46,6 +46,9 @@ interface UseActionSaveFlowParams {
   isBusy: boolean;
   hasPendingChanges: boolean;
   getActionDraftSnapshot: () => ActionSectionDraftSnapshot;
+  removedActionIds: Set<string>;
+  dispatchResetAfterSave: (successfulRemovedIds: Set<string>) => void;
+  setRemovedActionIds: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 }
 
 export interface UseActionSaveFlowReturn {

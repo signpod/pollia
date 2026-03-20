@@ -1,9 +1,11 @@
 import type { ActionFormHandle } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
+import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtom, useSetAtom } from "jotai";
 import { useMemo } from "react";
+import { removeCompletionDraftByIdAtom } from "../../../missions/[missionId]/atoms/editorCompletionAtoms";
 import type {
   ActionListItem,
   ActionSectionDraftSnapshot,
@@ -39,6 +41,7 @@ const SAVE_MESSAGES = {
 
 const getQueryKeysToInvalidate = (missionId: string) => [
   actionQueryKeys.actions({ missionId }),
+  missionCompletionQueryKeys.missionCompletion(missionId),
   missionQueryKeys.mission(missionId),
 ];
 
@@ -50,6 +53,9 @@ interface UseQuizActionSaveFlowParams {
   isBusy: boolean;
   hasPendingChanges: boolean;
   getActionDraftSnapshot: () => ActionSectionDraftSnapshot;
+  removedActionIds: Set<string>;
+  dispatchResetAfterSave: (successfulRemovedIds: Set<string>) => void;
+  setRemovedActionIds: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 }
 
 export interface UseQuizActionSaveFlowReturn {
@@ -63,6 +69,7 @@ export function useQuizActionSaveFlow(
 ): UseQuizActionSaveFlowReturn {
   const queryClient = useQueryClient();
   const [isApplying, setIsApplying] = useAtom(quizActionIsApplyingAtom);
+  const dispatchRemoveCompletionDraftById = useSetAtom(removeCompletionDraftByIdAtom);
   const setDraftItems = useSetAtom(quizActionDraftItemsAtom);
   const setItemOrderKeys = useSetAtom(quizActionItemOrderKeysAtom);
   const setOpenItemKey = useSetAtom(quizActionOpenItemKeyAtom);
@@ -106,6 +113,11 @@ export function useQuizActionSaveFlow(
     atomSetters,
     messages: SAVE_MESSAGES,
     getQueryKeysToInvalidate,
+    onAfterApply: result => {
+      for (const tempId of Object.keys(result.tempToRealCompletionIdMap)) {
+        dispatchRemoveCompletionDraftById(tempId);
+      }
+    },
   });
 
   return { isApplying, executeSave, saveHandle };

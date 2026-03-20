@@ -23,13 +23,15 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useState,
 } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
-import { countValidationIssues } from "../../../utils/countValidationIssues";
+import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
+import { useFormEagerValidation } from "../../../hooks/useFormEagerValidation";
+import { useFormScrollToFirstError } from "../../../hooks/useFormScrollToFirstError";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -140,22 +142,20 @@ function RewardSettingsCardComponent(
     form.setValue("reward.imageFileUploadId", null, { shouldDirty: true });
   };
 
-  const hasPendingChanges = form.formState.isDirty;
-  const isBusy = form.formState.isSubmitting || rewardImageUpload.isUploading;
-  const validationIssueCount = useMemo(
-    () => countValidationIssues(form.formState.errors),
-    [form.formState.errors],
+  const { validationIssueCount, hasValidationIssues } = useFormEagerValidation(
+    form,
+    createMissionFormSchema,
   );
-  const hasValidationIssues = validationIssueCount > 0;
 
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
+  const { hasPendingChanges, markClean } = useFormDirtySnapshot(form);
+
+  const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
+    hasPendingChanges,
+    isBusy: form.formState.isSubmitting || rewardImageUpload.isUploading,
+    hasValidationIssues,
+    validationIssueCount,
+    onSaveStateChange,
+  });
 
   const watchedHasReward = useWatch({ control: form.control, name: "hasReward" });
 
@@ -176,7 +176,7 @@ function RewardSettingsCardComponent(
         return { status: "failed", message: "이미지 업로드가 완료된 뒤 저장해주세요." };
       }
 
-      if (!form.formState.isDirty) {
+      if (!getHasPendingChanges()) {
         return { status: "no_changes" };
       }
 
@@ -197,6 +197,7 @@ function RewardSettingsCardComponent(
 
           setCurrentReward(null);
           form.reset(buildDefaultValues(mission, null));
+          markClean();
 
           if (!silent) {
             toast({ message: "리워드 설정이 저장되었습니다." });
@@ -235,6 +236,7 @@ function RewardSettingsCardComponent(
         }
 
         rewardImageUpload.deleteMarkedInitial();
+        markClean();
 
         if (!silent) {
           toast({ message: "리워드 설정이 저장되었습니다." });
@@ -255,15 +257,18 @@ function RewardSettingsCardComponent(
         return { status: "failed", message };
       }
     },
-    [currentReward, form, mission, rewardImageUpload],
+    [currentReward, form, getHasPendingChanges, markClean, mission, rewardImageUpload],
   );
+
+  const scrollToFirstError = useFormScrollToFirstError(form);
 
   useImperativeHandle(
     ref,
     () => ({
       save,
-      hasPendingChanges: () => form.formState.isDirty,
-      isBusy: () => form.formState.isSubmitting || rewardImageUpload.isUploading,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getIsBusy,
+      scrollToFirstError,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -325,15 +330,7 @@ function RewardSettingsCardComponent(
         form.reset(nextValues, { keepDefaultValues: true });
       },
     }),
-    [
-      currentReward,
-      form,
-      form.formState.isDirty,
-      form.formState.isSubmitting,
-      mission,
-      rewardImageUpload.isUploading,
-      save,
-    ],
+    [currentReward, form, mission, save, getHasPendingChanges, getIsBusy, scrollToFirstError],
   );
 
   const rewardImageUploader = (

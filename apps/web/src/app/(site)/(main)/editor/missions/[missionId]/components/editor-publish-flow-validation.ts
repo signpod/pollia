@@ -96,6 +96,7 @@ interface ParsedActionFormSnapshot {
 interface ParsedActionDraftSnapshot {
   draftKeys: string[];
   itemOrderKeys: string[];
+  removedExistingIds: Set<string>;
   formSnapshotsByItemKey: Record<string, ParsedActionFormSnapshot>;
 }
 
@@ -172,7 +173,12 @@ function parseActionFormSnapshot(value: unknown): ParsedActionFormSnapshot | nul
 
 function parseActionDraftSnapshot(snapshot: unknown): ParsedActionDraftSnapshot {
   if (!isRecord(snapshot)) {
-    return { draftKeys: [], itemOrderKeys: [], formSnapshotsByItemKey: {} };
+    return {
+      draftKeys: [],
+      itemOrderKeys: [],
+      removedExistingIds: new Set<string>(),
+      formSnapshotsByItemKey: {},
+    };
   }
 
   const draftKeys = Array.isArray(snapshot.draftItems)
@@ -199,9 +205,18 @@ function parseActionDraftSnapshot(snapshot: unknown): ParsedActionDraftSnapshot 
     }
   }
 
+  const removedExistingIds = new Set<string>(
+    Array.isArray(snapshot.removedExistingIds)
+      ? snapshot.removedExistingIds
+          .map(id => toNullableString(id))
+          .filter((id): id is string => Boolean(id))
+      : [],
+  );
+
   return {
     draftKeys,
     itemOrderKeys,
+    removedExistingIds,
     formSnapshotsByItemKey,
   };
 }
@@ -365,6 +380,10 @@ export function buildEditorFlowState({
 
   const actionById = new Map<string, FlowAction>();
   for (const action of serverActions) {
+    if (parsedActionSnapshot.removedExistingIds.has(action.id)) {
+      continue;
+    }
+
     const existingItemKey = `existing:${action.id}`;
     const snapshot = parsedActionSnapshot.formSnapshotsByItemKey[existingItemKey];
 

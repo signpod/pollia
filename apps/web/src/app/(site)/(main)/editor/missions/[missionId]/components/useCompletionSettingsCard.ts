@@ -13,6 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { cleanupDeletedCompletionRefsAtom } from "../atoms/editorActionAtoms";
 import {
   addCompletionDraftAtom,
@@ -254,6 +255,26 @@ export function useCompletionSettingsCard({
     });
   }, [isQuizMode, completionItems.length]);
 
+  useEffect(() => {
+    if (!isQuizMode || !thresholdsInitializedRef.current) return;
+    if (completionDrafts.length > 0 || removedExistingIds.size > 0) return;
+    if (!initialThresholdsRef.current) return;
+
+    const expectedCount = Math.max(0, completionItems.length - 1);
+    if (
+      thresholds.length === expectedCount &&
+      initialThresholdsRef.current.length !== expectedCount
+    ) {
+      initialThresholdsRef.current = [...thresholds];
+    }
+  }, [
+    isQuizMode,
+    completionItems.length,
+    completionDrafts.length,
+    removedExistingIds.size,
+    thresholds,
+  ]);
+
   const scoreRatios = useMemo(
     () => (isQuizMode ? computeScoreRatiosFromThresholds(thresholds, completionItems.length) : []),
     [isQuizMode, thresholds, completionItems.length],
@@ -371,21 +392,13 @@ export function useCompletionSettingsCard({
   );
   const hasValidationIssues = validationIssueCount > 0;
 
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy: isSaving || isLoading,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [
+  const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
     hasPendingChanges,
+    isBusy: isSaving || isLoading,
     hasValidationIssues,
-    isLoading,
-    isSaving,
-    onSaveStateChange,
     validationIssueCount,
-  ]);
+    onSaveStateChange,
+  });
 
   const handleItemDirtyChange = useCallback(
     (itemKey: string, isDirty: boolean) => {
@@ -914,8 +927,8 @@ export function useCompletionSettingsCard({
   const saveHandle = useMemo<SectionSaveHandle>(
     () => ({
       save: executeSave,
-      hasPendingChanges: () => hasPendingChanges,
-      isBusy: () => isSaving || isLoading,
+      hasPendingChanges: getHasPendingChanges,
+      isBusy: getIsBusy,
       exportDraftSnapshot: (): CompletionSectionDraftSnapshot => {
         return getCompletionDraftSnapshot();
       },
@@ -974,9 +987,8 @@ export function useCompletionSettingsCard({
       dispatchClear,
       executeSave,
       getCompletionDraftSnapshot,
-      hasPendingChanges,
-      isLoading,
-      isSaving,
+      getHasPendingChanges,
+      getIsBusy,
       setDirtyByItemKey,
       setDraftFormSnapshotByItemKey,
       setDraftHydrationVersion,

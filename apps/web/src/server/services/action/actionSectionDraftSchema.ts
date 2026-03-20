@@ -48,6 +48,7 @@ export const actionSectionDraftSnapshotSchema = z.object({
   actionTypeByItemKey: z.record(z.string(), actionTypeSchema),
   dirtyByItemKey: z.record(z.string(), z.boolean()),
   itemOrderKeys: z.array(z.string()).optional(),
+  removedExistingIds: z.array(z.string()).optional(),
 });
 
 export type ParsedActionSectionDraftSnapshot = z.infer<typeof actionSectionDraftSnapshotSchema>;

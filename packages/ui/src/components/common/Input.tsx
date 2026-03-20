@@ -94,7 +94,10 @@ const Input = ({
   };
 
   return (
-    <div className={cn("flex flex-col gap-2", containerClassName)}>
+    <div
+      className={cn("flex flex-col gap-2", containerClassName)}
+      data-field-error={errorMessage ? "" : undefined}
+    >
       {label && (
         <div className="flex items-center justify-between">
           <LabelText required={required}>{label}</LabelText>

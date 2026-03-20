@@ -28,7 +28,6 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { ActionDeleteConfirmDialog } from "../../../missions/[missionId]/components/ActionDeleteConfirmDialog";
 import type { SectionSaveHandle } from "../../../missions/[missionId]/components/editor-save.types";
 import { quizActionScrollTargetItemKeyAtom } from "../atoms/quizActionAtoms";
 import { QuizSortableActionItem } from "./QuizSortableActionItem";
@@ -41,7 +40,7 @@ function QuizQuestionSettingsCardComponent(
   props: QuizQuestionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
-  const { viewState, listState, formRefs, deleteDialog, handlers, saveHandle, scrollToFirstError } =
+  const { viewState, listState, formRefs, handlers, saveHandle, scrollToFirstError } =
     useQuizQuestionSettingsCard(props);
 
   useImperativeHandle(ref, () => ({ ...saveHandle, scrollToFirstError }), [
@@ -62,6 +61,7 @@ function QuizQuestionSettingsCardComponent(
   const {
     handleAddDraft,
     handleRemoveDraft,
+    handleRemoveExisting,
     handleToggleItem,
     handleActionTypeChange,
     handleDragEnd,
@@ -210,7 +210,7 @@ function QuizQuestionSettingsCardComponent(
                       onFormRef={handleFormRef}
                       onToggle={handleToggleItem}
                       onRemoveDraft={handleRemoveDraft}
-                      onDeleteExisting={item.kind === "existing" ? deleteDialog.onOpen : undefined}
+                      onRemoveExisting={item.kind === "existing" ? handleRemoveExisting : undefined}
                       onActionTypeChange={handleActionTypeChange}
                       onDirtyChange={handleItemDirtyChange}
                       onValidationStateChange={handleItemValidationChange}
@@ -239,13 +239,6 @@ function QuizQuestionSettingsCardComponent(
           </Typo.Body>
         </button>
       </div>
-
-      <ActionDeleteConfirmDialog
-        target={deleteDialog.target}
-        isPending={deleteDialog.isPending}
-        onClose={deleteDialog.onClose}
-        onConfirm={deleteDialog.onConfirm}
-      />
     </div>
   );
 }

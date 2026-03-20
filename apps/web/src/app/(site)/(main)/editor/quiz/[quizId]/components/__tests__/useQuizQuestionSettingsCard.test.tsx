@@ -19,13 +19,6 @@ jest.mock("@/hooks/action", () => ({
   })),
 }));
 
-jest.mock("@/app/(site)/mission/[missionId]/manage/actions/hooks", () => ({
-  useManageDeleteAction: jest.fn(() => ({
-    mutate: jest.fn(),
-    isPending: false,
-  })),
-}));
-
 jest.mock("@repo/ui/components", () => ({
   toast: jest.fn(),
 }));

@@ -1,9 +1,11 @@
-import { ActionType } from "@prisma/client";
+import { toServerEditorDraftPayload } from "@/types/mission-editor-draft";
+import { ActionType, type Prisma } from "@prisma/client";
 import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
   createMockAction,
   createMockMission,
+  createMockMissionCompletion,
   expectServiceErrorWithCause,
 } from "../testUtils";
 
@@ -192,7 +194,7 @@ describe("ActionService - applyActionSectionDraft", () => {
       expect(result.updatedActionIds).toEqual(["action1"]);
     });
 
-    it("completion draft가 있어도 completion을 생성하지 않는다 (completion 섹션에서 별도 처리)", async () => {
+    it("completion draft도 함께 파싱하여 completionsToCreate를 구성한다", async () => {
       // Given
       const actionDraft = {
         draftItems: [{ key: "q1" }],
@@ -230,6 +232,9 @@ describe("ActionService - applyActionSectionDraft", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
+      const mockCompletion = createMockMissionCompletion({ id: "real-comp" });
+      ctx.mockCompletionRepo.create.mockResolvedValue(mockCompletion);
+
       const mockAction = createMockAction({ id: "real-q1", type: ActionType.SUBJECTIVE });
       ctx.mockActionRepo.create.mockResolvedValue(mockAction);
       ctx.mockActionRepo.update.mockResolvedValue(mockAction);
@@ -238,8 +243,16 @@ describe("ActionService - applyActionSectionDraft", () => {
       const result = await ctx.service.applyActionSectionDraft("mission1", "user1");
 
       // Then
-      expect(result.createdCompletionIds).toEqual([]);
-      expect(ctx.mockCompletionRepo.create).not.toHaveBeenCalled();
+      expect(result.createdCompletionIds).toEqual(["real-comp"]);
+      expect(ctx.mockCompletionRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          missionId: "mission1",
+          title: "미션 완료!",
+          description: "축하합니다",
+        }),
+        "user1",
+        expect.anything(),
+      );
     });
 
     it("draft 적용 후 editorDraft의 action/completion 섹션을 클리어한다", async () => {
@@ -378,7 +391,7 @@ describe("ActionService - applyActionSectionDraft", () => {
       expect(result.createdActionIds).toEqual(["real-1"]);
     });
 
-    it("draft action의 nextCompletionId가 draft: 접두사인 경우 null로 resolve되어 FK 업데이트가 생략된다", async () => {
+    it("draft action의 nextCompletionId가 생성된 실제 completion ID로 resolve된다", async () => {
       // Given
       const actionDraft = {
         draftItems: [{ key: "q1" }],
@@ -399,11 +412,26 @@ describe("ActionService - applyActionSectionDraft", () => {
         itemOrderKeys: ["draft:q1"],
       };
 
+      const completionDraft = {
+        draftItems: [{ key: "comp1", title: "완료" }],
+        formSnapshotByItemKey: {
+          "draft:comp1": {
+            title: "완료 화면",
+            description: "축하합니다",
+            imageUrl: null,
+            imageFileUploadId: null,
+          },
+        },
+      };
+
       const mockMission = createMockMission({
-        editorDraft: { action: actionDraft, completion: null },
+        editorDraft: { action: actionDraft, completion: completionDraft },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      const mockCompletion = createMockMissionCompletion({ id: "real-comp-id" });
+      ctx.mockCompletionRepo.create.mockResolvedValue(mockCompletion);
 
       const mockAction = createMockAction({ id: "real-action-id", type: ActionType.SUBJECTIVE });
       ctx.mockActionRepo.create.mockResolvedValue(mockAction);
@@ -413,11 +441,24 @@ describe("ActionService - applyActionSectionDraft", () => {
       const result = await ctx.service.applyActionSectionDraft("mission1", "user1");
 
       // Then
-      expect(result.createdCompletionIds).toEqual([]);
-      expect(result.tempToRealCompletionIdMap).toEqual({});
+      expect(result.createdCompletionIds).toEqual(["real-comp-id"]);
+      expect(result.tempToRealCompletionIdMap).toEqual({
+        "draft:completion:comp1": "real-comp-id",
+      });
+
+      const updateCalls = ctx.mockActionRepo.update.mock.calls;
+      const fkUpdateCall = updateCalls.find(
+        call => call[0] === "real-action-id" && call[1]?.nextCompletionId !== undefined,
+      );
+      expect(fkUpdateCall).toBeDefined();
+      expect(fkUpdateCall![1]).toEqual(
+        expect.objectContaining({
+          nextCompletionId: "real-comp-id",
+        }),
+      );
     });
 
-    it("branch action option의 draft nextCompletionId는 null로 resolve된다", async () => {
+    it("branch action option의 nextCompletionId가 생성된 실제 completion ID로 resolve된다", async () => {
       // Given
       const actionDraft = {
         draftItems: [{ key: "b1" }],
@@ -454,11 +495,38 @@ describe("ActionService - applyActionSectionDraft", () => {
         itemOrderKeys: ["draft:b1"],
       };
 
+      const completionDraft = {
+        draftItems: [
+          { key: "comp1", title: "완료A" },
+          { key: "comp2", title: "완료B" },
+        ],
+        formSnapshotByItemKey: {
+          "draft:comp1": {
+            title: "완료 화면 A",
+            description: "A 설명",
+            imageUrl: null,
+            imageFileUploadId: null,
+          },
+          "draft:comp2": {
+            title: "완료 화면 B",
+            description: "B 설명",
+            imageUrl: null,
+            imageFileUploadId: null,
+          },
+        },
+      };
+
       const mockMission = createMockMission({
-        editorDraft: { action: actionDraft, completion: null },
+        editorDraft: { action: actionDraft, completion: completionDraft },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      let compCreateCount = 0;
+      ctx.mockCompletionRepo.create.mockImplementation(async () => {
+        compCreateCount += 1;
+        return createMockMissionCompletion({ id: `real-comp-${compCreateCount}` });
+      });
 
       const mockAction = createMockAction({ id: "real-branch-id", type: ActionType.BRANCH });
       ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockAction);
@@ -468,10 +536,12 @@ describe("ActionService - applyActionSectionDraft", () => {
       const result = await ctx.service.applyActionSectionDraft("mission1", "user1");
 
       // Then
-      expect(result.createdCompletionIds).toEqual([]);
-      expect(ctx.mockCompletionRepo.create).not.toHaveBeenCalled();
+      expect(result.createdCompletionIds).toContain("real-comp-1");
+      expect(result.createdCompletionIds).toContain("real-comp-2");
 
       const updateWithOptionsCalls = ctx.mockActionRepo.updateWithOptions.mock.calls;
+      expect(updateWithOptionsCalls.length).toBeGreaterThanOrEqual(1);
+
       const branchUpdateCall = updateWithOptionsCalls.find(call => call[0] === "real-branch-id");
       expect(branchUpdateCall).toBeDefined();
 
@@ -479,11 +549,12 @@ describe("ActionService - applyActionSectionDraft", () => {
         nextCompletionId: string | null;
       }>;
       const resolvedCompletionIds = resolvedOptions.map(opt => opt.nextCompletionId);
-      expect(resolvedCompletionIds).toEqual([null, null]);
+      expect(resolvedCompletionIds).toContain("real-comp-1");
+      expect(resolvedCompletionIds).toContain("real-comp-2");
     });
 
-    it("completion draft가 있어도 completion을 생성하지 않는다", async () => {
-      // Given
+    it("기존+신규 completion 스냅샷이 섞여있어도 draft completion이 정상 생성되고 nextCompletionId가 resolve된다", async () => {
+      // Given - 실제 프론트엔드: formSnapshotByItemKey에 existing과 draft 모두 포함
       const actionDraft = {
         draftItems: [{ key: "q1" }],
         formSnapshotByItemKey: {
@@ -506,6 +577,12 @@ describe("ActionService - applyActionSectionDraft", () => {
       const completionDraft = {
         draftItems: [{ key: "newcomp", title: "신규 완료" }],
         formSnapshotByItemKey: {
+          "existing:old-comp-id": {
+            title: "기존 완료 화면",
+            description: "<p>기존 설명</p>",
+            imageUrl: "https://example.com/image.png",
+            imageFileUploadId: "file-123",
+          },
           "draft:newcomp": {
             title: "신규 완료 화면",
             description: "<p>신규 설명</p>",
@@ -521,6 +598,93 @@ describe("ActionService - applyActionSectionDraft", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
+      const mockCompletion = createMockMissionCompletion({ id: "real-newcomp" });
+      ctx.mockCompletionRepo.create.mockResolvedValue(mockCompletion);
+
+      const mockAction = createMockAction({ id: "real-q1", type: ActionType.SUBJECTIVE });
+      ctx.mockActionRepo.create.mockResolvedValue(mockAction);
+      ctx.mockActionRepo.update.mockResolvedValue(mockAction);
+
+      // When
+      const result = await ctx.service.applyActionSectionDraft("mission1", "user1");
+
+      // Then - completion이 생성되고 action의 nextCompletionId가 resolve되어야 한다
+      expect(result.createdCompletionIds).toEqual(["real-newcomp"]);
+      expect(result.tempToRealCompletionIdMap).toEqual({
+        "draft:completion:newcomp": "real-newcomp",
+      });
+
+      const updateCalls = ctx.mockActionRepo.update.mock.calls;
+      const fkUpdateCall = updateCalls.find(
+        call => call[0] === "real-q1" && call[1]?.nextCompletionId !== undefined,
+      );
+      expect(fkUpdateCall).toBeDefined();
+      expect(fkUpdateCall![1]).toEqual(
+        expect.objectContaining({ nextCompletionId: "real-newcomp" }),
+      );
+    });
+
+    it("프론트엔드 이중 toServerEditorDraftPayload 변환을 거친 데이터에서도 completion이 생성되고 nextCompletionId가 resolve된다", async () => {
+      // Given - 프론트엔드가 collectLocalDraftPayload로 수집한 원본 데이터
+      const rawFrontendPayload = {
+        basic: null,
+        reward: null,
+        action: {
+          draftItems: [{ key: "q1" }],
+          openItemKey: "draft:q1",
+          dirtyByItemKey: { "draft:q1": true },
+          actionTypeByItemKey: { "draft:q1": ActionType.SUBJECTIVE },
+          formSnapshotByItemKey: {
+            "draft:q1": {
+              actionType: ActionType.SUBJECTIVE,
+              values: {
+                title: "질문",
+                isRequired: true,
+                nextCompletionId: "draft:completion:newcomp",
+                nextActionId: null,
+              },
+              nextLinkType: "completion",
+            },
+          },
+          itemOrderKeys: ["draft:q1"],
+        },
+        completion: {
+          draftItems: [{ key: "newcomp", title: "신규 완료" }],
+          openItemKey: "draft:newcomp",
+          removedExistingIds: [],
+          dirtyByItemKey: {},
+          formSnapshotByItemKey: {
+            "existing:old-comp": {
+              title: "기존 완료",
+              description: "<p>기존 설명</p>",
+              imageUrl: null,
+              imageFileUploadId: null,
+            },
+            "draft:newcomp": {
+              title: "신규 완료 화면",
+              description: "<p>설명</p>",
+              imageUrl: null,
+              imageFileUploadId: null,
+            },
+          },
+        },
+        meta: { updatedAtMs: Date.now() },
+      };
+
+      // 프론트엔드: toServerEditorDraftPayload (1차 변환)
+      const frontendPayload = toServerEditorDraftPayload(rawFrontendPayload);
+      // 서버 saveEditorDraft: toServerEditorDraftPayload (2차 변환)
+      const serverStoredPayload = toServerEditorDraftPayload(frontendPayload);
+
+      const mockMission = createMockMission({
+        editorDraft: serverStoredPayload as unknown as Prisma.JsonValue,
+      });
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      const mockCompletion = createMockMissionCompletion({ id: "real-newcomp" });
+      ctx.mockCompletionRepo.create.mockResolvedValue(mockCompletion);
+
       const mockAction = createMockAction({ id: "real-q1", type: ActionType.SUBJECTIVE });
       ctx.mockActionRepo.create.mockResolvedValue(mockAction);
       ctx.mockActionRepo.update.mockResolvedValue(mockAction);
@@ -529,8 +693,70 @@ describe("ActionService - applyActionSectionDraft", () => {
       const result = await ctx.service.applyActionSectionDraft("mission1", "user1");
 
       // Then
-      expect(result.createdCompletionIds).toEqual([]);
-      expect(ctx.mockCompletionRepo.create).not.toHaveBeenCalled();
+      expect(result.createdCompletionIds).toEqual(["real-newcomp"]);
+      expect(result.tempToRealCompletionIdMap).toEqual({
+        "draft:completion:newcomp": "real-newcomp",
+      });
+
+      const updateCalls = ctx.mockActionRepo.update.mock.calls;
+      const fkUpdateCall = updateCalls.find(
+        call => call[0] === "real-q1" && call[1]?.nextCompletionId !== undefined,
+      );
+      expect(fkUpdateCall).toBeDefined();
+      expect(fkUpdateCall![1]).toEqual(
+        expect.objectContaining({ nextCompletionId: "real-newcomp" }),
+      );
+    });
+
+    it("completion formSnapshotByItemKey는 draft:${key} 형식으로 조회된다", async () => {
+      // Given - 프론트엔드 실제 형태: completion snapshot 키가 "draft:comp1"
+      const actionDraft = {
+        draftItems: [{ key: "q1" }],
+        formSnapshotByItemKey: {
+          "draft:q1": {
+            actionType: ActionType.SUBJECTIVE,
+            values: { title: "질문", isRequired: true },
+            nextLinkType: "action",
+          },
+        },
+        actionTypeByItemKey: { "draft:q1": ActionType.SUBJECTIVE },
+        dirtyByItemKey: { "draft:q1": true },
+        itemOrderKeys: ["draft:q1"],
+      };
+
+      const completionDraft = {
+        draftItems: [{ key: "c1", title: "완료" }],
+        formSnapshotByItemKey: {
+          "draft:c1": {
+            title: "완료 화면",
+            description: "설명",
+            imageUrl: null,
+            imageFileUploadId: null,
+          },
+        },
+      };
+
+      const mockMission = createMockMission({
+        editorDraft: { action: actionDraft, completion: completionDraft },
+      });
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      const mockCompletion = createMockMissionCompletion({ id: "real-c1" });
+      ctx.mockCompletionRepo.create.mockResolvedValue(mockCompletion);
+
+      const mockAction = createMockAction({ id: "real-q1", type: ActionType.SUBJECTIVE });
+      ctx.mockActionRepo.create.mockResolvedValue(mockAction);
+      ctx.mockActionRepo.update.mockResolvedValue(mockAction);
+
+      // When
+      const result = await ctx.service.applyActionSectionDraft("mission1", "user1");
+
+      // Then - completion이 정상적으로 생성되어야 한다
+      expect(result.createdCompletionIds).toEqual(["real-c1"]);
+      expect(result.tempToRealCompletionIdMap).toEqual({
+        "draft:completion:c1": "real-c1",
+      });
     });
   });
 

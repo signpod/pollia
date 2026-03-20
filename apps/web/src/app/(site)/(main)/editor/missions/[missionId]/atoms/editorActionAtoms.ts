@@ -1,6 +1,7 @@
 import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { ActionType } from "@prisma/client";
 import { atom } from "jotai";
+import { createRemovedIdsAtomGroup } from "../../../atoms/createRemovedIdsAtomGroup";
 import type { DraftActionItem } from "../components/actionSettingsCard.types";
 
 export const actionDraftItemsAtom = atom<DraftActionItem[]>([]);
@@ -101,3 +102,9 @@ export const cleanupDeletedCompletionRefsAtom = atom(
 );
 
 export const actionScrollTargetItemKeyAtom = atom<string | null>(null);
+
+const actionRemovedIdsGroup = createRemovedIdsAtomGroup(actionFormVersionByIdAtom);
+
+export const removedActionIdsAtom = actionRemovedIdsGroup.removedIdsAtom;
+export const markActionRemovedAtom = actionRemovedIdsGroup.markRemovedAtom;
+export const resetActionAfterSaveAtom = actionRemovedIdsGroup.resetAfterSaveAtom;
