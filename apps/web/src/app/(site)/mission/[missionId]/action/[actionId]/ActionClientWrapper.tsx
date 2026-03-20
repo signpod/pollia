@@ -107,6 +107,7 @@ function ActionContent() {
 
   const content = (
     <ActionStepWrapper
+      key={actionId}
       actions={actions}
       currentActionData={currentStep.actionData}
       steps={steps}
