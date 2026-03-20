@@ -2,16 +2,12 @@ import type {
   ActionFormHandle,
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
-import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
 import { useReadActionsDetail } from "@/hooks/action";
-import type { ActionDetail } from "@/types/dto";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { ActionType } from "@prisma/client";
-import { toast } from "@repo/ui/components";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { AlertCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { mobilePreviewModeAtom } from "../../../missions/[missionId]/atoms/editorMobilePreviewAtom";
 import type {
@@ -47,6 +43,9 @@ import {
   quizActionTypeByItemKeyAtom,
   quizActionValidationIssueCountByItemKeyAtom,
   quizDraftVersionAtom,
+  quizMarkActionRemovedAtom,
+  quizRemovedActionIdsAtom,
+  quizResetActionAfterSaveAtom,
 } from "../atoms/quizActionAtoms";
 import { useQuizActionSaveFlow } from "./useQuizActionSaveFlow";
 
@@ -73,16 +72,10 @@ export interface UseQuizQuestionSettingsCardReturn {
     draftHydrationVersion: number;
   };
   formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
-  deleteDialog: {
-    target: ActionDetail | null;
-    isPending: boolean;
-    onOpen: (action: ActionDetail) => void;
-    onClose: () => void;
-    onConfirm: () => void;
-  };
   handlers: {
     handleAddDraft: () => void;
     handleRemoveDraft: (draftKey: string) => void;
+    handleRemoveExisting: (actionId: string) => void;
     handleToggleItem: (itemKey: string) => void;
     handleActionTypeChange: (itemKey: string, type: ActionType) => void;
     handleDragEnd: (event: DragEndEvent) => void;
@@ -104,11 +97,11 @@ export function useQuizQuestionSettingsCard({
   const [draftItems, setDraftItems] = useAtom(quizActionDraftItemsAtom);
   const [itemOrderKeys, setItemOrderKeys] = useAtom(quizActionItemOrderKeysAtom);
   const [openItemKey, setOpenItemKey] = useAtom(quizActionOpenItemKeyAtom);
-  const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
+  const [removedExistingIds, setRemovedExistingIds] = useAtom(quizRemovedActionIdsAtom);
+  const dispatchMarkRemoved = useSetAtom(quizMarkActionRemovedAtom);
+  const dispatchResetAfterSave = useSetAtom(quizResetActionAfterSaveAtom);
   const [dirtyByItemKey, setDirtyByItemKey] = useAtom(quizActionDirtyByItemKeyAtom);
-  const [existingFormVersionById, setExistingFormVersionById] = useAtom(
-    quizActionFormVersionByIdAtom,
-  );
+  const existingFormVersionById = useAtomValue(quizActionFormVersionByIdAtom);
   const [actionTypeByItemKey, setActionTypeByItemKey] = useAtom(quizActionTypeByItemKeyAtom);
   const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useAtom(
     quizActionFormSnapshotByItemKeyAtom,
@@ -123,44 +116,17 @@ export function useQuizQuestionSettingsCard({
 
   const { data: actionsData, isLoading: isActionsLoading } = useReadActionsDetail(missionId);
 
-  const existingActions = useMemo(() => {
+  const allExistingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
     return [...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [actionsData]);
 
-  const deleteAction = useManageDeleteAction({
-    onSuccess: () => {
-      const deletingActionId = deleteTarget?.id;
+  const existingActions = useMemo(
+    () => allExistingActions.filter(action => !removedExistingIds.has(action.id)),
+    [allExistingActions, removedExistingIds],
+  );
 
-      if (deletingActionId) {
-        const deletingItemKey = getExistingItemKey(deletingActionId);
-
-        setExistingFormVersionById(prev => {
-          const next = { ...prev };
-          delete next[deletingActionId];
-          return next;
-        });
-
-        delete formRefs.current[deletingItemKey];
-        setActionTypeByItemKey(prev => deleteKeyFromRecord(prev, deletingItemKey));
-        setDirtyByItemKey(prev => deleteKeyFromRecord(prev, deletingItemKey));
-        setValidationIssueCountByItemKey(prev => deleteKeyFromRecord(prev, deletingItemKey));
-        setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
-      }
-
-      toast({ message: "질문이 삭제되었습니다." });
-      setDeleteTarget(null);
-    },
-    onError: error => {
-      toast({
-        message: error.message || "질문 삭제에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    },
-  });
-
-  const isBusy = deleteAction.isPending;
+  const isBusy = false;
 
   const actionItems = useMemo<ActionListItem[]>(
     () => [
@@ -207,6 +173,7 @@ export function useQuizQuestionSettingsCard({
     return {
       draftItems,
       openItemKey,
+      removedExistingIds: [...removedExistingIds],
       dirtyByItemKey,
       actionTypeByItemKey,
       formSnapshotByItemKey,
@@ -218,14 +185,16 @@ export function useQuizQuestionSettingsCard({
     draftItems,
     dirtyByItemKey,
     openItemKey,
+    removedExistingIds,
     orderedActionItems,
   ]);
 
   const hasPendingChanges = useMemo(() => {
     if (draftItems.length > 0) return true;
+    if (removedExistingIds.size > 0) return true;
     if (hasOrderChanges) return true;
     return existingActions.some(action => dirtyByItemKey[getExistingItemKey(action.id)]);
-  }, [draftItems.length, existingActions, dirtyByItemKey, hasOrderChanges]);
+  }, [draftItems.length, removedExistingIds, existingActions, dirtyByItemKey, hasOrderChanges]);
 
   const { isApplying, saveHandle } = useQuizActionSaveFlow({
     missionId,
@@ -235,6 +204,9 @@ export function useQuizQuestionSettingsCard({
     isBusy,
     hasPendingChanges,
     getActionDraftSnapshot,
+    removedActionIds: removedExistingIds,
+    dispatchResetAfterSave,
+    setRemovedActionIds: setRemovedExistingIds,
   });
 
   const isBusyTotal = isApplying || isBusy;
@@ -402,10 +374,21 @@ export function useQuizQuestionSettingsCard({
     [setItemOrderKeys],
   );
 
-  const handleDeleteConfirm = useCallback(() => {
-    if (!deleteTarget) return;
-    deleteAction.mutate({ actionId: deleteTarget.id, missionId });
-  }, [deleteTarget, deleteAction, missionId]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외
+  const handleRemoveExisting = useCallback(
+    (actionId: string) => {
+      const itemKey = getExistingItemKey(actionId);
+
+      dispatchMarkRemoved(actionId);
+
+      delete formRefs.current[itemKey];
+      setActionTypeByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
+      setDirtyByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
+      setValidationIssueCountByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
+      setOpenItemKey(prev => (prev === itemKey ? null : prev));
+    },
+    [dispatchMarkRemoved],
+  );
 
   const scrollToFirstError = useCallback(() => {
     scrollToFirstFieldError({
@@ -432,16 +415,10 @@ export function useQuizQuestionSettingsCard({
       draftHydrationVersion,
     },
     formRefs,
-    deleteDialog: {
-      target: deleteTarget,
-      isPending: deleteAction.isPending,
-      onOpen: setDeleteTarget,
-      onClose: () => setDeleteTarget(null),
-      onConfirm: handleDeleteConfirm,
-    },
     handlers: {
       handleAddDraft,
       handleRemoveDraft,
+      handleRemoveExisting,
       handleToggleItem,
       handleActionTypeChange,
       handleDragEnd,

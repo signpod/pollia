@@ -8,7 +8,6 @@ import {
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { mapEditInitialValues } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { getActionTypeLabel } from "@/constants/action";
-import type { ActionDetail } from "@/types/dto";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ActionType } from "@prisma/client";
@@ -38,7 +37,7 @@ interface QuizSortableActionItemProps {
   onFormRef: (itemKey: string, instance: ActionFormHandle | null) => void;
   onToggle: (itemKey: string) => void;
   onRemoveDraft: (draftKey: string) => void;
-  onDeleteExisting?: (action: ActionDetail) => void;
+  onRemoveExisting?: (actionId: string) => void;
   onActionTypeChange: (itemKey: string, type: ActionType) => void;
   onDirtyChange: (itemKey: string, isDirty: boolean) => void;
   onValidationStateChange: (itemKey: string, issueCount: number) => void;
@@ -65,7 +64,7 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
   onFormRef,
   onToggle,
   onRemoveDraft,
-  onDeleteExisting,
+  onRemoveExisting,
   onActionTypeChange,
   onDirtyChange,
   onValidationStateChange,
@@ -108,11 +107,11 @@ export const QuizSortableActionItem = memo(function QuizSortableActionItem({
 
   const handleDelete = useCallback(() => {
     if (existingAction) {
-      onDeleteExisting?.(existingAction);
+      onRemoveExisting?.(existingAction.id);
     } else if (item.kind === "draft") {
       onRemoveDraft(item.draft.key);
     }
-  }, [existingAction, item, onRemoveDraft, onDeleteExisting]);
+  }, [existingAction, item, onRemoveDraft, onRemoveExisting]);
 
   const handleFormRefCb = useCallback(
     (instance: ActionFormHandle | null) => onFormRef(itemKey, instance),

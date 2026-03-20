@@ -2,21 +2,17 @@ import type {
   ActionFormHandle,
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
-import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
 import {
   makeDraftActionId,
   mapEditInitialValues,
 } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
-import type { ActionDetail } from "@/types/dto";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { ActionType } from "@prisma/client";
-import { toast } from "@repo/ui/components";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { AlertCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   actionDirtyByItemKeyAtom,
   actionDraftHydrationVersionAtom,
@@ -30,6 +26,9 @@ import {
   actionTypeByItemKeyAtom,
   actionValidationIssueCountByItemKeyAtom,
   cleanupDeletedActionRefsAtom,
+  markActionRemovedAtom,
+  removedActionIdsAtom,
+  resetActionAfterSaveAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
 import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
@@ -85,13 +84,6 @@ export interface UseActionSettingsCardReturn {
     flowAnalysis: ReturnType<typeof analyzeEditorFlow> | null;
   };
   formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
-  deleteDialog: {
-    target: ActionDetail | null;
-    isPending: boolean;
-    onOpen: (action: ActionDetail) => void;
-    onClose: () => void;
-    onConfirm: () => void;
-  };
   flowDialog: {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
@@ -99,6 +91,7 @@ export interface UseActionSettingsCardReturn {
   handlers: {
     handleAddDraft: () => void;
     handleRemoveDraft: (draftKey: string) => void;
+    handleRemoveExisting: (actionId: string) => void;
     handleToggleItem: (itemKey: string) => void;
     handleActionTypeChange: (itemKey: string, type: ActionType) => void;
     handleDragEnd: (event: DragEndEvent) => void;
@@ -121,7 +114,9 @@ export function useActionSettingsCard({
   const [draftItems, setDraftItems] = useAtom(actionDraftItemsAtom);
   const [itemOrderKeys, setItemOrderKeys] = useAtom(actionItemOrderKeysAtom);
   const [openItemKey, setOpenItemKey] = useAtom(actionOpenItemKeyAtom);
-  const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
+  const [removedExistingIds, setRemovedExistingIds] = useAtom(removedActionIdsAtom);
+  const dispatchMarkRemoved = useSetAtom(markActionRemovedAtom);
+  const dispatchResetAfterSave = useSetAtom(resetActionAfterSaveAtom);
   const [dirtyByItemKey, setDirtyByItemKey] = useAtom(actionDirtyByItemKeyAtom);
   const [existingFormVersionById, setExistingFormVersionById] = useAtom(actionFormVersionByIdAtom);
   const [actionTypeByItemKey, setActionTypeByItemKey] = useAtom(actionTypeByItemKeyAtom);
@@ -151,78 +146,17 @@ export function useActionSettingsCard({
     error: actionsError,
   } = useReadActionsDetail(missionId);
 
-  const existingActions = useMemo(() => {
+  const allExistingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
     return [...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [actionsData]);
 
-  const deleteAction = useManageDeleteAction({
-    onSuccess: () => {
-      const deletingActionId = deleteTarget?.id;
+  const existingActions = useMemo(
+    () => allExistingActions.filter(action => !removedExistingIds.has(action.id)),
+    [allExistingActions, removedExistingIds],
+  );
 
-      if (deletingActionId) {
-        const deletingItemKey = getExistingItemKey(deletingActionId);
-        const affectedActionIds = existingActions
-          .filter(
-            action =>
-              action.id !== deletingActionId &&
-              (action.nextActionId === deletingActionId ||
-                action.options.some(option => option.nextActionId === deletingActionId)),
-          )
-          .map(action => action.id);
-
-        setExistingFormVersionById(prev => {
-          const next = { ...prev };
-          delete next[deletingActionId];
-          for (const actionId of affectedActionIds) {
-            next[actionId] = (next[actionId] ?? 0) + 1;
-          }
-          return next;
-        });
-
-        delete formRefs.current[deletingItemKey];
-        setActionTypeByItemKey(prev => {
-          const next = { ...prev };
-          delete next[deletingItemKey];
-          return next;
-        });
-        setDirtyByItemKey(prev => {
-          const next = { ...prev };
-          delete next[deletingItemKey];
-          for (const actionId of affectedActionIds) {
-            delete next[getExistingItemKey(actionId)];
-          }
-          return next;
-        });
-        setValidationIssueCountByItemKey(prev => {
-          const next = { ...prev };
-          delete next[deletingItemKey];
-          for (const actionId of affectedActionIds) {
-            delete next[getExistingItemKey(actionId)];
-          }
-          return next;
-        });
-        setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
-
-        dispatchCleanupDeletedActionRefs({
-          itemKey: deletingItemKey,
-          deletedActionId: deletingActionId,
-        });
-      }
-
-      toast({ message: "질문이 삭제되었습니다." });
-      setDeleteTarget(null);
-    },
-    onError: error => {
-      toast({
-        message: error.message || "질문 삭제에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    },
-  });
-
-  const isBusy = deleteAction.isPending;
+  const isBusy = false;
   const isInactiveMission = missionData?.data?.isActive === false;
   const isAiCompletionEnabled =
     useAiCompletionOverride ?? missionData?.data?.useAiCompletion === true;
@@ -295,6 +229,7 @@ export function useActionSettingsCard({
     return {
       draftItems,
       openItemKey,
+      removedExistingIds: [...removedExistingIds],
       dirtyByItemKey,
       actionTypeByItemKey,
       formSnapshotByItemKey,
@@ -306,6 +241,7 @@ export function useActionSettingsCard({
     draftItems,
     dirtyByItemKey,
     openItemKey,
+    removedExistingIds,
     orderedActionItems,
   ]);
 
@@ -322,9 +258,10 @@ export function useActionSettingsCard({
 
   const hasPendingChanges = useMemo(() => {
     if (draftItems.length > 0) return true;
+    if (removedExistingIds.size > 0) return true;
     if (hasOrderChanges) return true;
     return existingActions.some(action => dirtyByItemKey[getExistingItemKey(action.id)]);
-  }, [draftItems.length, existingActions, dirtyByItemKey, hasOrderChanges]);
+  }, [draftItems.length, removedExistingIds, existingActions, dirtyByItemKey, hasOrderChanges]);
 
   const { isApplying, saveHandle } = useActionSaveFlow({
     missionId,
@@ -334,6 +271,9 @@ export function useActionSettingsCard({
     isBusy,
     hasPendingChanges,
     getActionDraftSnapshot,
+    removedActionIds: removedExistingIds,
+    dispatchResetAfterSave,
+    setRemovedActionIds: setRemovedExistingIds,
   });
 
   const isBusyTotal = isApplying || isBusy;
@@ -567,10 +507,60 @@ export function useActionSettingsCard({
     [setItemOrderKeys],
   );
 
-  const handleDeleteConfirm = useCallback(() => {
-    if (!deleteTarget) return;
-    deleteAction.mutate({ actionId: deleteTarget.id, missionId });
-  }, [deleteTarget, deleteAction, missionId]);
+  const handleRemoveExisting = useCallback(
+    (actionId: string) => {
+      const itemKey = getExistingItemKey(actionId);
+
+      const affectedActionIds = allExistingActions
+        .filter(
+          action =>
+            action.id !== actionId &&
+            (action.nextActionId === actionId ||
+              action.options.some(option => option.nextActionId === actionId)),
+        )
+        .map(action => action.id);
+
+      dispatchMarkRemoved(actionId);
+
+      setExistingFormVersionById(prev => {
+        const next = { ...prev };
+        for (const affectedId of affectedActionIds) {
+          next[affectedId] = (next[affectedId] ?? 0) + 1;
+        }
+        return next;
+      });
+
+      delete formRefs.current[itemKey];
+      setActionTypeByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
+      setDirtyByItemKey(prev => {
+        const next = deleteKeyFromRecord(prev, itemKey);
+        for (const affectedId of affectedActionIds) {
+          delete next[getExistingItemKey(affectedId)];
+        }
+        return next;
+      });
+      setValidationIssueCountByItemKey(prev => {
+        const next = deleteKeyFromRecord(prev, itemKey);
+        for (const affectedId of affectedActionIds) {
+          delete next[getExistingItemKey(affectedId)];
+        }
+        return next;
+      });
+      setOpenItemKey(prev => (prev === itemKey ? null : prev));
+
+      dispatchCleanupDeletedActionRefs({ itemKey, deletedActionId: actionId });
+    },
+    [
+      allExistingActions,
+      dispatchMarkRemoved,
+      setExistingFormVersionById,
+      setActionTypeByItemKey,
+      setDirtyByItemKey,
+      setValidationIssueCountByItemKey,
+      setOpenItemKey,
+      dispatchCleanupDeletedActionRefs,
+    ],
+  );
 
   const scrollToFirstError = useCallback(() => {
     scrollToFirstFieldError({
@@ -608,13 +598,6 @@ export function useActionSettingsCard({
       flowAnalysis,
     },
     formRefs,
-    deleteDialog: {
-      target: deleteTarget,
-      isPending: deleteAction.isPending,
-      onOpen: setDeleteTarget,
-      onClose: () => setDeleteTarget(null),
-      onConfirm: handleDeleteConfirm,
-    },
     flowDialog: {
       isOpen: isFlowDialogOpen,
       onOpenChange: setIsFlowDialogOpen,
@@ -622,6 +605,7 @@ export function useActionSettingsCard({
     handlers: {
       handleAddDraft,
       handleRemoveDraft,
+      handleRemoveExisting,
       handleToggleItem,
       handleActionTypeChange,
       handleDragEnd,

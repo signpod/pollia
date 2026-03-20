@@ -19,6 +19,7 @@ import {
   actionItemOrderKeysAtom,
   actionOpenItemKeyAtom,
   actionTypeByItemKeyAtom,
+  removedActionIdsAtom,
 } from "../atoms/editorActionAtoms";
 import {
   completionDirtyByItemKeyAtom,
@@ -69,6 +70,7 @@ export function EditorMissionTabContent({
   const actionTypeByItemKey = useAtomValue(actionTypeByItemKeyAtom);
   const actionFormSnapshotByItemKey = useAtomValue(actionFormSnapshotByItemKeyAtom);
   const actionItemOrderKeys = useAtomValue(actionItemOrderKeysAtom);
+  const removedActionIds = useAtomValue(removedActionIdsAtom);
   const completionDrafts = useAtomValue(completionDraftsAtom);
   const completionOpenItemKey = useAtomValue(completionOpenItemKeyAtom);
   const removedCompletionIds = useAtomValue(removedCompletionIdsAtom);
@@ -125,6 +127,7 @@ export function EditorMissionTabContent({
     () => ({
       draftItems: actionDraftItems,
       openItemKey: actionOpenItemKey,
+      removedExistingIds: [...removedActionIds],
       dirtyByItemKey: actionDirtyByItemKey,
       actionTypeByItemKey,
       formSnapshotByItemKey: actionFormSnapshotByItemKey,
@@ -133,6 +136,7 @@ export function EditorMissionTabContent({
     [
       actionDraftItems,
       actionOpenItemKey,
+      removedActionIds,
       actionDirtyByItemKey,
       actionTypeByItemKey,
       actionFormSnapshotByItemKey,
@@ -148,6 +152,7 @@ export function EditorMissionTabContent({
     actionDirtyByItemKey,
     actionFormSnapshotByItemKey,
     actionItemOrderKeys,
+    removedActionIds,
     sectionBindings.onActionWorkingSetChange,
   ]);
 
