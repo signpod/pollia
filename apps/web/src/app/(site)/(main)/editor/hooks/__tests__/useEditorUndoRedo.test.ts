@@ -319,7 +319,7 @@ describe("useEditorUndoRedo", () => {
   describe("maxHistory 제한", () => {
     // Given: maxHistory=3인 상태에서 4개의 스냅샷 push
     // Then: 가장 오래된 스냅샷이 삭제된다
-    it("maxHistory를 초과하면 가장 오래된 스냅샷이 삭제된다", () => {
+    it("maxHistory를 초과하면 가장 오래된 스냅샷이 삭제된다", async () => {
       const { result, setCurrentSnapshot } = renderUndoRedo({ maxHistory: 3 });
 
       for (let i = 0; i < 4; i++) {
@@ -333,9 +333,8 @@ describe("useEditorUndoRedo", () => {
 
       let undoCount = 0;
       while (result.current.canUndo) {
-        // eslint-disable-next-line no-loop-func
-        act(() => {
-          void result.current.undo();
+        await act(async () => {
+          await result.current.undo();
         });
         act(() => {
           jest.runAllTimers();

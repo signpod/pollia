@@ -1,6 +1,7 @@
 import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { ActionType } from "@prisma/client";
 import { atom } from "jotai";
+import { createRemovedIdsAtomGroup } from "../../../atoms/createRemovedIdsAtomGroup";
 import type { DraftActionItem } from "../components/actionSettingsCard.types";
 
 export const actionDraftItemsAtom = atom<DraftActionItem[]>([]);
@@ -102,33 +103,8 @@ export const cleanupDeletedCompletionRefsAtom = atom(
 
 export const actionScrollTargetItemKeyAtom = atom<string | null>(null);
 
-export const removedActionIdsAtom = atom<Set<string>>(new Set<string>());
+const actionRemovedIdsGroup = createRemovedIdsAtomGroup(actionFormVersionByIdAtom);
 
-export const markActionRemovedAtom = atom(null, (get, set, actionId: string) => {
-  const prev = get(removedActionIdsAtom);
-  const next = new Set(prev);
-  next.add(actionId);
-  set(removedActionIdsAtom, next);
-});
-
-export const resetActionAfterSaveAtom = atom(
-  null,
-  (get, set, successfulRemovedIds: Set<string>) => {
-    if (successfulRemovedIds.size === 0) return;
-
-    set(actionFormVersionByIdAtom, prev => {
-      const next = { ...prev };
-      for (const actionId of successfulRemovedIds) {
-        delete next[actionId];
-      }
-      return next;
-    });
-
-    const current = get(removedActionIdsAtom);
-    const next = new Set<string>(current);
-    for (const id of successfulRemovedIds) {
-      next.delete(id);
-    }
-    set(removedActionIdsAtom, next);
-  },
-);
+export const removedActionIdsAtom = actionRemovedIdsGroup.removedIdsAtom;
+export const markActionRemovedAtom = actionRemovedIdsGroup.markRemovedAtom;
+export const resetActionAfterSaveAtom = actionRemovedIdsGroup.resetAfterSaveAtom;

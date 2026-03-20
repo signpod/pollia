@@ -13,6 +13,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { ActionType } from "@prisma/client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import {
   actionDirtyByItemKeyAtom,
   actionDraftHydrationVersionAtom,
@@ -302,21 +303,13 @@ export function useActionSettingsCard({
   );
   const hasValidationIssues = validationIssueCount > 0;
 
-  useEffect(() => {
-    onSaveStateChange?.({
-      hasPendingChanges,
-      isBusy: isBusyTotal || isActionsLoading,
-      hasValidationIssues,
-      validationIssueCount,
-    });
-  }, [
+  useSectionSaveState({
     hasPendingChanges,
+    isBusy: isBusyTotal || isActionsLoading,
     hasValidationIssues,
-    isBusyTotal,
-    isActionsLoading,
-    onSaveStateChange,
     validationIssueCount,
-  ]);
+    onSaveStateChange,
+  });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDirtyByItemKey
   const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {

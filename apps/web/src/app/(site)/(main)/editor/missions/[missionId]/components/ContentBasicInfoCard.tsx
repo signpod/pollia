@@ -20,6 +20,7 @@ import { EditorContentInfoSection } from "../../../components/view/EditorContent
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
 import { useFormEagerValidation } from "../../../hooks/useFormEagerValidation";
+import { useFormScrollToFirstError } from "../../../hooks/useFormScrollToFirstError";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import type {
@@ -243,13 +244,7 @@ function ContentBasicInfoCardComponent(
     [brandLogoImageUpload, form, getHasPendingChanges, markClean, mission.id, thumbnailImageUpload],
   );
 
-  const scrollToFirstError = useCallback(async () => {
-    await form.trigger();
-    requestAnimationFrame(() => {
-      const el = document.querySelector("[data-field-error]");
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }, [form]);
+  const scrollToFirstError = useFormScrollToFirstError(form);
 
   useImperativeHandle(
     ref,

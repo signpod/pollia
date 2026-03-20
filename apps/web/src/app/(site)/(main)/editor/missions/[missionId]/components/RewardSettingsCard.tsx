@@ -30,6 +30,7 @@ import { EditorRewardSection } from "../../../components/view/EditorRewardSectio
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
 import { useFormEagerValidation } from "../../../hooks/useFormEagerValidation";
+import { useFormScrollToFirstError } from "../../../hooks/useFormScrollToFirstError";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
 import type {
   SectionSaveHandle,
@@ -259,13 +260,7 @@ function RewardSettingsCardComponent(
     [currentReward, form, getHasPendingChanges, markClean, mission, rewardImageUpload],
   );
 
-  const scrollToFirstError = useCallback(async () => {
-    await form.trigger();
-    requestAnimationFrame(() => {
-      const el = document.querySelector("[data-field-error]");
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }, [form]);
+  const scrollToFirstError = useFormScrollToFirstError(form);
 
   useImperativeHandle(
     ref,
