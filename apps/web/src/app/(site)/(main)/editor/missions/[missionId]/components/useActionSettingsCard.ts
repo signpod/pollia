@@ -53,6 +53,7 @@ import {
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle } from "./editor-save.types";
 import { toggleItemWithPreview } from "./editorMobilePreview.utils";
+import { scrollToFirstFieldError } from "./editorScrollToItem";
 import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
 import { useActionLinkDerived } from "./useActionLinkDerived";
 import { useActionSaveFlow } from "./useActionSaveFlow";
@@ -108,6 +109,7 @@ export interface UseActionSettingsCardReturn {
     handleDuplicateItem: (itemKey: string) => void;
   };
   saveHandle: SectionSaveHandle;
+  scrollToFirstError: () => void;
 }
 
 export function useActionSettingsCard({
@@ -570,6 +572,15 @@ export function useActionSettingsCard({
     deleteAction.mutate({ actionId: deleteTarget.id, missionId });
   }, [deleteTarget, deleteAction, missionId]);
 
+  const scrollToFirstError = useCallback(() => {
+    scrollToFirstFieldError({
+      items: orderedActionItems,
+      validationIssueCountByItemKey,
+      formRefs,
+      setOpenItemKey,
+    });
+  }, [orderedActionItems, validationIssueCountByItemKey, setOpenItemKey]);
+
   return {
     viewState: {
       isBusy: isBusyTotal,
@@ -621,5 +632,6 @@ export function useActionSettingsCard({
       handleDuplicateItem,
     },
     saveHandle,
+    scrollToFirstError,
   };
 }

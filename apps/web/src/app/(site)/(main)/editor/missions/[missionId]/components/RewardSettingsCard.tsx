@@ -23,15 +23,14 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useState,
 } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
+import { useFormEagerValidation } from "../../../hooks/useFormEagerValidation";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
-import { countValidationIssues } from "../../../utils/countValidationIssues";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -142,9 +141,9 @@ function RewardSettingsCardComponent(
     form.setValue("reward.imageFileUploadId", null, { shouldDirty: true });
   };
 
-  const validationIssueCount = useMemo(
-    () => countValidationIssues(form.formState.errors),
-    [form.formState.errors],
+  const { validationIssueCount, hasValidationIssues } = useFormEagerValidation(
+    form,
+    createMissionFormSchema,
   );
 
   const { hasPendingChanges, markClean } = useFormDirtySnapshot(form);
@@ -152,7 +151,7 @@ function RewardSettingsCardComponent(
   const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
     hasPendingChanges,
     isBusy: form.formState.isSubmitting || rewardImageUpload.isUploading,
-    hasValidationIssues: validationIssueCount > 0,
+    hasValidationIssues,
     validationIssueCount,
     onSaveStateChange,
   });
@@ -260,12 +259,21 @@ function RewardSettingsCardComponent(
     [currentReward, form, getHasPendingChanges, markClean, mission, rewardImageUpload],
   );
 
+  const scrollToFirstError = useCallback(async () => {
+    await form.trigger();
+    requestAnimationFrame(() => {
+      const el = document.querySelector("[data-field-error]");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [form]);
+
   useImperativeHandle(
     ref,
     () => ({
       save,
       hasPendingChanges: getHasPendingChanges,
       isBusy: getIsBusy,
+      scrollToFirstError,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -327,7 +335,7 @@ function RewardSettingsCardComponent(
         form.reset(nextValues, { keepDefaultValues: true });
       },
     }),
-    [currentReward, form, mission, save, getHasPendingChanges, getIsBusy],
+    [currentReward, form, mission, save, getHasPendingChanges, getIsBusy, scrollToFirstError],
   );
 
   const rewardImageUploader = (

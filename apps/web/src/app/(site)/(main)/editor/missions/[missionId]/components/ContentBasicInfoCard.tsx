@@ -14,20 +14,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@repo/ui/components";
 import { useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
-import {
-  type ForwardedRef,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-} from "react";
+import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import { useFormDirtySnapshot } from "../../../hooks/useFormDirtySnapshot";
+import { useFormEagerValidation } from "../../../hooks/useFormEagerValidation";
 import { useSectionSaveState } from "../../../hooks/useSectionSaveState";
-import { countValidationIssues } from "../../../utils/countValidationIssues";
 import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import type {
   SectionSaveHandle,
@@ -132,9 +125,9 @@ function ContentBasicInfoCardComponent(
     form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
   };
 
-  const validationIssueCount = useMemo(
-    () => countValidationIssues(form.formState.errors),
-    [form.formState.errors],
+  const { validationIssueCount, hasValidationIssues } = useFormEagerValidation(
+    form,
+    createMissionFormSchema,
   );
 
   const { hasPendingChanges, markClean } = useFormDirtySnapshot(form);
@@ -142,7 +135,7 @@ function ContentBasicInfoCardComponent(
   const { getHasPendingChanges, getIsBusy } = useSectionSaveState({
     hasPendingChanges,
     isBusy: form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy,
-    hasValidationIssues: validationIssueCount > 0,
+    hasValidationIssues,
     validationIssueCount,
     onSaveStateChange,
   });
@@ -250,12 +243,21 @@ function ContentBasicInfoCardComponent(
     [brandLogoImageUpload, form, getHasPendingChanges, markClean, mission.id, thumbnailImageUpload],
   );
 
+  const scrollToFirstError = useCallback(async () => {
+    await form.trigger();
+    requestAnimationFrame(() => {
+      const el = document.querySelector("[data-field-error]");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [form]);
+
   useImperativeHandle(
     ref,
     () => ({
       save,
       hasPendingChanges: getHasPendingChanges,
       isBusy: getIsBusy,
+      scrollToFirstError,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -306,7 +308,7 @@ function ContentBasicInfoCardComponent(
         form.reset(nextValues, { keepDefaultValues: true });
       },
     }),
-    [form, mission, save, getHasPendingChanges, getIsBusy],
+    [form, mission, save, getHasPendingChanges, getIsBusy, scrollToFirstError],
   );
 
   const imageUploaders = (

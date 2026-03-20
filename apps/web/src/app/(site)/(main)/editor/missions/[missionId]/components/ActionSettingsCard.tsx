@@ -60,11 +60,15 @@ function ActionSettingsCardComponent(
     flowDialog,
     handlers,
     saveHandle,
+    scrollToFirstError,
   } = useActionSettingsCard(props);
 
   const { createLinkedAction, createLinkedCompletion } = useCreateLinkedItem();
 
-  useImperativeHandle(ref, () => saveHandle, [saveHandle]);
+  useImperativeHandle(ref, () => ({ ...saveHandle, scrollToFirstError }), [
+    saveHandle,
+    scrollToFirstError,
+  ]);
 
   const {
     isBusy,
